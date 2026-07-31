@@ -20,7 +20,7 @@
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/page-15a44153.js"
+      "static/chunks/app/page-837b9579.js"
     ],
     "/(main)/admin/ai-agents/page": [
       "static/chunks/webpack-23a4e157.js",
@@ -38,26 +38,26 @@
       "static/chunks/566-639c4b10.js",
       "static/chunks/app/(main)/layout-66a71cc3.js"
     ],
-    "/(main)/admin/settings/page": [
-      "static/chunks/webpack-23a4e157.js",
-      "static/chunks/fd9d1056-8e0367ad.js",
-      "static/chunks/117-760cd612.js",
-      "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/admin/settings/page-62017b45.js"
-    ],
     "/(main)/admin/system-logs/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/admin/system-logs/page-4eeb69c4.js"
+      "static/chunks/app/(main)/admin/system-logs/page-bf6a89a1.js"
     ],
-    "/(main)/admin/users/page": [
+    "/(main)/admin/settings/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/admin/users/page-98553bb8.js"
+      "static/chunks/app/(main)/admin/settings/page-44503b34.js"
+    ],
+    "/(main)/calendar/page": [
+      "static/chunks/webpack-23a4e157.js",
+      "static/chunks/fd9d1056-8e0367ad.js",
+      "static/chunks/117-760cd612.js",
+      "static/chunks/main-app-f25b1aa3.js",
+      "static/chunks/app/(main)/calendar/page-94a4dfb3.js"
     ],
     "/(main)/calendar-export/page": [
       "static/chunks/webpack-23a4e157.js",
@@ -67,47 +67,47 @@
       "static/chunks/765-54087136.js",
       "static/chunks/app/(main)/calendar-export/page-fe35d8e2.js"
     ],
-    "/(main)/calendar/page": [
-      "static/chunks/webpack-23a4e157.js",
-      "static/chunks/fd9d1056-8e0367ad.js",
-      "static/chunks/117-760cd612.js",
-      "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/calendar/page-94a4dfb3.js"
-    ],
     "/(main)/dashboard/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/dashboard/page-ea7ce6b0.js"
+      "static/chunks/app/(main)/dashboard/page-e8037dd0.js"
     ],
     "/(main)/news/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/news/page-77ce5b38.js"
+      "static/chunks/app/(main)/news/page-f67d5bc4.js"
     ],
     "/(main)/players/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/players/page-94bbe8b9.js"
+      "static/chunks/app/(main)/players/page-c6850363.js"
+    ],
+    "/(main)/admin/users/page": [
+      "static/chunks/webpack-23a4e157.js",
+      "static/chunks/fd9d1056-8e0367ad.js",
+      "static/chunks/117-760cd612.js",
+      "static/chunks/main-app-f25b1aa3.js",
+      "static/chunks/app/(main)/admin/users/page-f0ef9c4a.js"
     ],
     "/(main)/rankings/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/rankings/page-9bc1befe.js"
+      "static/chunks/app/(main)/rankings/page-cddba190.js"
     ],
     "/(main)/tournaments/page": [
       "static/chunks/webpack-23a4e157.js",
       "static/chunks/fd9d1056-8e0367ad.js",
       "static/chunks/117-760cd612.js",
       "static/chunks/main-app-f25b1aa3.js",
-      "static/chunks/app/(main)/tournaments/page-51697007.js"
+      "static/chunks/app/(main)/tournaments/page-3d83a41a.js"
     ]
   }
 }
