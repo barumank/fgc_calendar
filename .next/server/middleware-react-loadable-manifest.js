@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST='{"app/(main)/admin/ai-agents/ai-agents-view.tsx -> @hello-pangea/dnd":{"id":2762,"files":["static/chunks/45e2cfc1f82c907c.js","static/chunks/b15db4d86d079560.js"]}}';
