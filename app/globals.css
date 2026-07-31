@@ -1,3 +1,22 @@
+/* Явно объявляем шрифт, чтобы он всегда был доступен браузеру */
+@font-face {
+  font-family: '__DM_Sans_0d7163';
+  src: url('/_next/static/media/13971731025ec697-s.p.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Принудительно устанавливаем переменную на корень сайта */
+:root {
+  --font-sans: "__DM_Sans_0d7163", "__DM_Sans_Fallback_0d7163", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* На всякий случай дублируем для html и body */
+html, body {
+  font-family: var(--font-sans) !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
