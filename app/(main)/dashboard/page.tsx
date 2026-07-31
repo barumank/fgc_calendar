@@ -1,1 +1,5 @@
-export default function Page() { return <div className='text-white p-8 text-2xl font-bold'>dashboard — в разработке</div> }
+import { DashboardView } from './dashboard-view';
+
+export default function DashboardPage() {
+  return <DashboardView />;
+}

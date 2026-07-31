@@ -1,9 +1,22 @@
-import type { Metadata } from 'next'
+import { DM_Sans, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
+import { ChunkLoadErrorHandler } from '@/components/chunk-load-error-handler'
 
-export const metadata: Metadata = {
-  title: 'FGC Calendar',
-  description: 'Fighting Game Community Tournament Calendar',
+export const dynamic = 'force-dynamic';
+
+const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-sans' })
+const jakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-display' })
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
+
+export const metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
+  title: 'FightNexus Tournaments',
+  description: 'Онлайн-платформа для турниров по файтингам',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
@@ -12,8 +25,19 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ru" className="dark">
-      <body className="bg-[#0D0D1F] text-white antialiased">{children}</body>
+    <html lang="ru" suppressHydrationWarning>
+      <body className={`${dmSans.variable} ${jakartaSans.variable} ${jetbrainsMono.variable}`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+          <ChunkLoadErrorHandler />
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

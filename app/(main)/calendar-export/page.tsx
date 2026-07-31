@@ -1,4 +1,5 @@
-import { CalendarExportView } from './calendar-export-view'
+import { CalendarExportView } from './calendar-export-view';
+
 export default function CalendarExportPage() {
-  return <CalendarExportView />
+  return <CalendarExportView />;
 }

@@ -1,1 +1,5 @@
-export default function Page() { return <div className='text-white p-8 text-2xl font-bold'>news — в разработке</div> }
+import { NewsView } from './news-view';
+
+export default function NewsPage() {
+  return <NewsView />;
+}
