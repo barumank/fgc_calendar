@@ -1,21 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
-import { Search, Settings, Moon, Globe, X, Send } from 'lucide-react';
-import { useClickOutside } from '@/src/hooks/use-click-outside';
+import React, { useState, useCallback } from 'react';
+import { Settings, Moon, Globe, X, Send } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 
 export function Header() {
-  const [search, setSearch] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showLangToast, setShowLangToast] = useState(false);
   const [reportSent, setReportSent] = useState(false);
   const [reportForm, setReportForm] = useState({ name: '', url: '', comment: '' });
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  const closeSearch = useCallback(() => setShowSearch(false), []);
-  useClickOutside(searchRef, closeSearch);
 
   const handleLangClick = useCallback(() => {
     setShowLangToast(true);
@@ -37,20 +30,6 @@ export function Header() {
         <div className="flex-1" />
 
         <div className="flex items-center gap-3">
-          {/* Search */}
-          <div ref={searchRef} className="relative">
-            <div className="flex items-center bg-white/5 rounded-lg border border-border/50 px-3 py-1.5 gap-2">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Поиск турниров, игроков..."
-                className="bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none w-48"
-                value={search}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e?.target?.value ?? '')}
-              />
-            </div>
-          </div>
-
           <button
             onClick={handleLangClick}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-sm"
