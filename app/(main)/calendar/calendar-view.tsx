@@ -247,6 +247,10 @@ export function CalendarView() {
       <Modal isOpen={!!selectedTournament} onClose={() => setSelectedTournament(null)} title={selectedTournament?.name ?? ''}>
         {selectedTournament && (
           <div className="space-y-4">
+            {selectedTournament?.bannerUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={selectedTournament.bannerUrl} alt={selectedTournament?.name} className="w-full h-40 object-cover rounded-lg" />
+            )}
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1 rounded-lg text-xs font-medium text-white" style={{ backgroundColor: GAME_COLORS[selectedTournament?.game] }}>{GAME_LABELS[selectedTournament?.game]}</span>
               <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{FORMAT_LABELS[selectedTournament?.format]}</span>
@@ -256,10 +260,8 @@ export function CalendarView() {
               <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedTournament?.startDate} — {selectedTournament?.endDate}</div>
               <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.city}, {selectedTournament?.country}</div>
               <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{selectedTournament?.playersCount} игроков</div>
-              <div className="flex items-center gap-2 text-sm"><DollarSign className="w-4 h-4 text-muted-foreground" />{selectedTournament?.prizePool}</div>
             </div>
             <p className="text-sm text-muted-foreground">{selectedTournament?.description}</p>
-            <div className="text-sm text-muted-foreground">Организатор: <span className="text-foreground">{selectedTournament?.organizerName}</span></div>
             <div className="flex gap-3 pt-2">
               <button className="flex-1 bg-white/5 hover:bg-white/10 py-2.5 rounded-lg text-sm font-medium transition-colors">Подробнее</button>
               {selectedTournament?.bracketUrl && (

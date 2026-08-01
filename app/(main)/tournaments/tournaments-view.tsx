@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import useSWR from 'swr';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Search, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown, X } from 'lucide-react';
+import { Search, MapPin, Users, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown, X } from 'lucide-react';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
@@ -122,12 +122,12 @@ export function TournamentsView() {
                 </div>
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t border-border/20 space-y-3">
+                    {t?.bannerUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={t.bannerUrl} alt={t?.name} className="w-full h-40 object-cover rounded-lg" />
+                    )}
                     <p className="text-sm text-muted-foreground">{t?.description}</p>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="flex items-center gap-2 text-sm"><DollarSign className="w-4 h-4 text-muted-foreground" />{t?.prizePool}</div>
-                      <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
-                      <div className="text-sm text-muted-foreground">Организатор: <span className="text-foreground">{t?.organizerName}</span></div>
-                    </div>
+                    <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
                     {t?.bracketUrl && (
                       <a href={t.bracketUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
                         Турнирная сетка <ExternalLink className="w-3.5 h-3.5" />
