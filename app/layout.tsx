@@ -3,6 +3,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { ChunkLoadErrorHandler } from '@/components/chunk-load-error-handler'
+import { AuthSessionProvider } from '@/src/components/providers/session-provider'
 
 export const dynamic = 'force-dynamic';
 
@@ -33,9 +34,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
-          <ChunkLoadErrorHandler />
+          <AuthSessionProvider>
+            {children}
+            <Toaster />
+            <ChunkLoadErrorHandler />
+          </AuthSessionProvider>
         </ThemeProvider>
       </body>
     </html>

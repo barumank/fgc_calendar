@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
-  ChevronDown, ChevronRight
+  ChevronDown, ChevronRight, LogIn, LogOut
 } from 'lucide-react';
+import { Modal } from '@/src/components/common/modal';
+import { showToast } from '@/src/components/common/toast-notification';
 
 const mainLinks = [
   { href: '/calendar', label: 'Календарь', icon: CalendarDays },
@@ -29,7 +32,47 @@ const adminSubLinks = [
 
 export function Sidebar() {
   const pathname = usePathname() ?? '';
+  const { data: session, status } = useSession();
+  const isAuthenticated = status === 'authenticated';
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const closeLoginModal = () => {
+    setShowLoginModal(false);
+    setLoginForm({ email: '', password: '' });
+    setLoginError('');
+  };
+
+  const handleLogin = async () => {
+    if (!loginForm.email || !loginForm.password || submitting) return;
+    setSubmitting(true);
+    setLoginError('');
+    try {
+      const result = await signIn('credentials', {
+        email: loginForm.email,
+        password: loginForm.password,
+        redirect: false,
+      });
+      if (result?.error) {
+        setLoginError('Неверный email или пароль');
+      } else {
+        closeLoginModal();
+        showToast('Вы вошли в систему', 'success');
+      }
+    } catch {
+      setLoginError('Не удалось войти, попробуйте ещё раз');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    showToast('Вы вышли из системы', 'info');
+  };
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-[240px] bg-[#111128] border-r border-border/50 flex flex-col z-40">
@@ -67,58 +110,112 @@ export function Sidebar() {
           );
         })}
 
-        {/* Divider */}
-        <div className="!my-3 border-t border-border/30" />
+        {isAuthenticated && (
+          <>
+            {/* Divider */}
+            <div className="!my-3 border-t border-border/30" />
 
-        {/* Admin Panel */}
-        <button
-          onClick={() => setAdminOpen((p: boolean) => !p)}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${
-            pathname?.startsWith('/admin')
-              ? 'text-[#EF4444] font-medium'
-              : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-          }`}
-        >
-          <Shield className="w-[18px] h-[18px] shrink-0" />
-          <span className="flex-1 text-left">Админ Панель</span>
-          {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-        </button>
-        {adminOpen && (
-          <div className="ml-3 space-y-0.5">
-            {adminSubLinks?.map((link: any) => {
-              const Icon = link?.icon;
-              const isActive = pathname === link?.href;
-              return (
-                <Link
-                  key={link?.href}
-                  href={link?.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    isActive
-                      ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                  }`}
-                >
-                  {Icon && <Icon className="w-4 h-4 shrink-0" />}
-                  <span>{link?.label}</span>
-                </Link>
-              );
-            })}
-          </div>
+            {/* Admin Panel */}
+            <button
+              onClick={() => setAdminOpen((p: boolean) => !p)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${
+                pathname?.startsWith('/admin')
+                  ? 'text-[#EF4444] font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+              }`}
+            >
+              <Shield className="w-[18px] h-[18px] shrink-0" />
+              <span className="flex-1 text-left">Админ Панель</span>
+              {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </button>
+            {adminOpen && (
+              <div className="ml-3 space-y-0.5">
+                {adminSubLinks?.map((link: any) => {
+                  const Icon = link?.icon;
+                  const isActive = pathname === link?.href;
+                  return (
+                    <Link
+                      key={link?.href}
+                      href={link?.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        isActive
+                          ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                      }`}
+                    >
+                      {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                      <span>{link?.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </nav>
 
       {/* User */}
       <div className="px-4 py-4 border-t border-border/30">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold">
-            A
+        {isAuthenticated ? (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+              {(session?.user?.name ?? session?.user?.email ?? '?').charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-foreground truncate">{session?.user?.name ?? session?.user?.email}</div>
+              <div className="text-xs text-[#EF4444]">Administrator</div>
+            </div>
+            <button onClick={handleLogout} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" title="Выйти">
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-foreground truncate">Aether_Ryu</div>
-            <div className="text-xs text-[#EF4444]">Administrator</div>
-          </div>
-        </div>
+        ) : (
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 text-foreground transition-colors"
+          >
+            <LogIn className="w-4 h-4" />
+            Войти
+          </button>
+        )}
       </div>
+
+      {/* Login modal */}
+      <Modal isOpen={showLoginModal} onClose={closeLoginModal} title="Вход">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">Email</label>
+            <input
+              type="email"
+              className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+              value={loginForm.email}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginForm(prev => ({ ...prev, email: e?.target?.value ?? '' }))}
+              onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleLogin()}
+              placeholder="you@example.com"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">Пароль</label>
+            <input
+              type="password"
+              className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+              value={loginForm.password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginForm(prev => ({ ...prev, password: e?.target?.value ?? '' }))}
+              onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleLogin()}
+              placeholder="••••••••"
+            />
+          </div>
+          {loginError && <p className="text-sm text-red-400">{loginError}</p>}
+          <button
+            onClick={handleLogin}
+            disabled={!loginForm.email || !loginForm.password || submitting}
+            className="w-full bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            {submitting ? 'Вход...' : 'Войти'}
+          </button>
+        </div>
+      </Modal>
     </aside>
   );
 }
