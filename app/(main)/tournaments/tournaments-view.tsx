@@ -42,7 +42,7 @@ export function TournamentsView() {
       return true;
     });
     items.sort((a: Tournament, b: Tournament) => {
-      if (sortBy === 'date') return (a?.startDate ?? '').localeCompare(b?.startDate ?? '');
+      if (sortBy === 'date') return (b?.startDate ?? '').localeCompare(a?.startDate ?? '');
       if (sortBy === 'prize') {
         const pa = parseInt((a?.prizePool ?? '0').replace(/[^0-9]/g, '') ?? '0') || 0;
         const pb = parseInt((b?.prizePool ?? '0').replace(/[^0-9]/g, '') ?? '0') || 0;
@@ -101,7 +101,10 @@ export function TournamentsView() {
             <div key={t?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden transition-all hover:border-border/60">
               <div className="h-1" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }} />
               <div className="p-4">
-                <div className="flex items-start justify-between">
+                <div
+                  onClick={() => toggleExpand(t?.id ?? '')}
+                  className="flex items-start justify-between cursor-pointer"
+                >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-base font-semibold truncate">{t?.name}</h3>
@@ -113,9 +116,9 @@ export function TournamentsView() {
                       <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{t?.city}, {t?.country}</span>
                     </div>
                   </div>
-                  <button onClick={() => toggleExpand(t?.id ?? '')} className="p-2 hover:bg-white/10 rounded-lg transition-colors shrink-0">
+                  <div className="p-2 rounded-lg shrink-0">
                     {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                  </button>
+                  </div>
                 </div>
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t border-border/20 space-y-3">
