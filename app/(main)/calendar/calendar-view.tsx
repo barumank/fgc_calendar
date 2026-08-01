@@ -12,6 +12,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const DAY_NAMES = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTH_ABBR = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
 
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
@@ -91,9 +92,17 @@ export function CalendarView() {
   const resetFilters = () => { setFilterGames([]); setFilterFormat(''); setFilterRegions([]); setFilterDateFrom(''); setFilterDateTo(''); };
 
   const featuredTournament = (filteredTournaments ?? []).find((t: Tournament) => t?.featured);
+  const todayStr = useMemo(() => {
+    const now = new Date();
+    return dateStr(now.getFullYear(), now.getMonth(), now.getDate());
+  }, []);
   const upcomingTournaments = (filteredTournaments ?? [])
-    .filter((t: Tournament) => (t?.startDate ?? '') >= '2025-05-01')
-    .sort((a: Tournament, b: Tournament) => (a?.startDate ?? '').localeCompare(b?.startDate ?? ''))
+    .filter((t: Tournament) => (t?.endDate ?? '') >= todayStr)
+    .sort((a: Tournament, b: Tournament) => {
+      const dateDiff = (a?.startDate ?? '').localeCompare(b?.startDate ?? '');
+      if (dateDiff !== 0) return dateDiff;
+      return (a?.createdAt ?? '').localeCompare(b?.createdAt ?? '');
+    })
     .slice(0, 6);
 
   return (
@@ -224,7 +233,7 @@ export function CalendarView() {
           <div className="space-y-3">
             {(upcomingTournaments ?? []).map((t: Tournament) => (
               <button key={t?.id} onClick={() => setSelectedTournament(t)} className="w-full text-left flex gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
-                <div className="text-center shrink-0 w-12"><div className="text-[10px] text-muted-foreground uppercase">Май</div><div className="text-sm font-bold">{t?.startDate?.split('-')?.[2]?.replace(/^0/, '')}</div></div>
+                <div className="text-center shrink-0 w-12"><div className="text-[10px] text-muted-foreground uppercase">{MONTH_ABBR[(parseInt(t?.startDate?.split('-')?.[1] ?? '1', 10) - 1 + 12) % 12]}</div><div className="text-sm font-bold">{t?.startDate?.split('-')?.[2]?.replace(/^0/, '')}</div></div>
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{t?.name}</div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{t?.city}, {t?.country}</div>

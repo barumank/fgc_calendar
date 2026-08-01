@@ -22,6 +22,7 @@ export interface Tournament {
   sourceUrl?: string;
   bracketUrl?: string;
   featured?: boolean;
+  createdAt?: string;
 }
 
 export const GAME_LABELS: Record<GameType, string> = {
