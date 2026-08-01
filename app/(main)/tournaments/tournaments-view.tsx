@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Search, MapPin, Users, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown, X } from 'lucide-react';
+import { Search, MapPin, Users, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
+const PAGE_SIZE = 20;
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -22,6 +23,7 @@ export function TournamentsView() {
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
   const [sortBy, setSortBy] = useState<'date' | 'prize' | 'players'>('date');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
   const dateFilter = searchParams?.get('date') ?? '';
 
   const clearDateFilter = () => router.push(pathname);
@@ -52,6 +54,11 @@ export function TournamentsView() {
     });
     return items;
   }, [tournaments, search, filterGame, filterFormat, filterRegion, dateFilter, sortBy]);
+
+  useEffect(() => { setPage(1); }, [search, filterGame, filterFormat, filterRegion, dateFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil((filtered?.length ?? 0) / PAGE_SIZE));
+  const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   return (
     <div>
@@ -95,7 +102,7 @@ export function TournamentsView() {
       </div>
       {/* List */}
       <div className="space-y-3">
-        {(filtered ?? []).map((t: Tournament) => {
+        {(paginated ?? []).map((t: Tournament) => {
           const isExpanded = expandedIds.has(t?.id ?? '');
           return (
             <div key={t?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden transition-all hover:border-border/60">
@@ -140,6 +147,25 @@ export function TournamentsView() {
           );
         })}
       </div>
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p: number) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-sm text-muted-foreground">Страница {page} из {totalPages}</span>
+          <button
+            onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="p-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
