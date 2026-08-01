@@ -66,17 +66,17 @@ export function CalendarExportView() {
             <h2 className="text-sm font-semibold mb-4">Фильтры данных</h2>
             <div className="space-y-3">
               <select value={filterGame} onChange={(e: any) => setFilterGame(e?.target?.value ?? '')} className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm">
-                <option value="">Все игры</option>
-                {ALL_GAMES.map((g: GameType) => <option key={g} value={g}>{GAME_LABELS[g]}</option>)}
+                <option value="" className="bg-[#1A1A2E] text-foreground">Все игры</option>
+                {ALL_GAMES.map((g: GameType) => <option key={g} value={g} className="bg-[#1A1A2E] text-foreground">{GAME_LABELS[g]}</option>)}
               </select>
               <select value={filterFormat} onChange={(e: any) => setFilterFormat(e?.target?.value ?? '')} className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm">
-                <option value="">Все форматы</option>
-                <option value="online">Онлайн</option>
-                <option value="offline">Офлайн</option>
+                <option value="" className="bg-[#1A1A2E] text-foreground">Все форматы</option>
+                <option value="online" className="bg-[#1A1A2E] text-foreground">Онлайн</option>
+                <option value="offline" className="bg-[#1A1A2E] text-foreground">Офлайн</option>
               </select>
               <select value={filterRegion} onChange={(e: any) => setFilterRegion(e?.target?.value ?? '')} className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm">
-                <option value="">Все регионы</option>
-                {ALL_REGIONS.map((r: RegionType) => <option key={r} value={r}>{REGION_LABELS[r]}</option>)}
+                <option value="" className="bg-[#1A1A2E] text-foreground">Все регионы</option>
+                {ALL_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
               </select>
               <div className="flex gap-3">
                 <input type="date" value={filterDateFrom} onChange={(e: any) => setFilterDateFrom(e?.target?.value ?? '')} className="flex-1 bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm" />

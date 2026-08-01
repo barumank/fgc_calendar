@@ -186,8 +186,8 @@ export function Header() {
                   value={reportForm.region}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, region: (e?.target?.value ?? '') as RegionType | '' }))}
                 >
-                  <option value="">Выберите регион</option>
-                  {REPORT_FORM_REGIONS.map((r: RegionType) => <option key={r} value={r}>{REGION_LABELS[r]}</option>)}
+                  <option value="" className="bg-[#1A1A2E] text-foreground">Выберите регион</option>
+                  {REPORT_FORM_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
                 </select>
               </div>
               <div>
@@ -197,8 +197,8 @@ export function Header() {
                   value={reportForm.game}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, game: (e?.target?.value ?? '') as GameType | '' }))}
                 >
-                  <option value="">Выберите дисциплину</option>
-                  {REPORT_FORM_GAMES.map((g: GameType) => <option key={g} value={g}>{GAME_LABELS[g]}</option>)}
+                  <option value="" className="bg-[#1A1A2E] text-foreground">Выберите дисциплину</option>
+                  {REPORT_FORM_GAMES.map((g: GameType) => <option key={g} value={g} className="bg-[#1A1A2E] text-foreground">{GAME_LABELS[g]}</option>)}
                 </select>
               </div>
             </div>
@@ -209,8 +209,8 @@ export function Header() {
                 value={reportForm.format}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, format: (e?.target?.value ?? '') as FormatType | '' }))}
               >
-                <option value="">Выберите тип турнира</option>
-                {REPORT_FORM_FORMATS.map((f: FormatType) => <option key={f} value={f}>{FORMAT_LABELS[f]}</option>)}
+                <option value="" className="bg-[#1A1A2E] text-foreground">Выберите тип турнира</option>
+                {REPORT_FORM_FORMATS.map((f: FormatType) => <option key={f} value={f} className="bg-[#1A1A2E] text-foreground">{FORMAT_LABELS[f]}</option>)}
               </select>
             </div>
             <div>

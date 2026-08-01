@@ -163,10 +163,10 @@ export function CalendarView() {
           <div className="grid grid-cols-7">
             {(calendarDays ?? []).map((dayObj: any, idx: number) => {
               const dayTournaments = (filteredTournaments ?? []).filter((t: Tournament) => isTournamentOnDay(t, dayObj?.year, dayObj?.month, dayObj?.day));
-              const visible = dayTournaments.slice(0, 5);
-              const remaining = (dayTournaments?.length ?? 0) - 5;
+              const visible = dayTournaments.slice(0, 4);
+              const remaining = (dayTournaments?.length ?? 0) - 4;
               return (
-                <div key={idx} className={`min-h-[190px] p-1.5 border-b border-r border-border/10 ${!dayObj?.isCurrentMonth ? 'opacity-30' : ''}`}>
+                <div key={idx} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 ${!dayObj?.isCurrentMonth ? 'opacity-30' : ''}`}>
                   <div className="text-xs text-muted-foreground mb-1 pl-1">{dayObj?.day}</div>
                   <div className="space-y-1">
                     {(visible ?? []).map((t: Tournament) => (

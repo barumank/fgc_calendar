@@ -34,12 +34,12 @@ export function PlayersView() {
           <input type="text" placeholder="Поиск по тегу..." className="bg-transparent text-sm outline-none w-44" value={search} onChange={(e: any) => setSearch(e?.target?.value ?? '')} />
         </div>
         <select value={filterGame} onChange={(e: any) => setFilterGame(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
-          <option value="">Все игры</option>
-          {ALL_GAMES.map((g: GameType) => <option key={g} value={g}>{GAME_LABELS[g]}</option>)}
+          <option value="" className="bg-[#1A1A2E] text-foreground">Все игры</option>
+          {ALL_GAMES.map((g: GameType) => <option key={g} value={g} className="bg-[#1A1A2E] text-foreground">{GAME_LABELS[g]}</option>)}
         </select>
         <select value={filterRegion} onChange={(e: any) => setFilterRegion(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
-          <option value="">Все регионы</option>
-          {ALL_REGIONS.map((r: RegionType) => <option key={r} value={r}>{REGION_LABELS[r]}</option>)}
+          <option value="" className="bg-[#1A1A2E] text-foreground">Все регионы</option>
+          {ALL_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
         </select>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
