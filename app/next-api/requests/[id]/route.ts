@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { REGION_LABELS, RegionType } from '@/src/types';
 
+export const dynamic = 'force-dynamic';
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { action } = (await req.json()) ?? {};
   if (action !== 'approve' && action !== 'reject') {
