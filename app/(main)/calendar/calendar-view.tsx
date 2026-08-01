@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ExternalLink } from 'lucide-react';
-import { mockTournaments } from '@/src/data/mock-tournaments';
+import { useTournamentsStore } from '@/src/store/tournaments-store';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
@@ -10,8 +10,8 @@ import { useClickOutside } from '@/src/hooks/use-click-outside';
 const DAY_NAMES = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game','other'];
-const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
+const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
+const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 
 function getCalendarDays(year: number, month: number) {
   const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -41,6 +41,7 @@ function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
 }
 
 export function CalendarView() {
+  const tournaments = useTournamentsStore((state) => state.tournaments);
   const [currentMonth, setCurrentMonth] = useState(4);
   const [currentYear, setCurrentYear] = useState(2025);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -56,7 +57,7 @@ export function CalendarView() {
   useClickOutside(filterRef, closeFilters);
 
   const filteredTournaments = useMemo(() => {
-    return (mockTournaments ?? []).filter((t: Tournament) => {
+    return (tournaments ?? []).filter((t: Tournament) => {
       if ((filterGames?.length ?? 0) > 0 && !filterGames.includes(t?.game)) return false;
       if (filterFormat && t?.format !== filterFormat) return false;
       if ((filterRegions?.length ?? 0) > 0 && !filterRegions.includes(t?.region)) return false;
@@ -64,7 +65,7 @@ export function CalendarView() {
       if (filterDateTo && (t?.startDate ?? '') > filterDateTo) return false;
       return true;
     });
-  }, [filterGames, filterFormat, filterRegions, filterDateFrom, filterDateTo]);
+  }, [tournaments, filterGames, filterFormat, filterRegions, filterDateFrom, filterDateTo]);
 
   const calendarDays = useMemo(() => getCalendarDays(currentYear, currentMonth), [currentYear, currentMonth]);
 

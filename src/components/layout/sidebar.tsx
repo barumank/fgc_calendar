@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
-  LayoutDashboard, Shield, UserCog, Settings, FileText, Bot,
+  LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
   ChevronDown, ChevronRight
 } from 'lucide-react';
 
@@ -20,6 +20,7 @@ const mainLinks = [
 ];
 
 const adminSubLinks = [
+  { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
   { href: '/admin/system-logs', label: 'Системные логи', icon: FileText },

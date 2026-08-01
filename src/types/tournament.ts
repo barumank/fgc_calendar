@@ -1,6 +1,6 @@
-export type GameType = 'tekken8' | 'sf6' | 'guilty_gear' | 'marvel_tokon' | 'multi_game' | 'other';
+export type GameType = 'tekken8' | 'sf6' | 'guilty_gear' | 'marvel_tokon' | 'avatar_legends' | 'multi_game' | 'other';
 export type FormatType = 'online' | 'offline';
-export type RegionType = 'russia' | 'belarus' | 'kazakhstan' | 'ukraine' | 'cis' | 'europe' | 'other';
+export type RegionType = 'russia' | 'belarus' | 'kazakhstan' | 'usa' | 'japan' | 'ukraine' | 'cis' | 'europe' | 'other';
 export type TournamentStatus = 'upcoming' | 'ongoing' | 'completed';
 
 export interface Tournament {
@@ -29,6 +29,7 @@ export const GAME_LABELS: Record<GameType, string> = {
   sf6: 'Street Fighter 6',
   guilty_gear: 'Guilty Gear Strive',
   marvel_tokon: 'Marvel Tokon',
+  avatar_legends: 'Avatar Legends',
   multi_game: 'Multi-Game',
   other: 'Другое',
 };
@@ -39,6 +40,7 @@ export const GAME_COLORS: Record<GameType, string> = {
   multi_game: '#DC2626',
   guilty_gear: '#16A34A',
   marvel_tokon: '#D97706',
+  avatar_legends: '#0EA5E9',
   other: '#EA580C',
 };
 
@@ -51,6 +53,8 @@ export const REGION_LABELS: Record<RegionType, string> = {
   russia: 'Россия',
   belarus: 'Беларусь',
   kazakhstan: 'Казахстан',
+  usa: 'США',
+  japan: 'Япония',
   ukraine: 'Украина',
   cis: 'СНГ',
   europe: 'Европа',

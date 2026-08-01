@@ -2,13 +2,14 @@
 
 import React, { useState, useMemo } from 'react';
 import { Search, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown } from 'lucide-react';
-import { mockTournaments } from '@/src/data/mock-tournaments';
+import { useTournamentsStore } from '@/src/store/tournaments-store';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game','other'];
-const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
+const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
+const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 
 export function TournamentsView() {
+  const tournaments = useTournamentsStore((state) => state.tournaments);
   const [search, setSearch] = useState('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
@@ -23,7 +24,7 @@ export function TournamentsView() {
   });
 
   const filtered = useMemo(() => {
-    let items = (mockTournaments ?? []).filter((t: Tournament) => {
+    let items = (tournaments ?? []).filter((t: Tournament) => {
       if (search && !(t?.name ?? '').toLowerCase().includes(search.toLowerCase())) return false;
       if (filterGame && t?.game !== filterGame) return false;
       if (filterFormat && t?.format !== filterFormat) return false;
@@ -40,7 +41,7 @@ export function TournamentsView() {
       return (b?.playersCount ?? 0) - (a?.playersCount ?? 0);
     });
     return items;
-  }, [search, filterGame, filterFormat, filterRegion, sortBy]);
+  }, [tournaments, search, filterGame, filterFormat, filterRegion, sortBy]);
 
   return (
     <div>
