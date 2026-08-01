@@ -44,6 +44,15 @@ function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
   return ds >= (t?.startDate ?? '') && ds <= (t?.endDate ?? '');
 }
 
+function formatDate(iso: string) {
+  const [y, m, d] = (iso ?? '').split('-');
+  return d && m && y ? `${d}.${m}.${y}` : (iso ?? '');
+}
+
+function formatDateRange(startDate: string, endDate: string) {
+  return startDate === endDate ? formatDate(startDate) : `${formatDate(startDate)} — ${formatDate(endDate)}`;
+}
+
 export function CalendarView() {
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
@@ -257,13 +266,15 @@ export function CalendarView() {
               <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedTournament?.startDate} — {selectedTournament?.endDate}</div>
-              <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.city}, {selectedTournament?.country}</div>
+              <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
+              <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.format === 'online' ? 'Online' : selectedTournament?.country}</div>
               <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{selectedTournament?.playersCount} игроков</div>
             </div>
             <p className="text-sm text-muted-foreground">{selectedTournament?.description}</p>
             <div className="flex gap-3 pt-2">
-              <button className="flex-1 bg-white/5 hover:bg-white/10 py-2.5 rounded-lg text-sm font-medium transition-colors">Подробнее</button>
+              {selectedTournament?.sourceUrl && (
+                <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 py-2.5 rounded-lg text-sm font-medium text-center transition-colors">Перейти к турниру</a>
+              )}
               {selectedTournament?.bracketUrl && (
                 <a href={selectedTournament.bracketUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Турнирная сетка <ExternalLink className="w-4 h-4" /></a>
               )}
