@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import useSWR from 'swr';
-import { Search, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown } from 'lucide-react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { Search, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown, X } from 'lucide-react';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
@@ -12,12 +13,18 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function TournamentsView() {
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
   const [sortBy, setSortBy] = useState<'date' | 'prize' | 'players'>('date');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const dateFilter = searchParams?.get('date') ?? '';
+
+  const clearDateFilter = () => router.push(pathname);
 
   const toggleExpand = (id: string) => setExpandedIds((prev: Set<string>) => {
     const next = new Set(prev);
@@ -31,6 +38,7 @@ export function TournamentsView() {
       if (filterGame && t?.game !== filterGame) return false;
       if (filterFormat && t?.format !== filterFormat) return false;
       if (filterRegion && t?.region !== filterRegion) return false;
+      if (dateFilter && !((t?.startDate ?? '') <= dateFilter && (t?.endDate ?? '') >= dateFilter)) return false;
       return true;
     });
     items.sort((a: Tournament, b: Tournament) => {
@@ -43,11 +51,20 @@ export function TournamentsView() {
       return (b?.playersCount ?? 0) - (a?.playersCount ?? 0);
     });
     return items;
-  }, [tournaments, search, filterGame, filterFormat, filterRegion, sortBy]);
+  }, [tournaments, search, filterGame, filterFormat, filterRegion, dateFilter, sortBy]);
 
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">Турниры</h1>
+      {dateFilter && (
+        <div className="flex items-center gap-2 mb-4 text-sm">
+          <span className="text-muted-foreground">Турниры на дату:</span>
+          <span className="inline-flex items-center gap-1.5 bg-[#EF4444]/10 text-[#EF4444] px-2.5 py-1 rounded-lg font-medium">
+            {new Date(dateFilter).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+            <button onClick={clearDateFilter} className="hover:text-white transition-colors"><X className="w-3.5 h-3.5" /></button>
+          </span>
+        </div>
+      )}
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="flex items-center bg-white/5 rounded-lg border border-border/50 px-3 py-2 gap-2">

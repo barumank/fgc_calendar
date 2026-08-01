@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
+import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ExternalLink } from 'lucide-react';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
@@ -177,7 +178,14 @@ export function CalendarView() {
                         <span className="truncate">{t?.name}</span>
                       </button>
                     ))}
-                    {remaining > 0 && <div className="text-[10px] text-muted-foreground pl-1">+{remaining} ещё</div>}
+                    {remaining > 0 && (
+                      <Link
+                        href={`/tournaments?date=${dateStr(dayObj?.year, dayObj?.month, dayObj?.day)}`}
+                        className="block text-[10px] text-muted-foreground hover:text-[#EF4444] pl-1 transition-colors"
+                      >
+                        +{remaining} ещё
+                      </Link>
+                    )}
                   </div>
                 </div>
               );
