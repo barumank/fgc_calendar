@@ -42,8 +42,8 @@ function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
 
 export function CalendarView() {
   const tournaments = useTournamentsStore((state) => state.tournaments);
-  const [currentMonth, setCurrentMonth] = useState(4);
-  const [currentYear, setCurrentYear] = useState(2025);
+  const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
+  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -77,7 +77,11 @@ export function CalendarView() {
     if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear((y: number) => y + 1); }
     else setCurrentMonth((m: number) => m + 1);
   };
-  const goToday = () => { setCurrentMonth(4); setCurrentYear(2025); };
+  const goToday = () => {
+    const now = new Date();
+    setCurrentMonth(now.getMonth());
+    setCurrentYear(now.getFullYear());
+  };
 
   const toggleGame = (g: GameType) => setFilterGames((prev: GameType[]) => prev.includes(g) ? prev.filter((x: GameType) => x !== g) : [...prev, g]);
   const toggleRegion = (r: RegionType) => setFilterRegions((prev: RegionType[]) => prev.includes(r) ? prev.filter((x: RegionType) => x !== r) : [...prev, r]);
