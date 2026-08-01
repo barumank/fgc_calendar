@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import useSWR from 'swr';
 import { Search, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ExternalLink, ArrowUpDown } from 'lucide-react';
-import { useTournamentsStore } from '@/src/store/tournaments-store';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export function TournamentsView() {
-  const tournaments = useTournamentsStore((state) => state.tournaments);
+  const { data: tournaments } = useSWR<Tournament[]>('/api/tournaments', fetcher);
   const [search, setSearch] = useState('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');

@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import useSWR from 'swr';
 import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon } from 'lucide-react';
-import { useRequestsStore } from '@/src/store/requests-store';
-import { useTournamentsStore } from '@/src/store/tournaments-store';
-import { TournamentRequest, Tournament, GAME_LABELS, REGION_LABELS } from '@/src/types';
+import { TournamentRequest, GAME_LABELS, REGION_LABELS } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const STATUS_LABELS: Record<TournamentRequest['status'], string> = {
   pending: 'На рассмотрении',
@@ -21,55 +22,43 @@ const STATUS_STYLES: Record<TournamentRequest['status'], string> = {
 };
 
 export function RequestsView() {
-  const requests = useRequestsStore((state) => state.requests);
-  const approveRequest = useRequestsStore((state) => state.approveRequest);
-  const rejectRequest = useRequestsStore((state) => state.rejectRequest);
-  const addTournament = useTournamentsStore((state) => state.addTournament);
+  const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/api/requests', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
+  const [processing, setProcessing] = useState(false);
 
-  const handleApprove = (request: TournamentRequest) => {
-    const tournament: Tournament = {
-      id: `t-${Date.now()}`,
-      name: request.name,
-      game: request.game,
-      format: 'offline',
-      region: request.region,
-      country: REGION_LABELS[request.region],
-      city: '—',
-      startDate: request.startDate,
-      endDate: request.endDate,
-      status: 'upcoming',
-      prizePool: '—',
-      playersCount: 0,
-      description: request.comment || 'Без описания',
-      bannerUrl: request.bannerUrl,
-      organizerName: '—',
-      sourceUrl: request.url || undefined,
-    };
-    addTournament(tournament);
-    approveRequest(request.id);
-    setSelectedRequest(null);
-    showToast(`Турнир «${request.name}» создан`, 'success');
-  };
-
-  const handleReject = (request: TournamentRequest) => {
-    rejectRequest(request.id);
-    setSelectedRequest(null);
-    showToast(`Заявка «${request.name}» отклонена`, 'info');
+  const handleAction = async (request: TournamentRequest, action: 'approve' | 'reject') => {
+    setProcessing(true);
+    try {
+      const res = await fetch(`/api/requests/${request.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error('Action failed');
+      await mutate();
+      setSelectedRequest(null);
+      showToast(action === 'approve' ? `Турнир «${request.name}» создан` : `Заявка «${request.name}» отклонена`, action === 'approve' ? 'success' : 'info');
+    } catch {
+      showToast('Не удалось обработать заявку', 'error');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">Заявки</h1>
 
-      {(requests?.length ?? 0) === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground text-sm">Загрузка...</div>
+      ) : (requests?.length ?? 0) === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
           <ClipboardList className="w-16 h-16 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">Заявок пока нет</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {requests.map((r: TournamentRequest) => (
+          {(requests ?? []).map((r: TournamentRequest) => (
             <button
               key={r.id}
               onClick={() => setSelectedRequest(r)}
@@ -125,14 +114,16 @@ export function RequestsView() {
             {selectedRequest.status === 'pending' && (
               <div className="flex gap-3 pt-2">
                 <button
-                  onClick={() => handleApprove(selectedRequest)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  onClick={() => handleAction(selectedRequest, 'approve')}
+                  disabled={processing}
+                  className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                 >
                   <Check className="w-4 h-4" /> Создать турнир
                 </button>
                 <button
-                  onClick={() => handleReject(selectedRequest)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  onClick={() => handleAction(selectedRequest, 'reject')}
+                  disabled={processing}
+                  className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                 >
                   <XIcon className="w-4 h-4" /> Отклонить
                 </button>

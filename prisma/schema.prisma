@@ -7,3 +7,39 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Tournament {
+  id            String   @id @default(uuid())
+  name          String
+  game          String
+  format        String
+  region        String
+  country       String
+  city          String
+  startDate     String
+  endDate       String
+  status        String   @default("upcoming")
+  prizePool     String
+  playersCount  Int      @default(0)
+  description   String
+  bannerUrl     String?
+  organizerName String
+  sourceUrl     String?
+  bracketUrl    String?
+  featured      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model TournamentRequest {
+  id        String   @id @default(uuid())
+  name      String
+  url       String?
+  comment   String?
+  startDate String
+  endDate   String
+  region    String
+  game      String
+  bannerUrl String?
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}

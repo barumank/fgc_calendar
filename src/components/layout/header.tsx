@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { Settings, Moon, Globe, X, Send, Upload } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
-import { useRequestsStore } from '@/src/store/requests-store';
+import { showToast } from '@/src/components/common/toast-notification';
 import { GameType, RegionType, GAME_LABELS, REGION_LABELS } from '@/src/types';
 
 const REPORT_FORM_GAMES: GameType[] = ['tekken8', 'guilty_gear', 'marvel_tokon', 'sf6', 'avatar_legends', 'other'];
@@ -21,10 +21,10 @@ const EMPTY_REPORT_FORM = {
 };
 
 export function Header() {
-  const addRequest = useRequestsStore((state) => state.addRequest);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showLangToast, setShowLangToast] = useState(false);
   const [reportSent, setReportSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [reportForm, setReportForm] = useState(EMPTY_REPORT_FORM);
 
   const handleLangClick = useCallback(() => {
@@ -48,28 +48,37 @@ export function Header() {
     reportForm?.game
   );
 
-  const handleReportSubmit = useCallback(() => {
-    if (!isReportFormValid) return;
-    addRequest({
-      id: `req-${Date.now()}`,
-      name: reportForm.name.trim(),
-      url: reportForm.url,
-      comment: reportForm.comment,
-      startDate: reportForm.startDate,
-      endDate: reportForm.endDate,
-      region: reportForm.region as RegionType,
-      game: reportForm.game as GameType,
-      bannerUrl: reportForm.bannerUrl || undefined,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    });
-    setReportSent(true);
-    setTimeout(() => {
-      setShowReportModal(false);
-      setReportSent(false);
-      setReportForm(EMPTY_REPORT_FORM);
-    }, 1500);
-  }, [reportForm, isReportFormValid, addRequest]);
+  const handleReportSubmit = useCallback(async () => {
+    if (!isReportFormValid || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: reportForm.name.trim(),
+          url: reportForm.url,
+          comment: reportForm.comment,
+          startDate: reportForm.startDate,
+          endDate: reportForm.endDate,
+          region: reportForm.region,
+          game: reportForm.game,
+          bannerUrl: reportForm.bannerUrl || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      setReportSent(true);
+      setTimeout(() => {
+        setShowReportModal(false);
+        setReportSent(false);
+        setReportForm(EMPTY_REPORT_FORM);
+      }, 1500);
+    } catch {
+      showToast('Не удалось отправить заявку, попробуйте ещё раз', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [reportForm, isReportFormValid, submitting]);
 
   return (
     <>
@@ -201,10 +210,10 @@ export function Header() {
             </div>
             <button
               onClick={handleReportSubmit}
-              disabled={!isReportFormValid}
+              disabled={!isReportFormValid || submitting}
               className="w-full bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
             >
-              Отправить
+              {submitting ? 'Отправка...' : 'Отправить'}
             </button>
           </div>
         )}

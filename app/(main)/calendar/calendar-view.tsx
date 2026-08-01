@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useCallback } from 'react';
+import useSWR from 'swr';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ExternalLink } from 'lucide-react';
-import { useTournamentsStore } from '@/src/store/tournaments-store';
 import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 const DAY_NAMES = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -41,7 +43,7 @@ function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
 }
 
 export function CalendarView() {
-  const tournaments = useTournamentsStore((state) => state.tournaments);
+  const { data: tournaments } = useSWR<Tournament[]>('/api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
