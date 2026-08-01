@@ -5,6 +5,7 @@ import { Settings, Moon, Globe, X, Send, Upload } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { GameType, RegionType, GAME_LABELS, REGION_LABELS } from '@/src/types';
+import { MAX_BANNER_BYTES, isAllowedBannerMimeType } from '@/src/lib/banner-constraints';
 
 const REPORT_FORM_GAMES: GameType[] = ['tekken8', 'guilty_gear', 'marvel_tokon', 'sf6', 'avatar_legends', 'other'];
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
@@ -35,6 +36,16 @@ export function Header() {
   const handleBannerChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e?.target?.files?.[0];
     if (!file) return;
+    if (!isAllowedBannerMimeType(file.type)) {
+      showToast('Баннер должен быть в формате JPEG или PNG', 'error');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_BANNER_BYTES) {
+      showToast(`Размер баннера не должен превышать ${MAX_BANNER_BYTES / 1024 / 1024} МБ`, 'error');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => setReportForm(prev => ({ ...prev, bannerUrl: (reader.result as string) ?? '' }));
     reader.readAsDataURL(file);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,10 @@ export async function POST(req: NextRequest) {
 
   if (!name?.trim() || !startDate || !endDate || !region || !game) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  if (bannerUrl && !isValidBannerDataUrl(bannerUrl)) {
+    return NextResponse.json({ error: 'Invalid banner image' }, { status: 400 });
   }
 
   const request = await prisma.tournamentRequest.create({
