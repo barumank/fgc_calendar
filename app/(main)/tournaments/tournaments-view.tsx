@@ -124,7 +124,7 @@ export function TournamentsView() {
                   <div className="mt-4 pt-4 border-t border-border/20 space-y-3">
                     {t?.bannerUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.bannerUrl} alt={t?.name} className="w-full h-40 object-cover rounded-lg" />
+                      <img src={t.bannerUrl} alt={t?.name} className="w-full max-w-2xl mx-auto h-40 object-cover rounded-lg" />
                     )}
                     <p className="text-sm text-muted-foreground">{t?.description}</p>
                     <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
