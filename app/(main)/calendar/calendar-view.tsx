@@ -43,7 +43,7 @@ function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
 }
 
 export function CalendarView() {
-  const { data: tournaments } = useSWR<Tournament[]>('/api/tournaments', fetcher);
+  const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);

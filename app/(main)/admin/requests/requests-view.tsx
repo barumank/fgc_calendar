@@ -22,14 +22,14 @@ const STATUS_STYLES: Record<TournamentRequest['status'], string> = {
 };
 
 export function RequestsView() {
-  const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/api/requests', fetcher);
+  const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/next-api/requests', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
 
   const handleAction = async (request: TournamentRequest, action: 'approve' | 'reject') => {
     setProcessing(true);
     try {
-      const res = await fetch(`/api/requests/${request.id}`, {
+      const res = await fetch(`/next-api/requests/${request.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),

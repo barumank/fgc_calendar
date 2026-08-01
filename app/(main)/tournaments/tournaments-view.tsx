@@ -11,7 +11,7 @@ const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan'
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function TournamentsView() {
-  const { data: tournaments } = useSWR<Tournament[]>('/api/tournaments', fetcher);
+  const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [search, setSearch] = useState('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');

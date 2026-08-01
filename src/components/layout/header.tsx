@@ -52,7 +52,7 @@ export function Header() {
     if (!isReportFormValid || submitting) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/api/requests', {
+      const res = await fetch('/next-api/requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
