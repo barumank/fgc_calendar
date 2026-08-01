@@ -39,6 +39,7 @@ model TournamentRequest {
   endDate   String
   region    String
   game      String
+  format    String   @default("offline")
   bannerUrl String?
   status    String   @default("pending")
   createdAt DateTime @default(now())

@@ -4,11 +4,12 @@ import React, { useState, useCallback } from 'react';
 import { Settings, Moon, Globe, X, Send, Upload } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
-import { GameType, RegionType, GAME_LABELS, REGION_LABELS } from '@/src/types';
+import { GameType, RegionType, FormatType, GAME_LABELS, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
 import { MAX_BANNER_BYTES, isAllowedBannerMimeType } from '@/src/lib/banner-constraints';
 
 const REPORT_FORM_GAMES: GameType[] = ['tekken8', 'guilty_gear', 'marvel_tokon', 'sf6', 'avatar_legends', 'other'];
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
+const REPORT_FORM_FORMATS: FormatType[] = ['online', 'offline'];
 
 const EMPTY_REPORT_FORM = {
   name: '',
@@ -18,6 +19,7 @@ const EMPTY_REPORT_FORM = {
   endDate: '',
   region: '' as RegionType | '',
   game: '' as GameType | '',
+  format: '' as FormatType | '',
   bannerUrl: '',
 };
 
@@ -56,7 +58,8 @@ export function Header() {
     reportForm?.startDate &&
     reportForm?.endDate &&
     reportForm?.region &&
-    reportForm?.game
+    reportForm?.game &&
+    reportForm?.format
   );
 
   const handleReportSubmit = useCallback(async () => {
@@ -74,6 +77,7 @@ export function Header() {
           endDate: reportForm.endDate,
           region: reportForm.region,
           game: reportForm.game,
+          format: reportForm.format,
           bannerUrl: reportForm.bannerUrl || undefined,
         }),
       });
@@ -199,12 +203,24 @@ export function Header() {
               </div>
             </div>
             <div>
+              <label className="block text-sm text-muted-foreground mb-1.5">Тип турнира *</label>
+              <select
+                className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                value={reportForm.format}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, format: (e?.target?.value ?? '') as FormatType | '' }))}
+              >
+                <option value="">Выберите тип турнира</option>
+                {REPORT_FORM_FORMATS.map((f: FormatType) => <option key={f} value={f}>{FORMAT_LABELS[f]}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="block text-sm text-muted-foreground mb-1.5">Баннер турнира</label>
               <label className="flex items-center gap-2 w-full bg-white/5 border border-dashed border-border/50 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:border-[#EF4444]/50 cursor-pointer transition-colors">
                 <Upload className="w-4 h-4 shrink-0" />
                 <span className="truncate">{reportForm.bannerUrl ? 'Изображение выбрано' : 'Загрузить JPEG или PNG'}</span>
                 <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleBannerChange} />
               </label>
+              <p className="text-xs text-muted-foreground mt-1">Только JPEG или PNG, не более {MAX_BANNER_BYTES / 1024 / 1024} МБ</p>
               {reportForm.bannerUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={reportForm.bannerUrl} alt="Превью баннера" className="mt-2 h-24 w-full object-cover rounded-lg border border-border/30" />

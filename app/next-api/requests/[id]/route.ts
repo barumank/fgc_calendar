@@ -31,7 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data: {
         name: request.name,
         game: request.game,
-        format: 'offline',
+        format: request.format,
         region: request.region,
         country: REGION_LABELS[request.region as RegionType] ?? request.region,
         city: '—',

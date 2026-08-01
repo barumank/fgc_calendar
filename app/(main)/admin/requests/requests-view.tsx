@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon } from 'lucide-react';
-import { TournamentRequest, GAME_LABELS, REGION_LABELS } from '@/src/types';
+import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 
@@ -81,6 +81,7 @@ export function RequestsView() {
                   <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{r.startDate} — {r.endDate}</span>
                   <span>{GAME_LABELS[r.game]}</span>
                   <span>{REGION_LABELS[r.region]}</span>
+                  <span>{FORMAT_LABELS[r.format]}</span>
                 </div>
               </div>
             </button>
@@ -102,6 +103,7 @@ export function RequestsView() {
               <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedRequest.startDate} — {selectedRequest.endDate}</div>
               <div>Дисциплина: <span className="text-foreground">{GAME_LABELS[selectedRequest.game]}</span></div>
               <div>Регион: <span className="text-foreground">{REGION_LABELS[selectedRequest.region]}</span></div>
+              <div>Тип турнира: <span className="text-foreground">{FORMAT_LABELS[selectedRequest.format]}</span></div>
               {selectedRequest.url && (
                 <a href={selectedRequest.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#EF4444] hover:underline">
                   Ссылка на турнир <ExternalLink className="w-3.5 h-3.5" />
