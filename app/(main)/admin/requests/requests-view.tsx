@@ -38,9 +38,9 @@ export function RequestsView() {
       await mutate();
       setSelectedRequest(null);
       const messages = {
-        approve: [`Турнир «${request.name}» создан`, 'success' as const],
-        reject: [`Заявка «${request.name}» отклонена`, 'info' as const],
-        unapprove: [`Одобрение заявки «${request.name}» отменено, турнир удалён`, 'info' as const],
+        approve: [`Турнир «${request.name}» создан`, 'success'] as const,
+        reject: [`Заявка «${request.name}» отклонена`, 'info'] as const,
+        unapprove: [`Одобрение заявки «${request.name}» отменено, турнир удалён`, 'info'] as const,
       };
       const [message, type] = messages[action];
       showToast(message, type);
