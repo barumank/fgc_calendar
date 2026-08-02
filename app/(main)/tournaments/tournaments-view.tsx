@@ -22,17 +22,13 @@ export function TournamentsView() {
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
   const [sortBy, setSortBy] = useState<'date' | 'prize' | 'players'>('date');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const dateFilter = searchParams?.get('date') ?? '';
 
   const clearDateFilter = () => router.push(pathname);
 
-  const toggleExpand = (id: string) => setExpandedIds((prev: Set<string>) => {
-    const next = new Set(prev);
-    if (next.has(id)) next.delete(id); else next.add(id);
-    return next;
-  });
+  const toggleExpand = (id: string) => setExpandedId((prev: string | null) => (prev === id ? null : id));
 
   const filtered = useMemo(() => {
     let items = (tournaments ?? []).filter((t: Tournament) => {
@@ -103,7 +99,7 @@ export function TournamentsView() {
       {/* List */}
       <div className="space-y-3">
         {(paginated ?? []).map((t: Tournament) => {
-          const isExpanded = expandedIds.has(t?.id ?? '');
+          const isExpanded = expandedId === t?.id;
           return (
             <div key={t?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden transition-all hover:border-border/60">
               <div className="h-1" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }} />
