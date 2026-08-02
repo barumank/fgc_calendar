@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
-import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, RotateCcw } from 'lucide-react';
-import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
+import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 
@@ -21,10 +21,32 @@ const STATUS_STYLES: Record<TournamentRequest['status'], string> = {
   rejected: 'bg-red-500/10 text-red-400',
 };
 
+const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
+const ALL_STATUSES: TournamentRequest['status'][] = ['pending', 'approved', 'rejected'];
+const PAGE_SIZE = 20;
+
 export function RequestsView() {
   const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/next-api/requests', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('');
+  const [filterGame, setFilterGame] = useState<GameType | ''>('');
+  const [filterDate, setFilterDate] = useState('');
+  const [page, setPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    return (requests ?? []).filter((r: TournamentRequest) => {
+      if (filterStatus && r.status !== filterStatus) return false;
+      if (filterGame && r.game !== filterGame) return false;
+      if (filterDate && r.startDate !== filterDate) return false;
+      return true;
+    });
+  }, [requests, filterStatus, filterGame, filterDate]);
+
+  useEffect(() => { setPage(1); }, [filterStatus, filterGame, filterDate]);
+
+  const totalPages = Math.max(1, Math.ceil((filtered?.length ?? 0) / PAGE_SIZE));
+  const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   const handleAction = async (request: TournamentRequest, action: 'approve' | 'reject' | 'unapprove') => {
     setProcessing(true);
@@ -59,16 +81,34 @@ export function RequestsView() {
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">Заявки</h1>
 
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        <select value={filterStatus} onChange={(e: any) => setFilterStatus(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
+          <option value="" className="bg-[#1A1A2E] text-foreground">Все статусы</option>
+          {ALL_STATUSES.map((s: TournamentRequest['status']) => <option key={s} value={s} className="bg-[#1A1A2E] text-foreground">{STATUS_LABELS[s]}</option>)}
+        </select>
+        <select value={filterGame} onChange={(e: any) => setFilterGame(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
+          <option value="" className="bg-[#1A1A2E] text-foreground">Все игры</option>
+          {ALL_GAMES.map((g: GameType) => <option key={g} value={g} className="bg-[#1A1A2E] text-foreground">{GAME_LABELS[g]}</option>)}
+        </select>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e: any) => setFilterDate(e?.target?.value ?? '')}
+          className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground"
+        />
+      </div>
+
       {isLoading ? (
         <div className="flex items-center justify-center min-h-[40vh] text-muted-foreground text-sm">Загрузка...</div>
-      ) : (requests?.length ?? 0) === 0 ? (
+      ) : (filtered?.length ?? 0) === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
           <ClipboardList className="w-16 h-16 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Заявок пока нет</p>
+          <p className="text-muted-foreground">{(requests?.length ?? 0) === 0 ? 'Заявок пока нет' : 'Ничего не найдено по выбранным фильтрам'}</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {(requests ?? []).map((r: TournamentRequest) => (
+          {(paginated ?? []).map((r: TournamentRequest) => (
             <button
               key={r.id}
               onClick={() => setSelectedRequest(r)}
@@ -96,6 +136,25 @@ export function RequestsView() {
               </div>
             </button>
           ))}
+        </div>
+      )}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            onClick={() => setPage((p: number) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-sm text-muted-foreground">Страница {page} из {totalPages}</span>
+          <button
+            onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="p-2 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       )}
 
