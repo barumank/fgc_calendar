@@ -53,3 +53,28 @@ model TournamentRequest {
   status    String   @default("pending")
   createdAt DateTime @default(now())
 }
+
+model Player {
+  id                String   @id @default(uuid())
+  tag               String
+  realName          String?
+  country           String
+  region            String
+  mainGame          String
+  avatarUrl         String?
+  tournamentsPlayed Int      @default(0)
+  wins              Int      @default(0)
+  top3              Int      @default(0)
+  points            Int      @default(0)
+  discord           String?
+  twitter           String?
+  twitch            String?
+  challongeUsername String?  @unique
+  createdAt         DateTime @default(now())
+}
+
+model ChallongeApiUsage {
+  id    String @id @default(uuid())
+  month String @unique
+  count Int    @default(0)
+}

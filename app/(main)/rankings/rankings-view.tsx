@@ -1,23 +1,26 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import useSWR from 'swr';
 import { Trophy, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
-import { mockPlayers } from '@/src/data/mock-players';
 import { Player } from '@/src/types/player';
 import { GAME_LABELS, GAME_COLORS, GameType } from '@/src/types';
 
 const RANKING_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game'];
 const PAGE_SIZE = 20;
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export function RankingsView() {
+  const { data: players } = useSWR<Player[]>('/next-api/players', fetcher);
   const [selectedGame, setSelectedGame] = useState<GameType>('tekken8');
   const [page, setPage] = useState(1);
 
   const ranked = useMemo(() => {
-    return (mockPlayers ?? [])
+    return (players ?? [])
       .filter((p: Player) => p?.mainGame === selectedGame || selectedGame === 'multi_game')
       .sort((a: Player, b: Player) => (b?.points ?? 0) - (a?.points ?? 0));
-  }, [selectedGame]);
+  }, [players, selectedGame]);
 
   useEffect(() => { setPage(1); }, [selectedGame]);
 

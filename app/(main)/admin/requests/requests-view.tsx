@@ -6,6 +6,7 @@ import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, R
 import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
+import { extractChallongeSlug } from '@/lib/challonge';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -27,8 +28,10 @@ const PAGE_SIZE = 20;
 
 export function RequestsView() {
   const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/next-api/requests', fetcher);
+  const { data: usage, mutate: mutateUsage } = useSWR<{ count: number; limit: number }>('/next-api/challonge-usage', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [fetchingResult, setFetchingResult] = useState(false);
   const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterDate, setFilterDate] = useState('');
@@ -73,8 +76,27 @@ export function RequestsView() {
     }
   };
 
-  const handleResultClick = () => {
-    showToast('Интеграция с Challonge, start.gg и другими системами появится позже', 'info');
+  const handleResultClick = async (request: TournamentRequest) => {
+    if (fetchingResult) return;
+    setFetchingResult(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/challonge-result`, { method: 'POST' });
+      const data = await res.json();
+      await mutateUsage();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось получить результаты', 'error');
+        return;
+      }
+      if (!data.tournamentFinished) {
+        showToast('Турнир на Challonge ещё не завершён — итоговых мест пока нет', 'info');
+        return;
+      }
+      showToast(`Обновлено: ${data.playersCount} участников, топ-8 сохранён в «Игроки»`, 'success');
+    } catch {
+      showToast('Не удалось получить результаты', 'error');
+    } finally {
+      setFetchingResult(false);
+    }
   };
 
   return (
@@ -201,20 +223,29 @@ export function RequestsView() {
               </div>
             )}
             {selectedRequest.status === 'approved' && (
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handleAction(selectedRequest, 'unapprove')}
-                  disabled={processing}
-                  className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <RotateCcw className="w-4 h-4" /> Отменить
-                </button>
-                <button
-                  onClick={handleResultClick}
-                  className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Trophy className="w-4 h-4" /> Результат
-                </button>
+              <div className="pt-2 space-y-2">
+                {usage && (
+                  <p className="text-xs text-muted-foreground text-right">
+                    Запросов к Challonge в этом месяце: {usage.count}/{usage.limit}
+                  </p>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => handleAction(selectedRequest, 'unapprove')}
+                    disabled={processing}
+                    className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Отменить
+                  </button>
+                  <button
+                    onClick={() => handleResultClick(selectedRequest)}
+                    disabled={fetchingResult || !extractChallongeSlug(selectedRequest.url)}
+                    title={!extractChallongeSlug(selectedRequest.url) ? 'Ссылка на турнир не похожа на Challonge (https://challonge.com/...)' : undefined}
+                    className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Trophy className="w-4 h-4" /> {fetchingResult ? 'Получаем...' : 'Результат'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

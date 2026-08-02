@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import useSWR from 'swr';
 import { Search, Trophy, Target, Medal } from 'lucide-react';
-import { mockPlayers } from '@/src/data/mock-players';
 import { Player } from '@/src/types/player';
 import { GAME_LABELS, GAME_COLORS, REGION_LABELS, GameType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
@@ -10,20 +10,23 @@ import { Modal } from '@/src/components/common/modal';
 const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
 export function PlayersView() {
+  const { data: players } = useSWR<Player[]>('/next-api/players', fetcher);
   const [search, setSearch] = useState('');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   const filtered = useMemo(() => {
-    return (mockPlayers ?? []).filter((p: Player) => {
+    return (players ?? []).filter((p: Player) => {
       if (search && !(p?.tag ?? '').toLowerCase().includes(search.toLowerCase())) return false;
       if (filterGame && p?.mainGame !== filterGame) return false;
       if (filterRegion && p?.region !== filterRegion) return false;
       return true;
     });
-  }, [search, filterGame, filterRegion]);
+  }, [players, search, filterGame, filterRegion]);
 
   return (
     <div>

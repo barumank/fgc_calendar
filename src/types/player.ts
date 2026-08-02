@@ -13,4 +13,5 @@ export interface Player {
   top3: number;
   points: number;
   socialLinks: { discord?: string; twitter?: string; twitch?: string };
+  challongeUsername?: string;
 }
