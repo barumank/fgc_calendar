@@ -27,6 +27,7 @@ model Tournament {
   sourceUrl     String?
   bracketUrl    String?
   featured      Boolean  @default(false)
+  requestId     String?  @unique
   createdAt     DateTime @default(now())
 }
 

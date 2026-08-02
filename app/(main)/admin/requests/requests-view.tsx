@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
-import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon } from 'lucide-react';
+import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, RotateCcw } from 'lucide-react';
 import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -26,7 +26,7 @@ export function RequestsView() {
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
 
-  const handleAction = async (request: TournamentRequest, action: 'approve' | 'reject') => {
+  const handleAction = async (request: TournamentRequest, action: 'approve' | 'reject' | 'unapprove') => {
     setProcessing(true);
     try {
       const res = await fetch(`/next-api/requests/${request.id}`, {
@@ -37,12 +37,22 @@ export function RequestsView() {
       if (!res.ok) throw new Error('Action failed');
       await mutate();
       setSelectedRequest(null);
-      showToast(action === 'approve' ? `Турнир «${request.name}» создан` : `Заявка «${request.name}» отклонена`, action === 'approve' ? 'success' : 'info');
+      const messages = {
+        approve: [`Турнир «${request.name}» создан`, 'success' as const],
+        reject: [`Заявка «${request.name}» отклонена`, 'info' as const],
+        unapprove: [`Одобрение заявки «${request.name}» отменено, турнир удалён`, 'info' as const],
+      };
+      const [message, type] = messages[action];
+      showToast(message, type);
     } catch {
       showToast('Не удалось обработать заявку', 'error');
     } finally {
       setProcessing(false);
     }
+  };
+
+  const handleResultClick = () => {
+    showToast('Интеграция с Challonge, start.gg и другими системами появится позже', 'info');
   };
 
   return (
@@ -128,6 +138,23 @@ export function RequestsView() {
                   className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                 >
                   <XIcon className="w-4 h-4" /> Отклонить
+                </button>
+              </div>
+            )}
+            {selectedRequest.status === 'approved' && (
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => handleAction(selectedRequest, 'unapprove')}
+                  disabled={processing}
+                  className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <RotateCcw className="w-4 h-4" /> Отменить
+                </button>
+                <button
+                  onClick={handleResultClick}
+                  className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Trophy className="w-4 h-4" /> Результат
                 </button>
               </div>
             )}
