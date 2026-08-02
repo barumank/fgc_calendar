@@ -4,8 +4,13 @@ export function extractChallongeSlug(url: string | null | undefined): string | n
   if (!url || !url.startsWith('https://challonge.com/')) return null;
   try {
     const parsed = new URL(url);
-    const slug = parsed.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-    return slug || null;
+    const segments = parsed.pathname.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean);
+    if (segments.length === 0) return null;
+    // Challonge sometimes prefixes URLs with a locale, e.g. /ru/TournamentSlug
+    if (segments.length >= 2 && /^[a-z]{2}(-[a-z]{2})?$/i.test(segments[0])) {
+      return segments[1];
+    }
+    return segments[0];
   } catch {
     return null;
   }
