@@ -116,7 +116,7 @@ export function CalendarView() {
     .slice(0, 6);
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 pr-6">
       <div className="flex-1 min-w-0 pl-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
