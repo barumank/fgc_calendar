@@ -27,28 +27,31 @@ export async function fetchChallongeParticipants(slug: string): Promise<Challong
   const apiKey = process.env.CHALLONGE_API_KEY;
   if (!apiKey) throw new Error('CHALLONGE_API_KEY is not configured');
 
-  const res = await fetch(`https://api.challonge.com/v2.1/tournaments/${slug}/participants.json`, {
-    headers: {
-      'Content-Type': 'application/vnd.api+json',
-      Accept: 'application/json',
-      'Authorization-Type': 'v1',
-      Authorization: apiKey,
-    },
+  // Uses the v1 endpoint (not v2.1): v1 permits GET on any tournament,
+  // including ones not owned by this API key's account; v2.1 is account-scoped
+  // and 404s on third-party tournaments even with a v1-key-compat auth header.
+  const url = `https://api.challonge.com/v1/tournaments/${encodeURIComponent(slug)}/participants.json?api_key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    headers: { Accept: 'application/json' },
     cache: 'no-store',
   });
 
   if (!res.ok) {
-    throw new Error(`Challonge API error: ${res.status}`);
+    const body = await res.text().catch(() => '');
+    throw new Error(`Challonge API error: ${res.status}${body ? ` — ${body.slice(0, 300)}` : ''}`);
   }
 
   const json = await res.json();
-  const data = Array.isArray(json?.data) ? json.data : [];
-  return data.map((p: any) => ({
-    id: String(p?.id ?? ''),
-    name: p?.attributes?.name ?? 'Unknown',
-    username: p?.attributes?.username ?? null,
-    finalRank: p?.attributes?.final_rank ?? null,
-  }));
+  const data = Array.isArray(json) ? json : [];
+  return data.map((entry: any) => {
+    const p = entry?.participant ?? {};
+    return {
+      id: String(p?.id ?? ''),
+      name: p?.name ?? 'Unknown',
+      username: p?.challonge_username ?? p?.username ?? null,
+      finalRank: p?.final_rank ?? null,
+    };
+  });
 }
 
 export function pointsForRank(rank: number): number {
