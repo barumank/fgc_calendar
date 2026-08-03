@@ -4,15 +4,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, MapPin, Users, CalendarDays, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
-import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
+import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
+import { useGames } from '@/src/hooks/use-games';
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 const PAGE_SIZE = 20;
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function TournamentsView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const searchParams = useSearchParams();
   const router = useRouter();

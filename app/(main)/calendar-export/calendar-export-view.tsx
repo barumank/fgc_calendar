@@ -3,13 +3,14 @@
 import React, { useState, useMemo } from 'react';
 import { Send, Hash, Key, MessageSquare, CalendarDays, MapPin } from 'lucide-react';
 import { mockTournaments } from '@/src/data/mock-tournaments';
-import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
+import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { showToast } from '@/src/components/common/toast-notification';
+import { useGames } from '@/src/hooks/use-games';
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
 
 export function CalendarExportView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');

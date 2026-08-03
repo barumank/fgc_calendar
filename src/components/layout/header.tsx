@@ -4,10 +4,10 @@ import React, { useState, useCallback } from 'react';
 import { Settings, Moon, Globe, X, Send, Upload } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
-import { GameType, RegionType, FormatType, GAME_LABELS, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
+import { GameType, RegionType, FormatType, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
 import { MAX_BANNER_BYTES, isAllowedBannerMimeType } from '@/src/lib/banner-constraints';
+import { useGames } from '@/src/hooks/use-games';
 
-const REPORT_FORM_GAMES: GameType[] = ['tekken8', 'guilty_gear', 'marvel_tokon', 'sf6', 'avatar_legends', 'other'];
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
 const REPORT_FORM_FORMATS: FormatType[] = ['online', 'offline'];
 
@@ -24,6 +24,7 @@ const EMPTY_REPORT_FORM = {
 };
 
 export function Header() {
+  const { games } = useGames();
   const [showReportModal, setShowReportModal] = useState(false);
   const [showLangToast, setShowLangToast] = useState(false);
   const [reportSent, setReportSent] = useState(false);
@@ -198,7 +199,7 @@ export function Header() {
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, game: (e?.target?.value ?? '') as GameType | '' }))}
                 >
                   <option value="" className="bg-[#1A1A2E] text-foreground">Выберите дисциплину</option>
-                  {REPORT_FORM_GAMES.map((g: GameType) => <option key={g} value={g} className="bg-[#1A1A2E] text-foreground">{GAME_LABELS[g]}</option>)}
+                  {games.map((g) => <option key={g.key} value={g.key} className="bg-[#1A1A2E] text-foreground">{g.label}</option>)}
                 </select>
               </div>
             </div>

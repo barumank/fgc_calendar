@@ -4,14 +4,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { Trophy, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Player } from '@/src/types/player';
-import { GAME_LABELS, GAME_COLORS, GameType } from '@/src/types';
+import { GameType } from '@/src/types';
+import { useGames } from '@/src/hooks/use-games';
 
-const RANKING_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game'];
 const PAGE_SIZE = 20;
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function RankingsView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
   const { data: players } = useSWR<Player[]>('/next-api/players', fetcher);
   const [selectedGame, setSelectedGame] = useState<GameType>('tekken8');
   const [page, setPage] = useState(1);
@@ -32,8 +33,8 @@ export function RankingsView() {
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">Рейтинг</h1>
-      <div className="flex gap-2 mb-6">
-        {RANKING_GAMES.map((g: GameType) => (
+      <div className="flex flex-wrap gap-2 mb-6">
+        {ALL_GAMES.map((g: GameType) => (
           <button key={g} onClick={() => setSelectedGame(g)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedGame === g ? 'text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'

@@ -1,4 +1,6 @@
-export type GameType = 'tekken8' | 'sf6' | 'guilty_gear' | 'marvel_tokon' | 'avatar_legends' | 'multi_game' | 'other';
+// Disciplines are managed dynamically in the admin panel (see src/hooks/use-games.ts)
+// rather than hardcoded here — this type is intentionally just a string.
+export type GameType = string;
 export type FormatType = 'online' | 'offline';
 export type RegionType = 'russia' | 'belarus' | 'kazakhstan' | 'usa' | 'japan' | 'ukraine' | 'cis' | 'europe' | 'other';
 export type TournamentStatus = 'upcoming' | 'ongoing' | 'completed';
@@ -24,26 +26,6 @@ export interface Tournament {
   featured?: boolean;
   createdAt?: string;
 }
-
-export const GAME_LABELS: Record<GameType, string> = {
-  tekken8: 'Tekken 8',
-  sf6: 'Street Fighter 6',
-  guilty_gear: 'Guilty Gear Strive',
-  marvel_tokon: 'Marvel Tokon',
-  avatar_legends: 'Avatar Legends',
-  multi_game: 'Multi-Game',
-  other: 'Другое',
-};
-
-export const GAME_COLORS: Record<GameType, string> = {
-  tekken8: '#7C3AED',
-  sf6: '#2563EB',
-  multi_game: '#DC2626',
-  guilty_gear: '#16A34A',
-  marvel_tokon: '#D97706',
-  avatar_legends: '#0EA5E9',
-  other: '#EA580C',
-};
 
 export const FORMAT_LABELS: Record<FormatType, string> = {
   online: 'Онлайн',

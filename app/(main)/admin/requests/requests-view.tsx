@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
 import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
-import { TournamentRequest, GAME_LABELS, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
+import { TournamentRequest, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
+import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
@@ -22,11 +23,11 @@ const STATUS_STYLES: Record<TournamentRequest['status'], string> = {
   rejected: 'bg-red-500/10 text-red-400',
 };
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_STATUSES: TournamentRequest['status'][] = ['pending', 'approved', 'rejected'];
 const PAGE_SIZE = 20;
 
 export function RequestsView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS } = useGames();
   const { data: requests, mutate, isLoading } = useSWR<TournamentRequest[]>('/next-api/requests', fetcher);
   const { data: usage, mutate: mutateUsage } = useSWR<{ count: number; limit: number }>('/next-api/challonge-usage', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);

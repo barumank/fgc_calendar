@@ -7,7 +7,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
-  ChevronDown, ChevronRight, LogIn, LogOut
+  ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -24,6 +24,7 @@ const mainLinks = [
 
 const adminSubLinks = [
   { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
+  { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
   { href: '/admin/system-logs', label: 'Системные логи', icon: FileText },

@@ -4,9 +4,10 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ExternalLink } from 'lucide-react';
-import { Tournament, GAME_LABELS, GAME_COLORS, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
+import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
+import { useGames } from '@/src/hooks/use-games';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -14,7 +15,6 @@ const DAY_NAMES = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
 const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const MONTH_ABBR = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
 
-const ALL_GAMES: GameType[] = ['tekken8','sf6','guilty_gear','marvel_tokon','avatar_legends','multi_game','other'];
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 
 function getCalendarDays(year: number, month: number) {
@@ -54,6 +54,7 @@ function formatDateRange(startDate: string, endDate: string) {
 }
 
 export function CalendarView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());

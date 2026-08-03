@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Trophy, CalendarDays, Users, TrendingUp, UploadCloud, BarChart3, MapPin } from 'lucide-react';
 import { mockTournaments } from '@/src/data/mock-tournaments';
 import { mockPlayers } from '@/src/data/mock-players';
-import { GAME_LABELS, GAME_COLORS, GameType, Tournament, FORMAT_LABELS } from '@/src/types';
+import { GameType, Tournament, FORMAT_LABELS } from '@/src/types';
 import { Player } from '@/src/types/player';
+import { useGames } from '@/src/hooks/use-games';
 
 const stats = [
   { label: 'Всего турниров', value: mockTournaments?.length ?? 0, icon: Trophy, color: '#7C3AED' },
@@ -13,15 +14,6 @@ const stats = [
   { label: 'Активных игроков', value: mockPlayers?.length ?? 0, icon: Users, color: '#16A34A' },
   { label: 'Предстоящих', value: (mockTournaments ?? []).filter((t: Tournament) => t?.status === 'upcoming')?.length ?? 0, icon: TrendingUp, color: '#EF4444' },
 ];
-
-const gameDistribution: { game: GameType; count: number }[] = (
-  ['tekken8','sf6','guilty_gear','marvel_tokon','multi_game','other'] as GameType[]
-).map((g: GameType) => ({
-  game: g,
-  count: (mockTournaments ?? []).filter((t: Tournament) => t?.game === g)?.length ?? 0,
-})).sort((a: any, b: any) => (b?.count ?? 0) - (a?.count ?? 0));
-
-const totalGames = gameDistribution.reduce((s: number, d: any) => s + (d?.count ?? 0), 0);
 
 const recentTournaments = [...(mockTournaments ?? [])].sort((a: Tournament, b: Tournament) => (b?.startDate ?? '').localeCompare(a?.startDate ?? '')).slice(0, 5);
 const upcomingTournaments = (mockTournaments ?? []).filter((t: Tournament) => t?.status === 'upcoming').sort((a: Tournament, b: Tournament) => (a?.startDate ?? '').localeCompare(b?.startDate ?? '')).slice(0, 5);
@@ -35,6 +27,17 @@ const mockExportLog = [
 ];
 
 export function DashboardView() {
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
+
+  const gameDistribution = useMemo(() => {
+    return ALL_GAMES.map((g: GameType) => ({
+      game: g,
+      count: (mockTournaments ?? []).filter((t: Tournament) => t?.game === g)?.length ?? 0,
+    })).sort((a, b) => (b?.count ?? 0) - (a?.count ?? 0));
+  }, [ALL_GAMES]);
+
+  const totalGames = gameDistribution.reduce((s: number, d) => s + (d?.count ?? 0), 0);
+
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">Дашборд</h1>
