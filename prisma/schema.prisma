@@ -87,3 +87,10 @@ model Game {
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+model BacklogItem {
+  id        String   @id @default(uuid())
+  text      String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
