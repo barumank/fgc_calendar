@@ -33,7 +33,7 @@ export function NewsView() {
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   return (
-    <div>
+    <div className="px-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">Новости</h1>
       <div className="flex gap-2 mb-6">
         <button onClick={() => setFilterCategory('')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!filterCategory ? 'bg-[#EF4444] text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}>Все</button>

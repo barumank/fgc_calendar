@@ -58,7 +58,7 @@ export function TournamentsView() {
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   return (
-    <div>
+    <div className="px-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">Турниры</h1>
       {dateFilter && (
         <div className="flex items-center gap-2 mb-4 text-sm">

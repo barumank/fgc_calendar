@@ -31,7 +31,7 @@ export function RankingsView() {
   const medalColors = ['text-yellow-400', 'text-gray-300', 'text-orange-400'];
 
   return (
-    <div>
+    <div className="px-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">Рейтинг</h1>
       <div className="flex flex-wrap gap-2 mb-6">
         {ALL_GAMES.map((g: GameType) => (
