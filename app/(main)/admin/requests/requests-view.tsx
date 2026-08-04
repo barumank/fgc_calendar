@@ -101,7 +101,7 @@ export function RequestsView() {
   };
 
   return (
-    <div>
+    <div className="px-6">
       <h1 className="text-2xl font-bold tracking-tight mb-6">Заявки</h1>
 
       {/* Filters */}
