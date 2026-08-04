@@ -187,12 +187,12 @@ export function CalendarView() {
               const remaining = (dayTournaments?.length ?? 0) - 4;
               const isPastDay = dayObj?.isCurrentMonth && dateStr(dayObj?.year, dayObj?.month, dayObj?.day) < todayStr;
               return (
-                <div key={idx} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''}`}>
-                  <div className="text-xs text-muted-foreground mb-1 pl-1">{dayObj?.day}</div>
-                  <div className="space-y-1">
+                <div key={idx} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''}`}>
+                  <div className="text-xs text-muted-foreground mb-1 pl-1 shrink-0">{dayObj?.day}</div>
+                  <div className="flex-1 flex flex-col gap-1">
                     {(visible ?? []).map((t: Tournament) => (
                       <button key={t?.id} onClick={() => setSelectedTournament(t)}
-                        className="w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white truncate flex items-center gap-1"
+                        className={`w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white truncate flex items-center gap-1 ${(visible?.length ?? 0) <= 2 ? 'flex-1' : ''}`}
                         style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>
                         {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
                         <span className="truncate">{t?.name}</span>
