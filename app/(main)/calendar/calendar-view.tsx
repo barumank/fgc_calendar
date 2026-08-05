@@ -197,14 +197,14 @@ export function CalendarView() {
                         style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>
                         {stretched ? (
                           <>
-                            <span className="flex items-start justify-between gap-1 min-w-0">
-                              <span className="flex items-center gap-1 min-w-0">
-                                {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
-                                <span className="truncate">{t?.name}</span>
-                              </span>
-                              <span className="shrink-0 opacity-80">{GAME_LABELS[t?.game]}</span>
+                            <span className="flex items-center gap-1 min-w-0">
+                              {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
+                              <span className="truncate">{t?.name}</span>
                             </span>
-                            {t?.startTime && <span className="opacity-80">{t.startTime}</span>}
+                            <span className="flex items-center gap-1">
+                              {t?.startTime && <span className="opacity-80">{t.startTime}</span>}
+                              <span className="shrink-0 opacity-80 ml-auto">{GAME_LABELS[t?.game]}</span>
+                            </span>
                           </>
                         ) : (
                           <>
