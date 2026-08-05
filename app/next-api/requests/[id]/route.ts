@@ -41,6 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           city: '—',
           startDate: request.startDate,
           endDate: request.endDate,
+          startTime: request.startTime,
           status: 'upcoming',
           prizePool: '—',
           playersCount: 0,

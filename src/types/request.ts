@@ -9,6 +9,7 @@ export interface TournamentRequest {
   comment: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
   region: RegionType;
   game: GameType;
   format: FormatType;

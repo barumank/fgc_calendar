@@ -11,7 +11,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, url, comment, startDate, endDate, region, game, format, bannerUrl } = body ?? {};
+  const { name, url, comment, startDate, endDate, startTime, region, game, format, bannerUrl } = body ?? {};
 
   if (!name?.trim() || !startDate || !endDate || !region || !game || !format) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       comment: comment || null,
       startDate,
       endDate,
+      startTime: startTime || null,
       region,
       game,
       format,

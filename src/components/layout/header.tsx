@@ -17,6 +17,7 @@ const EMPTY_REPORT_FORM = {
   comment: '',
   startDate: '',
   endDate: '',
+  startTime: '',
   region: '' as RegionType | '',
   game: '' as GameType | '',
   format: '' as FormatType | '',
@@ -76,6 +77,7 @@ export function Header() {
           comment: reportForm.comment,
           startDate: reportForm.startDate,
           endDate: reportForm.endDate,
+          startTime: reportForm.startTime || undefined,
           region: reportForm.region,
           game: reportForm.game,
           format: reportForm.format,
@@ -158,7 +160,7 @@ export function Header() {
                 placeholder="https://..."
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1.5">Дата начала *</label>
                 <input
@@ -176,6 +178,15 @@ export function Header() {
                   value={reportForm.endDate}
                   min={reportForm.startDate || undefined}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, endDate: e?.target?.value ?? '' }))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Время начала</label>
+                <input
+                  type="time"
+                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                  value={reportForm.startTime}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, startTime: e?.target?.value ?? '' }))}
                 />
               </div>
             </div>

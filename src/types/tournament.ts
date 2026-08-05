@@ -15,6 +15,7 @@ export interface Tournament {
   city: string;
   startDate: string;
   endDate: string;
+  startTime?: string;
   status: TournamentStatus;
   prizePool: string;
   playersCount: number;

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
-import { ClipboardList, CalendarDays, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TournamentRequest, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
@@ -152,6 +152,7 @@ export function RequestsView() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{r.startDate} — {r.endDate}</span>
+                  {r.startTime && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{r.startTime}</span>}
                   <span>{GAME_LABELS[r.game]}</span>
                   <span>{REGION_LABELS[r.region]}</span>
                   <span>{FORMAT_LABELS[r.format]}</span>
@@ -193,6 +194,7 @@ export function RequestsView() {
             </span>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedRequest.startDate} — {selectedRequest.endDate}</div>
+              {selectedRequest.startTime && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" />{selectedRequest.startTime}</div>}
               <div>Дисциплина: <span className="text-foreground">{GAME_LABELS[selectedRequest.game]}</span></div>
               <div>Регион: <span className="text-foreground">{REGION_LABELS[selectedRequest.region]}</span></div>
               <div>Тип турнира: <span className="text-foreground">{FORMAT_LABELS[selectedRequest.format]}</span></div>

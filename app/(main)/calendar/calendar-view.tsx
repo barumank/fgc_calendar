@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Wifi, WifiOff, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Clock, Wifi, WifiOff, ExternalLink } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
@@ -186,16 +186,34 @@ export function CalendarView() {
               const visible = dayTournaments.slice(0, 4);
               const remaining = (dayTournaments?.length ?? 0) - 4;
               const isPastDay = dayObj?.isCurrentMonth && dateStr(dayObj?.year, dayObj?.month, dayObj?.day) < todayStr;
+              const stretched = (visible?.length ?? 0) <= 2;
               return (
                 <div key={idx} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''}`}>
                   <div className="text-xs text-muted-foreground mb-1 pl-1 shrink-0">{dayObj?.day}</div>
                   <div className="flex-1 flex flex-col gap-1">
                     {(visible ?? []).map((t: Tournament) => (
                       <button key={t?.id} onClick={() => setSelectedTournament(t)}
-                        className={`w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white truncate flex items-center gap-1 ${(visible?.length ?? 0) <= 2 ? 'flex-1' : ''}`}
+                        className={`w-full text-left px-1.5 py-1 rounded text-[10px] font-medium text-white overflow-hidden ${stretched ? 'flex-1 flex flex-col justify-between' : 'flex items-center gap-1'}`}
                         style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>
-                        {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
-                        <span className="truncate">{t?.name}</span>
+                        {stretched ? (
+                          <>
+                            <span className="flex items-start justify-between gap-1 min-w-0">
+                              <span className="flex items-center gap-1 min-w-0">
+                                {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
+                                <span className="truncate">{t?.name}</span>
+                              </span>
+                              <span className="shrink-0 opacity-80">{GAME_LABELS[t?.game]}</span>
+                            </span>
+                            {t?.startTime && <span className="opacity-80">{t.startTime}</span>}
+                          </>
+                        ) : (
+                          <>
+                            {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
+                            <span className="truncate flex-1 min-w-0">{t?.name}</span>
+                            {t?.startTime && <span className="shrink-0 opacity-80">{t.startTime}</span>}
+                            <span className="shrink-0 opacity-80">{GAME_LABELS[t?.game]}</span>
+                          </>
+                        )}
                       </button>
                     ))}
                     {remaining > 0 && (
@@ -269,6 +287,7 @@ export function CalendarView() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
+              {selectedTournament?.startTime && <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" />{selectedTournament.startTime}</div>}
               <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.format === 'online' ? 'Online' : selectedTournament?.country}</div>
               <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{selectedTournament?.playersCount} игроков</div>
             </div>
