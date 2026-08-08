@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const label = (body?.label ?? '').trim();
+  const shortLabel = (body?.shortLabel ?? '').trim();
   const color = (body?.color ?? '').trim();
   if (!label || !color) {
     return NextResponse.json({ error: 'Название и цвет обязательны' }, { status: 400 });
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const maxOrder = await prisma.game.aggregate({ _max: { order: true } });
   const game = await prisma.game.create({
-    data: { key, label, color, order: (maxOrder._max.order ?? -1) + 1 },
+    data: { key, label, shortLabel: shortLabel || null, color, order: (maxOrder._max.order ?? -1) + 1 },
   });
 
   return NextResponse.json(game, { status: 201 });

@@ -18,12 +18,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const body = await req.json();
   const label = (body?.label ?? '').trim();
+  const shortLabel = (body?.shortLabel ?? '').trim();
   const color = (body?.color ?? '').trim();
   if (!label || !color) {
     return NextResponse.json({ error: 'Название и цвет обязательны' }, { status: 400 });
   }
 
-  const game = await prisma.game.update({ where: { id: params.id }, data: { label, color } });
+  const game = await prisma.game.update({ where: { id: params.id }, data: { label, shortLabel: shortLabel || null, color } });
   return NextResponse.json(game);
 }
 

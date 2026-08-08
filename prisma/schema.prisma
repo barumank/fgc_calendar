@@ -82,12 +82,13 @@ model ChallongeApiUsage {
 }
 
 model Game {
-  id        String   @id @default(uuid())
-  key       String   @unique
-  label     String
-  color     String
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
+  id         String   @id @default(uuid())
+  key        String   @unique
+  label      String
+  shortLabel String?
+  color      String
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
 }
 
 model BacklogItem {

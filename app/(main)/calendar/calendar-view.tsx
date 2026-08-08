@@ -54,7 +54,7 @@ function formatDateRange(startDate: string, endDate: string) {
 }
 
 export function CalendarView() {
-  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
+  const { gameKeys: ALL_GAMES, labels: GAME_LABELS, shortLabels: GAME_SHORT_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
@@ -203,7 +203,7 @@ export function CalendarView() {
                             </span>
                             <span className="flex items-center gap-1">
                               {t?.startTime && <span className="opacity-80">{t.startTime}</span>}
-                              <span className="shrink-0 opacity-80 ml-auto">{GAME_LABELS[t?.game]}</span>
+                              <span className="shrink-0 opacity-80 ml-auto">{GAME_SHORT_LABELS[t?.game]}</span>
                             </span>
                           </>
                         ) : (
@@ -211,7 +211,7 @@ export function CalendarView() {
                             {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
                             <span className="truncate flex-1 min-w-0">{t?.name}</span>
                             {t?.startTime && <span className="shrink-0 opacity-80">{t.startTime}</span>}
-                            <span className="shrink-0 opacity-80">{GAME_LABELS[t?.game]}</span>
+                            <span className="shrink-0 opacity-80">{GAME_SHORT_LABELS[t?.game]}</span>
                           </>
                         )}
                       </button>

@@ -12,7 +12,8 @@ export function useGames() {
   const games = useMemo(() => [...(data ?? [])].sort((a, b) => a.order - b.order), [data]);
   const gameKeys = useMemo(() => games.map((g) => g.key), [games]);
   const labels = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g.label])), [games]);
+  const shortLabels = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g.shortLabel || g.label])), [games]);
   const colors = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g.color])), [games]);
 
-  return { games, gameKeys, labels, colors, mutate, isLoading };
+  return { games, gameKeys, labels, shortLabels, colors, mutate, isLoading };
 }

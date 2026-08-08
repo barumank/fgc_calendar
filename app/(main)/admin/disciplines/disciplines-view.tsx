@@ -7,7 +7,7 @@ import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { GameRecord } from '@/src/data/default-games';
 
-const EMPTY_FORM = { label: '', color: '#EF4444' };
+const EMPTY_FORM = { label: '', shortLabel: '', color: '#EF4444' };
 
 export function DisciplinesView() {
   const { games, mutate, isLoading } = useGames();
@@ -17,7 +17,7 @@ export function DisciplinesView() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const openCreate = () => { setForm(EMPTY_FORM); setModalGame('new'); };
-  const openEdit = (g: GameRecord) => { setForm({ label: g.label, color: g.color }); setModalGame(g); };
+  const openEdit = (g: GameRecord) => { setForm({ label: g.label, shortLabel: g.shortLabel ?? '', color: g.color }); setModalGame(g); };
   const closeModal = () => { setModalGame(null); setForm(EMPTY_FORM); };
 
   const isValid = !!(form.label.trim() && form.color);
@@ -32,7 +32,7 @@ export function DisciplinesView() {
       const res = await fetch(url, {
         method: isNew ? 'POST' : 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: form.label.trim(), color: form.color }),
+        body: JSON.stringify({ label: form.label.trim(), shortLabel: form.shortLabel.trim(), color: form.color }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -86,15 +86,16 @@ export function DisciplinesView() {
       </p>
 
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
-        <div className="grid grid-cols-[48px_1fr_140px_100px] gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20">
-          <div></div><div>Название</div><div>Ключ</div><div>Действия</div>
+        <div className="grid grid-cols-[48px_1fr_100px_140px_100px] gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20">
+          <div></div><div>Название</div><div>Сокращение</div><div>Ключ</div><div>Действия</div>
         </div>
         {isLoading && (games?.length ?? 0) === 0 ? (
           <div className="px-6 py-8 text-center text-sm text-muted-foreground">Загрузка...</div>
         ) : (games ?? []).map((g: GameRecord) => (
-          <div key={g.id ?? g.key} className="grid grid-cols-[48px_1fr_140px_100px] gap-4 px-6 py-3 items-center text-sm border-b border-border/10 last:border-b-0">
+          <div key={g.id ?? g.key} className="grid grid-cols-[48px_1fr_100px_140px_100px] gap-4 px-6 py-3 items-center text-sm border-b border-border/10 last:border-b-0">
             <div className="w-6 h-6 rounded-full" style={{ backgroundColor: g.color }} />
             <div className="font-medium truncate">{g.label}</div>
+            <div className="text-xs text-muted-foreground truncate">{g.shortLabel || '—'}</div>
             <div className="text-xs text-muted-foreground font-mono truncate">{g.key}</div>
             <div className="flex items-center gap-1">
               <button
@@ -130,6 +131,18 @@ export function DisciplinesView() {
               placeholder="Например: Tekken 8"
               autoFocus
             />
+          </div>
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">Сокращение</label>
+            <input
+              type="text"
+              className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+              value={form.shortLabel}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm((prev) => ({ ...prev, shortLabel: e?.target?.value ?? '' }))}
+              onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSubmit()}
+              placeholder="Например: Tek8"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Используется только в ячейках календарной сетки. Если не задано — покажется полное название.</p>
           </div>
           <div>
             <label className="block text-sm text-muted-foreground mb-1.5">Цвет *</label>
