@@ -261,12 +261,18 @@ export function CalendarView() {
           <h3 className="text-sm font-semibold mb-3">БЛИЖАЙШИЕ ТУРНИРЫ</h3>
           <div className="space-y-3">
             {(upcomingTournaments ?? []).map((t: Tournament) => (
-              <button key={t?.id} onClick={() => setSelectedTournament(t)} className="w-full text-left flex gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors">
-                <div className="text-center shrink-0 w-12"><div className="text-[10px] text-muted-foreground uppercase">{MONTH_ABBR[(parseInt(t?.startDate?.split('-')?.[1] ?? '1', 10) - 1 + 12) % 12]}</div><div className="text-sm font-bold">{t?.startDate?.split('-')?.[2]?.replace(/^0/, '')}</div></div>
-                <div className="min-w-0">
+              <button key={t?.id} onClick={() => setSelectedTournament(t)} className="w-full text-left flex items-center gap-3 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                <div className="text-center shrink-0 w-12 py-1.5 rounded-lg bg-white/10">
+                  <div className="text-[10px] text-muted-foreground uppercase">{MONTH_ABBR[(parseInt(t?.startDate?.split('-')?.[1] ?? '1', 10) - 1 + 12) % 12]}</div>
+                  <div className="text-sm font-bold">{t?.startDate?.split('-')?.[2]?.replace(/^0/, '')}</div>
+                </div>
+                <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium truncate">{t?.name}</div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="w-3 h-3" />{t?.format === 'online' ? 'Online' : t?.country}</div>
-                  <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>{GAME_LABELS[t?.game]}</span>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                    {t?.startTime && <span className="shrink-0">{t.startTime}</span>}
+                    <span className="flex items-center gap-1 shrink-0"><MapPin className="w-3 h-3" />{t?.format === 'online' ? 'Online' : t?.country}</span>
+                    <span className="ml-auto shrink-0 px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>{GAME_LABELS[t?.game]}</span>
+                  </div>
                 </div>
               </button>
             ))}
