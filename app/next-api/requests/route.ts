@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
+import { isValidDateString, isValidTimeString } from '@/lib/date-validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,18 @@ export async function POST(req: NextRequest) {
 
   if (!name?.trim() || !startDate || !endDate || !region || !game || !format) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+  }
+
+  if (!isValidDateString(startDate) || !isValidDateString(endDate)) {
+    return NextResponse.json({ error: 'Некорректный формат даты' }, { status: 400 });
+  }
+
+  if (startDate > endDate) {
+    return NextResponse.json({ error: 'Дата начала не может быть позже даты завершения' }, { status: 400 });
+  }
+
+  if (startTime && !isValidTimeString(startTime)) {
+    return NextResponse.json({ error: 'Некорректный формат времени' }, { status: 400 });
   }
 
   if (bannerUrl && !isValidBannerDataUrl(bannerUrl)) {
