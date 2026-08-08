@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractChallongeSlug, fetchChallongeParticipants, pointsForRank, currentUsageMonth, ChallongeParticipant } from '@/lib/challonge';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const request = await prisma.tournamentRequest.findUnique({ where: { id: params.id } });
   if (!request) {
     return NextResponse.json({ error: 'Request not found' }, { status: 404 });
