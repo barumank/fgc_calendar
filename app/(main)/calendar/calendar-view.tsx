@@ -116,8 +116,8 @@ export function CalendarView() {
     .slice(0, 6);
 
   return (
-    <div className="flex gap-6 pr-6">
-      <div className="flex-1 min-w-0 pl-6">
+    <div className="flex flex-col xl:flex-row gap-6 px-6">
+      <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <button onClick={goToday} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors">Сегодня</button>
@@ -234,7 +234,7 @@ export function CalendarView() {
           {ALL_GAMES.map((g: GameType) => (<div key={g} className="flex items-center gap-2"><div className="w-5 h-5 rounded-full" style={{ backgroundColor: GAME_COLORS[g] }} /><span className="text-2xl text-muted-foreground">{GAME_LABELS[g]}</span></div>))}
         </div>
       </div>
-      <div className="w-[340px] shrink-0 space-y-6">
+      <div className="w-full xl:w-[340px] xl:shrink-0 space-y-6">
         {featuredTournament && (
           <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
             <div className="relative h-40 bg-gradient-to-br from-purple-600 to-red-600 flex items-center justify-center">
