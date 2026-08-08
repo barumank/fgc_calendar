@@ -95,7 +95,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
         {mainLinks?.map((link: any) => {
           const Icon = link?.icon;
-          const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(link?.href));
+          const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
           return (
             <Link
               key={link?.href}
