@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
-import { Trophy, CalendarDays, Users, TrendingUp, UploadCloud, BarChart3, MapPin } from 'lucide-react';
+import { Trophy, CalendarDays, Users, TrendingUp, BarChart3, MapPin } from 'lucide-react';
 import { GameType, Tournament } from '@/src/types';
 import { Player } from '@/src/types/player';
 import { useGames } from '@/src/hooks/use-games';
@@ -69,7 +69,6 @@ export function DashboardView() {
   const totalGames = gameDistribution.reduce((s: number, d) => s + (d?.count ?? 0), 0);
 
   const totalTournaments = (tournaments ?? []).length;
-  const discordExportedCount = (tournaments ?? []).filter((t) => t?.discordEventId).length;
 
   return (
     <div className="px-6 pt-6">
@@ -91,31 +90,16 @@ export function DashboardView() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Monthly chart */}
-        <div className="lg:col-span-2 bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
-          <h2 className="text-sm font-semibold mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" />Турниры по месяцам</h2>
-          <div className="flex items-end gap-3 h-48">
-            {monthlyTournaments.map((d) => (
-              <div key={d.key} className="flex-1 flex flex-col items-center gap-1">
-                <div className="w-full bg-[#EF4444]/80 rounded-t-md transition-all" style={{ height: `${(d.count / maxMonthly) * 100}%` }} />
-                <span className="text-[10px] text-muted-foreground">{d.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Game distribution */}
-        <div className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
-          <h2 className="text-sm font-semibold mb-4">Топ игры</h2>
-          <div className="space-y-3">
-            {(gameDistribution ?? []).map((d: any) => (
-              <div key={d?.game} className="space-y-1">
-                <div className="flex justify-between text-xs"><span>{GAME_LABELS[d?.game as GameType]}</span><span className="text-muted-foreground">{d?.count} ({totalGames > 0 ? Math.round(((d?.count ?? 0) / totalGames) * 100) : 0}%)</span></div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${totalGames > 0 ? ((d?.count ?? 0) / totalGames) * 100 : 0}%`, backgroundColor: GAME_COLORS[d?.game as GameType] }} /></div>
-              </div>
-            ))}
-          </div>
+      {/* Monthly chart */}
+      <div className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+        <h2 className="text-sm font-semibold mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" />Турниры по месяцам</h2>
+        <div className="flex items-end gap-3 h-48">
+          {monthlyTournaments.map((d) => (
+            <div key={d.key} className="flex-1 flex flex-col items-center gap-1">
+              <div className="w-full bg-[#EF4444]/80 rounded-t-md transition-all" style={{ height: `${(d.count / maxMonthly) * 100}%` }} />
+              <span className="text-[10px] text-muted-foreground">{d.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -148,19 +132,17 @@ export function DashboardView() {
           </div>
         </div>
 
-        {/* Discord export summary */}
+        {/* Game distribution */}
         <div className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2"><UploadCloud className="w-4 h-4" />Экспорт в Discord</h2>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-            <div>
-              <div className="text-2xl font-bold font-mono">{discordExportedCount}</div>
-              <div className="text-xs text-muted-foreground mt-1">из {totalTournaments} турниров экспортировано</div>
-            </div>
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#5865F2]/20">
-              <UploadCloud className="w-5 h-5 text-[#5865F2]" />
-            </div>
+          <h2 className="text-sm font-semibold mb-4">Топ игры</h2>
+          <div className="space-y-3">
+            {(gameDistribution ?? []).map((d: any) => (
+              <div key={d?.game} className="space-y-1">
+                <div className="flex justify-between text-xs"><span>{GAME_LABELS[d?.game as GameType]}</span><span className="text-muted-foreground">{d?.count} ({totalGames > 0 ? Math.round(((d?.count ?? 0) / totalGames) * 100) : 0}%)</span></div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${totalGames > 0 ? ((d?.count ?? 0) / totalGames) * 100 : 0}%`, backgroundColor: GAME_COLORS[d?.game as GameType] }} /></div>
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-muted-foreground mt-3">Telegram-экспорт пока не подключён к реальной отправке.</p>
         </div>
       </div>
     </div>

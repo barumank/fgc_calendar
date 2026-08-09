@@ -112,3 +112,14 @@ model AppSetting {
   key   String @id
   value String
 }
+
+model ExportLog {
+  id           String   @id @default(uuid())
+  platform     String
+  serverId     String
+  successCount Int      @default(0)
+  failCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([platform, createdAt])
+}

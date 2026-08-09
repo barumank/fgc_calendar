@@ -85,5 +85,9 @@ export async function POST(req: NextRequest) {
     await new Promise((resolve) => setTimeout(resolve, REQUEST_DELAY_MS));
   }
 
+  const successCount = results.filter((r) => r.status === 'created').length;
+  const failCount = results.filter((r) => r.status === 'error').length;
+  await prisma.exportLog.create({ data: { platform: 'discord', serverId: guildId, successCount, failCount } });
+
   return NextResponse.json({ results });
 }
