@@ -59,7 +59,6 @@ export function CalendarExportView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">Экспорт календаря</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Filters + Preview */}
         <div className="space-y-4">

@@ -59,7 +59,6 @@ export function TournamentsView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">Турниры</h1>
       {dateFilter && (
         <div className="flex items-center gap-2 mb-4 text-sm">
           <span className="text-muted-foreground">Турниры на дату:</span>

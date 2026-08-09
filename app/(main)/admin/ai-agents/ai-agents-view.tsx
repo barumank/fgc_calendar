@@ -59,7 +59,6 @@ export function AIAgentsView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">AI Агенты</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {(agents ?? []).map((agent: AIAgent) => (
           <div key={agent?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5 hover:border-border/60 transition-all">

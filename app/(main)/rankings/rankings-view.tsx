@@ -32,7 +32,6 @@ export function RankingsView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">Рейтинг</h1>
       <div className="flex flex-wrap gap-2 mb-6">
         {ALL_GAMES.map((g: GameType) => (
           <button key={g} onClick={() => setSelectedGame(g)}

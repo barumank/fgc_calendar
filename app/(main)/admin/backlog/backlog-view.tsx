@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
-import { ListTodo, Plus, Check, RotateCcw } from 'lucide-react';
+import { Plus, Check, RotateCcw } from 'lucide-react';
 import { showToast } from '@/src/components/common/toast-notification';
 
 interface BacklogItem {
@@ -85,8 +85,6 @@ export function BacklogView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><ListTodo className="w-6 h-6" />Бэклог</h1>
-
       <div className="flex gap-3 mb-6">
         <input
           type="text"

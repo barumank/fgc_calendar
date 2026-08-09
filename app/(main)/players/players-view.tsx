@@ -31,7 +31,6 @@ export function PlayersView() {
 
   return (
     <div className="px-6">
-      <h1 className="text-2xl font-bold tracking-tight mb-6">Игроки</h1>
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="flex items-center bg-white/5 rounded-lg border border-border/50 px-3 py-2 gap-2">
           <Search className="w-4 h-4 text-muted-foreground" />

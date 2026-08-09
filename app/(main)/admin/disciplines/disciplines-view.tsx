@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Gamepad2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -71,8 +71,7 @@ export function DisciplinesView() {
 
   return (
     <div className="px-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><Gamepad2 className="w-6 h-6" />Дисциплины</h1>
+      <div className="flex items-center justify-end mb-6">
         <button
           onClick={openCreate}
           className="flex items-center gap-2 bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors"
