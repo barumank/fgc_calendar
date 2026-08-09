@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
         city: t.city,
         country: t.country,
         sourceUrl: t.sourceUrl,
+        bannerUrl: t.bannerUrl,
       });
       await prisma.tournament.update({ where: { id: t.id }, data: { discordEventId: eventId } });
       results.push({ id: t.id, name: t.name, status: 'created' });

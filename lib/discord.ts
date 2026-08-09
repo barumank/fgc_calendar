@@ -13,6 +13,7 @@ export interface DiscordEventTournament {
   city: string;
   country: string;
   sourceUrl: string | null;
+  bannerUrl: string | null;
 }
 
 export function getScheduledStart(startDate: string, startTime: string | null): Date {
@@ -41,6 +42,7 @@ export async function createDiscordScheduledEvent(guildId: string, botToken: str
       privacy_level: 2, // GUILD_ONLY
       entity_type: 3, // EXTERNAL
       entity_metadata: { location },
+      ...(t.bannerUrl ? { image: t.bannerUrl } : {}),
     }),
   });
 
