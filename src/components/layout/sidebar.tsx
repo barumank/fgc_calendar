@@ -17,12 +17,12 @@ const mainLinks = [
   { href: '/tournaments', label: 'Турниры', icon: Trophy },
   { href: '/players', label: 'Игроки', icon: Users },
   { href: '/rankings', label: 'Рейтинг', icon: BarChart3 },
-  { href: '/calendar-export', label: 'Экспорт календаря', icon: UploadCloud },
   { href: '/news', label: 'Новости', icon: Newspaper },
-  { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
+  { href: '/calendar-export', label: 'Экспорт календаря', icon: UploadCloud },
 ];
 
 const adminSubLinks = [
+  { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
   { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
   { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
