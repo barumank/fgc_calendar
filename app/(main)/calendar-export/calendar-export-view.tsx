@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import useSWR from 'swr';
-import { Send, Hash, Key, CalendarDays, MapPin } from 'lucide-react';
+import { Send, Hash, Key, CalendarDays, MapPin, ExternalLink } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { showToast } from '@/src/components/common/toast-notification';
 import { useGames } from '@/src/hooks/use-games';
@@ -14,6 +14,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 export function CalendarExportView() {
   const { gameKeys: ALL_GAMES, labels: GAME_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
+  const { data: discordConfig } = useSWR<{ inviteUrl: string }>('/next-api/discord-config', fetcher);
   const [filterGames, setFilterGames] = useState<GameType[]>([]);
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
@@ -23,7 +24,6 @@ export function CalendarExportView() {
 
   // Discord fields
   const [discordServerId, setDiscordServerId] = useState('');
-  const [discordBotToken, setDiscordBotToken] = useState('');
   const [discordExporting, setDiscordExporting] = useState(false);
 
   // Telegram fields
@@ -50,7 +50,6 @@ export function CalendarExportView() {
     if (discordExporting) return;
     const newErrors: Record<string, boolean> = {};
     if (!discordServerId?.trim()) newErrors['discordServerId'] = true;
-    if (!discordBotToken?.trim()) newErrors['discordBotToken'] = true;
     setErrors(newErrors);
     if (Object.keys(newErrors ?? {}).length > 0) return;
     if ((filtered?.length ?? 0) === 0) {
@@ -65,7 +64,6 @@ export function CalendarExportView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           guildId: discordServerId.trim(),
-          botToken: discordBotToken.trim(),
           tournamentIds: filtered.map((t) => t.id),
         }),
       });
@@ -166,6 +164,15 @@ export function CalendarExportView() {
           </div>
           {platform === 'discord' ? (
             <div className="space-y-4">
+              <div className="bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-lg p-3 text-xs text-muted-foreground leading-relaxed">
+                Пригласите нашего бота к вам в Discord-сервер. Для этого перейдите по{' '}
+                {discordConfig?.inviteUrl ? (
+                  <a href={discordConfig.inviteUrl} target="_blank" rel="noopener noreferrer" className="text-[#5865F2] hover:underline inline-flex items-center gap-0.5">
+                    этой ссылке<ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : 'этой ссылке'}
+                {' '}и выберите сервер, на который вы его приглашаете. Затем укажите ID вашего сервера. После чего нажмите "Экспортировать в Discord". Важно: турниры с датой более ранней, чем сегодня, в Discord не переносятся.
+              </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Server ID *</label>
                 <div className={`flex items-center bg-white/5 rounded-lg border px-3 py-2 gap-2 ${errors?.['discordServerId'] ? 'border-red-500' : 'border-border/50'}`}>
@@ -173,14 +180,6 @@ export function CalendarExportView() {
                   <input type="text" value={discordServerId} onChange={(e: any) => { setDiscordServerId(e?.target?.value ?? ''); setErrors((p: any) => ({...(p ?? {}), discordServerId: false})); }} className="bg-transparent text-sm outline-none flex-1" placeholder="123456789" />
                 </div>
                 {errors?.['discordServerId'] && <span className="text-xs text-red-500 mt-1">Обязательное поле</span>}
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Bot Token *</label>
-                <div className={`flex items-center bg-white/5 rounded-lg border px-3 py-2 gap-2 ${errors?.['discordBotToken'] ? 'border-red-500' : 'border-border/50'}`}>
-                  <Key className="w-4 h-4 text-muted-foreground" />
-                  <input type="password" value={discordBotToken} onChange={(e: any) => { setDiscordBotToken(e?.target?.value ?? ''); setErrors((p: any) => ({...(p ?? {}), discordBotToken: false})); }} className="bg-transparent text-sm outline-none flex-1" placeholder="Bot token" />
-                </div>
-                {errors?.['discordBotToken'] && <span className="text-xs text-red-500 mt-1">Обязательное поле</span>}
               </div>
               <p className="text-xs text-muted-foreground">
                 Для каждого турнира из предпросмотра создаётся отдельное событие ("Событие сервера") в выбранном Discord-сервере. Турниры, уже выгруженные ранее, пропускаются повторно.

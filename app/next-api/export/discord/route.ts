@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { createDiscordScheduledEvent, getScheduledStart } from '@/lib/discord';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, recordSubmission } from '@/lib/rate-limit';
+import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,12 +28,17 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const guildId = (body?.guildId ?? '').trim();
-  const botToken = (body?.botToken ?? '').trim();
   const tournamentIds: string[] = Array.isArray(body?.tournamentIds) ? body.tournamentIds : [];
 
-  if (!guildId || !botToken) {
-    return NextResponse.json({ error: 'Server ID и Bot Token обязательны' }, { status: 400 });
+  if (!guildId) {
+    return NextResponse.json({ error: 'Server ID обязателен' }, { status: 400 });
   }
+
+  const botToken = await getSetting(SETTING_KEYS.discordBotToken);
+  if (!botToken) {
+    return NextResponse.json({ error: 'Discord-бот пока не настроен администратором сайта' }, { status: 503 });
+  }
+
   if (tournamentIds.length === 0) {
     return NextResponse.json({ error: 'Нет турниров для экспорта' }, { status: 400 });
   }

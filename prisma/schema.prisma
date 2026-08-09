@@ -107,3 +107,8 @@ model RequestSubmission {
 
   @@index([kind, ip, createdAt])
 }
+
+model AppSetting {
+  key   String @id
+  value String
+}
