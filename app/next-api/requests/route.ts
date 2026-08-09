@@ -4,8 +4,13 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
 import { isValidDateString, isValidTimeString } from '@/lib/date-validation';
+import { getClientIp } from '@/lib/client-ip';
 
 export const dynamic = 'force-dynamic';
+
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const SUBMISSION_RETENTION_MS = 24 * 60 * 60 * 1000;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -19,7 +24,20 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, url, comment, startDate, endDate, startTime, region, game, format, bannerUrl } = body ?? {};
+  const { name, url, comment, startDate, endDate, startTime, region, game, format, bannerUrl, website } = body ?? {};
+
+  // Honeypot: this field is hidden from real users but bots that
+  // auto-fill forms tend to populate it. Pretend success and stop.
+  if (website) {
+    return NextResponse.json({ id: 'ok' }, { status: 201 });
+  }
+
+  const ip = getClientIp(req);
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+  const recentCount = await prisma.requestSubmission.count({ where: { ip, createdAt: { gte: windowStart } } });
+  if (recentCount >= RATE_LIMIT_MAX) {
+    return NextResponse.json({ error: 'Слишком много заявок с вашего адреса. Попробуйте позже.' }, { status: 429 });
+  }
 
   if (!name?.trim() || !startDate || !endDate || !region || !game || !format) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -41,21 +59,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid banner image' }, { status: 400 });
   }
 
-  const request = await prisma.tournamentRequest.create({
-    data: {
-      name: name.trim(),
-      url: url || null,
-      comment: comment || null,
-      startDate,
-      endDate,
-      startTime: startTime || null,
-      region,
-      game,
-      format,
-      bannerUrl: bannerUrl || null,
-      status: 'pending',
-    },
-  });
+  const [request] = await prisma.$transaction([
+    prisma.tournamentRequest.create({
+      data: {
+        name: name.trim(),
+        url: url || null,
+        comment: comment || null,
+        startDate,
+        endDate,
+        startTime: startTime || null,
+        region,
+        game,
+        format,
+        bannerUrl: bannerUrl || null,
+        status: 'pending',
+      },
+    }),
+    prisma.requestSubmission.create({ data: { ip } }),
+  ]);
+
+  prisma.requestSubmission
+    .deleteMany({ where: { createdAt: { lt: new Date(Date.now() - SUBMISSION_RETENTION_MS) } } })
+    .catch(() => {});
 
   return NextResponse.json(request, { status: 201 });
 }

@@ -97,3 +97,11 @@ model BacklogItem {
   status    String   @default("pending")
   createdAt DateTime @default(now())
 }
+
+model RequestSubmission {
+  id        String   @id @default(uuid())
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}

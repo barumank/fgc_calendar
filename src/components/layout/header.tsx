@@ -22,6 +22,7 @@ const EMPTY_REPORT_FORM = {
   game: '' as GameType | '',
   format: '' as FormatType | '',
   bannerUrl: '',
+  website: '',
 };
 
 export function Header() {
@@ -82,9 +83,14 @@ export function Header() {
           game: reportForm.game,
           format: reportForm.format,
           bannerUrl: reportForm.bannerUrl || undefined,
+          website: reportForm.website,
         }),
       });
-      if (!res.ok) throw new Error('Request failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        showToast(data?.error ?? 'Не удалось отправить заявку, попробуйте ещё раз', 'error');
+        return;
+      }
       setReportSent(true);
       setTimeout(() => {
         setShowReportModal(false);
@@ -245,6 +251,17 @@ export function Header() {
                 value={reportForm.comment}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReportForm(prev => ({ ...prev, comment: e?.target?.value ?? '' }))}
                 placeholder="Расскажите подробнее..."
+              />
+            </div>
+            <div className="h-0 w-0 overflow-hidden">
+              <input
+                type="text"
+                name="website"
+                value={reportForm.website}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, website: e?.target?.value ?? '' }))}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
               />
             </div>
             <button
