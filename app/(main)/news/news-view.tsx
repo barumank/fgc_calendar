@@ -5,6 +5,7 @@ import { CalendarDays, Newspaper, ChevronLeft, ChevronRight } from 'lucide-react
 import { mockNews } from '@/src/data/mock-news';
 import { NewsItem, NewsCategory, NEWS_CATEGORY_LABELS } from '@/src/types/news';
 import { Modal } from '@/src/components/common/modal';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const CATEGORIES: NewsCategory[] = ['announcement','results','update','interview'];
 const CATEGORY_COLORS: Record<NewsCategory, string> = {
@@ -33,8 +34,8 @@ export function NewsView() {
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   return (
-    <div className="px-6">
-      <div className="flex gap-2 mb-6">
+    <div className="px-6 pt-6">
+      <div className="flex items-center gap-2 mb-6">
         <button onClick={() => setFilterCategory('')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!filterCategory ? 'bg-[#EF4444] text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}>Все</button>
         {CATEGORIES.map((c: NewsCategory) => (
           <button key={c} onClick={() => setFilterCategory(c)}
@@ -43,6 +44,7 @@ export function NewsView() {
             {NEWS_CATEGORY_LABELS[c]}
           </button>
         ))}
+        <div className="ml-auto"><HeaderActions /></div>
       </div>
       <div className="space-y-4">
         {(paginated ?? []).map((n: NewsItem) => (

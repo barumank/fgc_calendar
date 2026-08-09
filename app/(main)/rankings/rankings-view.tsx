@@ -6,6 +6,7 @@ import { Trophy, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Player } from '@/src/types/player';
 import { GameType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const PAGE_SIZE = 20;
 
@@ -31,8 +32,8 @@ export function RankingsView() {
   const medalColors = ['text-yellow-400', 'text-gray-300', 'text-orange-400'];
 
   return (
-    <div className="px-6">
-      <div className="flex flex-wrap gap-2 mb-6">
+    <div className="px-6 pt-6">
+      <div className="flex flex-wrap items-center gap-2 mb-6">
         {ALL_GAMES.map((g: GameType) => (
           <button key={g} onClick={() => setSelectedGame(g)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -42,6 +43,7 @@ export function RankingsView() {
             {GAME_LABELS[g]}
           </button>
         ))}
+        <div className="ml-auto"><HeaderActions /></div>
       </div>
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
         <div className="grid grid-cols-[60px_1fr_120px_80px_80px_80px_100px] gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20">

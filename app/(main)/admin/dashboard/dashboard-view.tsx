@@ -7,6 +7,7 @@ import { mockPlayers } from '@/src/data/mock-players';
 import { GameType, Tournament, FORMAT_LABELS } from '@/src/types';
 import { Player } from '@/src/types/player';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const stats = [
   { label: 'Всего турниров', value: mockTournaments?.length ?? 0, icon: Trophy, color: '#7C3AED' },
@@ -39,7 +40,8 @@ export function DashboardView() {
   const totalGames = gameDistribution.reduce((s: number, d) => s + (d?.count ?? 0), 0);
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
+      <div className="flex justify-end mb-6"><HeaderActions /></div>
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((s: any) => {

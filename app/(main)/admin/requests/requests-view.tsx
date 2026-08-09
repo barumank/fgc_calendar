@@ -8,6 +8,7 @@ import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -101,9 +102,9 @@ export function RequestsView() {
   };
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <select value={filterStatus} onChange={(e: any) => setFilterStatus(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
           <option value="" className="bg-[#1A1A2E] text-foreground">Все статусы</option>
           {ALL_STATUSES.map((s: TournamentRequest['status']) => <option key={s} value={s} className="bg-[#1A1A2E] text-foreground">{STATUS_LABELS[s]}</option>)}
@@ -118,6 +119,7 @@ export function RequestsView() {
           onChange={(e: any) => setFilterDate(e?.target?.value ?? '')}
           className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground"
         />
+        <div className="ml-auto"><HeaderActions /></div>
       </div>
 
       {isLoading ? (

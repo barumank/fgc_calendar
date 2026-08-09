@@ -6,6 +6,7 @@ import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { GameRecord } from '@/src/data/default-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const EMPTY_FORM = { label: '', shortLabel: '', color: '#EF4444' };
 
@@ -70,14 +71,15 @@ export function DisciplinesView() {
   };
 
   return (
-    <div className="px-6">
-      <div className="flex items-center justify-end mb-6">
+    <div className="px-6 pt-6">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={openCreate}
           className="flex items-center gap-2 bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors"
         >
           <Plus className="w-4 h-4" />Добавить
         </button>
+        <HeaderActions />
       </div>
 
       <p className="text-sm text-muted-foreground mb-4">

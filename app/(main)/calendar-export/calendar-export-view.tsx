@@ -6,6 +6,7 @@ import { mockTournaments } from '@/src/data/mock-tournaments';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { showToast } from '@/src/components/common/toast-notification';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
 
@@ -58,7 +59,8 @@ export function CalendarExportView() {
   };
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
+      <div className="flex justify-end mb-6"><HeaderActions /></div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Filters + Preview */}
         <div className="space-y-4">

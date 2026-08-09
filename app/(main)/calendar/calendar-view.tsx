@@ -8,6 +8,7 @@ import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionT
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -116,35 +117,36 @@ export function CalendarView() {
     .slice(0, 6);
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 px-6">
+    <div className="flex flex-col xl:flex-row gap-6 px-6 pt-6">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
             <button onClick={goToday} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors">Сегодня</button>
             <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors"><ChevronLeft className="w-4 h-4" /></button>
             <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors"><ChevronRight className="w-4 h-4" /></button>
             <h2 className="text-lg font-semibold">{MONTH_NAMES[currentMonth]} {currentYear}</h2>
           </div>
-          <div className="relative" ref={filterRef}>
-            <button onClick={() => setShowFilters((p: boolean) => !p)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showFilters ? 'bg-[#EF4444] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
-              <Filter className="w-4 h-4" /> Фильтры
-              {((filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)) > 0 && (
-                <span className="ml-1 bg-[#EF4444] text-white text-xs rounded-full px-1.5 py-0.5">{(filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)}</span>
-              )}
-            </button>
-            {showFilters && (
-              <div className="absolute right-0 top-12 w-[420px] bg-[#1A1A2E] rounded-xl border border-border/50 shadow-2xl p-5 z-50">
-                <h3 className="text-sm font-semibold mb-3">Игра</h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {ALL_GAMES.map((g: GameType) => (
-                    <button key={g} onClick={() => toggleGame(g)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filterGames.includes(g) ? 'text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}
-                      style={filterGames.includes(g) ? { backgroundColor: GAME_COLORS[g] } : {}}>
-                      {GAME_LABELS[g]}
-                    </button>
-                  ))}
-                </div>
+          <div className="flex items-center gap-3">
+            <div className="relative" ref={filterRef}>
+              <button onClick={() => setShowFilters((p: boolean) => !p)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showFilters ? 'bg-[#EF4444] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
+                <Filter className="w-4 h-4" /> Фильтры
+                {((filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)) > 0 && (
+                  <span className="ml-1 bg-[#EF4444] text-white text-xs rounded-full px-1.5 py-0.5">{(filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)}</span>
+                )}
+              </button>
+              {showFilters && (
+                <div className="absolute right-0 top-12 w-[420px] bg-[#1A1A2E] rounded-xl border border-border/50 shadow-2xl p-5 z-50">
+                  <h3 className="text-sm font-semibold mb-3">Игра</h3>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {ALL_GAMES.map((g: GameType) => (
+                      <button key={g} onClick={() => toggleGame(g)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filterGames.includes(g) ? 'text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}
+                        style={filterGames.includes(g) ? { backgroundColor: GAME_COLORS[g] } : {}}>
+                        {GAME_LABELS[g]}
+                      </button>
+                    ))}
+                  </div>
                 <h3 className="text-sm font-semibold mb-3">Формат</h3>
                 <div className="flex gap-2 mb-4">
                   {(['online','offline'] as FormatType[]).map((f: FormatType) => (
@@ -174,6 +176,8 @@ export function CalendarView() {
                 </div>
               </div>
             )}
+            </div>
+            <HeaderActions />
           </div>
         </div>
         <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">

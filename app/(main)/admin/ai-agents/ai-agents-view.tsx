@@ -7,6 +7,7 @@ import { mockAgents } from '@/src/data/mock-agents';
 import { AIAgent, BusinessProcess } from '@/src/types/agent';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const DragDropContext = dynamic(
   () => import('@hello-pangea/dnd').then((m: any) => m.DragDropContext),
@@ -58,7 +59,8 @@ export function AIAgentsView() {
   }, [selectedAgent]);
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
+      <div className="flex justify-end mb-6"><HeaderActions /></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {(agents ?? []).map((agent: AIAgent) => (
           <div key={agent?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5 hover:border-border/60 transition-all">

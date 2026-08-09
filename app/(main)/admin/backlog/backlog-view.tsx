@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import useSWR from 'swr';
 import { Plus, Check, RotateCcw } from 'lucide-react';
 import { showToast } from '@/src/components/common/toast-notification';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 interface BacklogItem {
   id: string;
@@ -84,7 +85,7 @@ export function BacklogView() {
   };
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
       <div className="flex gap-3 mb-6">
         <input
           type="text"
@@ -103,10 +104,11 @@ export function BacklogView() {
         </button>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex items-center gap-2 mb-6">
         <button onClick={() => setFilterStatus('')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${!filterStatus ? 'bg-[#EF4444] text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}>Все</button>
         <button onClick={() => setFilterStatus('pending')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === 'pending' ? 'bg-[#EF4444] text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}>Не реализовано</button>
         <button onClick={() => setFilterStatus('done')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filterStatus === 'done' ? 'bg-[#EF4444] text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'}`}>Реализовано</button>
+        <div className="ml-auto"><HeaderActions /></div>
       </div>
 
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">

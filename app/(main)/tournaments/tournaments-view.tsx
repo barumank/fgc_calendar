@@ -6,6 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 const PAGE_SIZE = 20;
@@ -58,7 +59,7 @@ export function TournamentsView() {
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   return (
-    <div className="px-6">
+    <div className="px-6 pt-6">
       {dateFilter && (
         <div className="flex items-center gap-2 mb-4 text-sm">
           <span className="text-muted-foreground">Турниры на дату:</span>
@@ -95,6 +96,7 @@ export function TournamentsView() {
             <option value="players" className="bg-[#1A1A2E] text-foreground">По кол-ву игроков</option>
           </select>
         </div>
+        <HeaderActions />
       </div>
       {/* List */}
       <div className="space-y-3">

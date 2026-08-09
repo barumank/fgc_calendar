@@ -7,6 +7,7 @@ import { Player } from '@/src/types/player';
 import { REGION_LABELS, GameType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useGames } from '@/src/hooks/use-games';
+import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','ukraine','cis','europe','other'];
 
@@ -30,8 +31,8 @@ export function PlayersView() {
   }, [players, search, filterGame, filterRegion]);
 
   return (
-    <div className="px-6">
-      <div className="flex flex-wrap gap-3 mb-6">
+    <div className="px-6 pt-6">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center bg-white/5 rounded-lg border border-border/50 px-3 py-2 gap-2">
           <Search className="w-4 h-4 text-muted-foreground" />
           <input type="text" placeholder="Поиск по тегу..." className="bg-transparent text-sm outline-none w-44" value={search} onChange={(e: any) => setSearch(e?.target?.value ?? '')} />
@@ -44,6 +45,7 @@ export function PlayersView() {
           <option value="" className="bg-[#1A1A2E] text-foreground">Все регионы</option>
           {ALL_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
         </select>
+        <div className="ml-auto"><HeaderActions /></div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {(filtered ?? []).map((p: Player) => (
