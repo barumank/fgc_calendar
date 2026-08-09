@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { createDiscordScheduledEvent } from '@/lib/discord';
+import { createDiscordScheduledEvent, getScheduledStart } from '@/lib/discord';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, recordSubmission } from '@/lib/rate-limit';
 
@@ -48,7 +48,12 @@ export async function POST(req: NextRequest) {
 
   for (const t of tournaments) {
     if (t.discordEventId) {
-      results.push({ id: t.id, name: t.name, status: 'skipped' });
+      results.push({ id: t.id, name: t.name, status: 'skipped', error: 'уже экспортирован ранее' });
+      continue;
+    }
+
+    if (getScheduledStart(t.startDate, t.startTime).getTime() <= Date.now()) {
+      results.push({ id: t.id, name: t.name, status: 'skipped', error: 'турнир уже начался или прошёл' });
       continue;
     }
 

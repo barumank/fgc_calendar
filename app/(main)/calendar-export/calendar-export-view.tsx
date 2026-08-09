@@ -76,11 +76,16 @@ export function CalendarExportView() {
       }
       const created = data.results.filter((r: any) => r.status === 'created').length;
       const skipped = data.results.filter((r: any) => r.status === 'skipped').length;
-      const errored = data.results.filter((r: any) => r.status === 'error').length;
+      const errors = data.results.filter((r: any) => r.status === 'error');
       const parts = [`Создано событий: ${created}`];
-      if (skipped > 0) parts.push(`уже экспортировано: ${skipped}`);
-      if (errored > 0) parts.push(`ошибок: ${errored}`);
-      showToast(parts.join(', '), errored > 0 ? 'error' : 'success');
+      if (skipped > 0) parts.push(`пропущено: ${skipped}`);
+      if (errors.length > 0) {
+        parts.push(`ошибок: ${errors.length}`);
+        const details = errors.slice(0, 2).map((r: any) => `«${r.name}»: ${r.error}`).join('; ');
+        showToast(`${parts.join(', ')}. ${details}`, 'error');
+      } else {
+        showToast(parts.join(', '), 'success');
+      }
     } catch {
       showToast('Не удалось экспортировать в Discord', 'error');
     } finally {

@@ -15,6 +15,10 @@ export interface DiscordEventTournament {
   sourceUrl: string | null;
 }
 
+export function getScheduledStart(startDate: string, startTime: string | null): Date {
+  return new Date(`${startDate}T${startTime || '00:00'}:00${ASSUMED_TIMEZONE_OFFSET}`);
+}
+
 export async function createDiscordScheduledEvent(guildId: string, botToken: string, t: DiscordEventTournament): Promise<string> {
   const startTime = t.startTime || '00:00';
   const scheduledStartTime = `${t.startDate}T${startTime}:00${ASSUMED_TIMEZONE_OFFSET}`;
