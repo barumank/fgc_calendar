@@ -5,12 +5,13 @@ import { prisma } from '@/lib/db';
 import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
 import { isValidDateString, isValidTimeString } from '@/lib/date-validation';
 import { getClientIp } from '@/lib/client-ip';
+import { isRateLimited, pruneOldSubmissions } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
+const RATE_LIMIT_KIND = 'tournament_request';
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const SUBMISSION_RETENTION_MS = 24 * 60 * 60 * 1000;
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -33,9 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = getClientIp(req);
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
-  const recentCount = await prisma.requestSubmission.count({ where: { ip, createdAt: { gte: windowStart } } });
-  if (recentCount >= RATE_LIMIT_MAX) {
+  if (await isRateLimited(RATE_LIMIT_KIND, ip, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)) {
     return NextResponse.json({ error: 'Слишком много заявок с вашего адреса. Попробуйте позже.' }, { status: 429 });
   }
 
@@ -75,12 +74,10 @@ export async function POST(req: NextRequest) {
         status: 'pending',
       },
     }),
-    prisma.requestSubmission.create({ data: { ip } }),
+    prisma.requestSubmission.create({ data: { kind: RATE_LIMIT_KIND, ip } }),
   ]);
 
-  prisma.requestSubmission
-    .deleteMany({ where: { createdAt: { lt: new Date(Date.now() - SUBMISSION_RETENTION_MS) } } })
-    .catch(() => {});
+  pruneOldSubmissions();
 
   return NextResponse.json(request, { status: 201 });
 }

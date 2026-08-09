@@ -29,6 +29,7 @@ model Tournament {
   bracketUrl    String?
   featured      Boolean  @default(false)
   requestId     String?  @unique
+  discordEventId String?
   createdAt     DateTime @default(now())
 }
 
@@ -100,8 +101,9 @@ model BacklogItem {
 
 model RequestSubmission {
   id        String   @id @default(uuid())
+  kind      String   @default("tournament_request")
   ip        String
   createdAt DateTime @default(now())
 
-  @@index([ip, createdAt])
+  @@index([kind, ip, createdAt])
 }

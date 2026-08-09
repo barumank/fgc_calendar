@@ -25,6 +25,7 @@ export interface Tournament {
   sourceUrl?: string;
   bracketUrl?: string;
   featured?: boolean;
+  discordEventId?: string;
   createdAt?: string;
 }
 
