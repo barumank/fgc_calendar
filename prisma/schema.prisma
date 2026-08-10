@@ -34,11 +34,13 @@ model Tournament {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  createdAt DateTime @default(now())
+  id               String   @id @default(uuid())
+  email            String   @unique
+  password         String
+  name             String?
+  notifyOnRequests Boolean  @default(false)
+  telegramChatId   String?
+  createdAt        DateTime @default(now())
 }
 
 model TournamentRequest {

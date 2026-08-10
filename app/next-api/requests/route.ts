@@ -6,6 +6,7 @@ import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
 import { isValidDateString, isValidTimeString, tournamentDurationDays, MAX_TOURNAMENT_DURATION_DAYS } from '@/lib/date-validation';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, pruneOldSubmissions } from '@/lib/rate-limit';
+import { notifyNewRequestSubscribers } from '@/lib/notify-request';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,6 +83,7 @@ export async function POST(req: NextRequest) {
   ]);
 
   pruneOldSubmissions();
+  notifyNewRequestSubscribers(request).catch(() => {});
 
   return NextResponse.json(request, { status: 201 });
 }

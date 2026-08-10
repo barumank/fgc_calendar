@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db';
 export const SETTING_KEYS = {
   discordBotToken: 'discord_bot_token',
   discordInviteUrl: 'discord_invite_url',
+  telegramBotName: 'telegram_bot_name',
+  telegramBotToken: 'telegram_bot_token',
 } as const;
 
 export async function getSetting(key: string): Promise<string | null> {
