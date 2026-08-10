@@ -21,6 +21,14 @@ html, body {
 @tailwind components;
 @tailwind utilities;
 
+/* On screens 1080px tall or shorter, zoom out to 80% so more of the
+   layout (fixed sidebar + content) fits without vertical scrolling. */
+@media (max-height: 1080px) {
+  html {
+    zoom: 0.8;
+  }
+}
+
 @layer base {
   :root {
     --background: 240 10% 8%;
