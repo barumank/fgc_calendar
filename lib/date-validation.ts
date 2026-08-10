@@ -11,3 +11,11 @@ export function isValidDateString(value: unknown): value is string {
 export function isValidTimeString(value: unknown): value is string {
   return typeof value === 'string' && TIME_RE.test(value);
 }
+
+export const MAX_TOURNAMENT_DURATION_DAYS = 4;
+
+export function tournamentDurationDays(startDate: string, endDate: string): number {
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const end = new Date(`${endDate}T00:00:00Z`);
+  return Math.round((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+}

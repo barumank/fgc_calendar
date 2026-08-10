@@ -6,6 +6,7 @@ import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { GameType, RegionType, FormatType, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
 import { MAX_BANNER_BYTES, isAllowedBannerMimeType } from '@/src/lib/banner-constraints';
+import { tournamentDurationDays, MAX_TOURNAMENT_DURATION_DAYS } from '@/lib/date-validation';
 import { useGames } from '@/src/hooks/use-games';
 
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
@@ -56,13 +57,19 @@ export function HeaderActions() {
     reader.readAsDataURL(file);
   }, []);
 
+  const durationError = (reportForm?.startDate && reportForm?.endDate && reportForm.endDate >= reportForm.startDate
+    && tournamentDurationDays(reportForm.startDate, reportForm.endDate) > MAX_TOURNAMENT_DURATION_DAYS)
+    ? `Продолжительность турнира не может быть более ${MAX_TOURNAMENT_DURATION_DAYS} суток`
+    : '';
+
   const isReportFormValid = !!(
     reportForm?.name?.trim?.() &&
     reportForm?.startDate &&
     reportForm?.endDate &&
     reportForm?.region &&
     reportForm?.game &&
-    reportForm?.format
+    reportForm?.format &&
+    !durationError
   );
 
   const handleReportSubmit = useCallback(async () => {
@@ -176,11 +183,12 @@ export function HeaderActions() {
                 <label className="block text-sm text-muted-foreground mb-1.5">Дата завершения *</label>
                 <input
                   type="date"
-                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                  className={`w-full bg-white/5 border rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50 ${durationError ? 'border-red-500' : 'border-border/50'}`}
                   value={reportForm.endDate}
                   min={reportForm.startDate || undefined}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, endDate: e?.target?.value ?? '' }))}
                 />
+                {durationError && <span className="text-xs text-red-500 mt-1 block">{durationError}</span>}
               </div>
               <div>
                 <label className="block text-sm text-muted-foreground mb-1.5">Время начала</label>

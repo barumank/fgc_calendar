@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
-import { isValidDateString, isValidTimeString } from '@/lib/date-validation';
+import { isValidDateString, isValidTimeString, tournamentDurationDays, MAX_TOURNAMENT_DURATION_DAYS } from '@/lib/date-validation';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, pruneOldSubmissions } from '@/lib/rate-limit';
 
@@ -48,6 +48,10 @@ export async function POST(req: NextRequest) {
 
   if (startDate > endDate) {
     return NextResponse.json({ error: 'Дата начала не может быть позже даты завершения' }, { status: 400 });
+  }
+
+  if (tournamentDurationDays(startDate, endDate) > MAX_TOURNAMENT_DURATION_DAYS) {
+    return NextResponse.json({ error: `Продолжительность турнира не может быть более ${MAX_TOURNAMENT_DURATION_DAYS} суток` }, { status: 400 });
   }
 
   if (startTime && !isValidTimeString(startTime)) {
