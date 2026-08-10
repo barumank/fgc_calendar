@@ -29,7 +29,7 @@ export function BacklogView() {
   const { data: items, mutate, isLoading } = useSWR<BacklogItem[]>('/next-api/admin/backlog', fetcher);
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<BacklogItem['status'] | ''>('');
+  const [filterStatus, setFilterStatus] = useState<BacklogItem['status'] | ''>('pending');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
