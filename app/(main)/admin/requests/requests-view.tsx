@@ -164,6 +164,7 @@ export function RequestsView() {
                   <span>{FORMAT_LABELS[r.format]}</span>
                 </div>
               </div>
+              <div className="text-xs text-muted-foreground shrink-0 text-right">{formatDateTime(r.createdAt)}</div>
             </button>
           ))}
         </div>
