@@ -12,6 +12,12 @@ import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 const STATUS_LABELS: Record<TournamentRequest['status'], string> = {
   pending: 'На рассмотрении',
   approved: 'Одобрена',
@@ -34,7 +40,7 @@ export function RequestsView() {
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
   const [fetchingResult, setFetchingResult] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('');
+  const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('pending');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterDate, setFilterDate] = useState('');
   const [page, setPage] = useState(1);
@@ -189,9 +195,12 @@ export function RequestsView() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={selectedRequest.bannerUrl} alt="" className="w-full h-40 object-cover rounded-lg" />
             )}
-            <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[selectedRequest.status]}`}>
-              {STATUS_LABELS[selectedRequest.status]}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[selectedRequest.status]}`}>
+                {STATUS_LABELS[selectedRequest.status]}
+              </span>
+              <span className="text-xs text-muted-foreground">Заявка создана: {formatDateTime(selectedRequest.createdAt)}</span>
+            </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedRequest.startDate} — {selectedRequest.endDate}</div>
               {selectedRequest.startTime && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" />{selectedRequest.startTime}</div>}
