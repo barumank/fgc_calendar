@@ -10,6 +10,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function NotificationsView() {
   const { data, mutate, isLoading } = useSWR<{ notifyOnRequests: boolean; telegramChatId: string }>('/next-api/admin/notification-preference', fetcher);
+  const { data: botSettings } = useSWR<{ botName: string; hasToken: boolean }>('/next-api/admin/settings/telegram', fetcher);
   const [notifyOnRequests, setNotifyOnRequests] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -59,6 +60,11 @@ export function NotificationsView() {
           <div className="text-sm text-muted-foreground py-4">Загрузка...</div>
         ) : (
           <div className="space-y-4">
+            <div className="bg-[#229ED9]/10 border border-[#229ED9]/30 rounded-lg p-3 text-xs text-muted-foreground leading-relaxed">
+              Зайдите в Telegram с того аккаунта, на который вы бы хотели получать уведомления. Затем найдите в поиске нашего бота
+              {botSettings?.botName ? <> (<span className="text-[#229ED9] font-medium">@{botSettings.botName.replace(/^@/, '')}</span>)</> : ''}.
+              Напишите этому боту или нажмите "/start". В ответ бот вам сообщит ваш Chat ID — этот id укажите в разделе ниже.
+            </div>
             <label className="flex items-center gap-2 text-sm cursor-pointer">
               <input
                 type="checkbox"
@@ -80,9 +86,6 @@ export function NotificationsView() {
                   placeholder="Например: 123456789"
                 />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Не знаете свой Chat ID? Напишите нашему боту в Telegram команду /start — он пришлёт его в ответ.
-              </p>
             </div>
             <button
               onClick={handleSave}
