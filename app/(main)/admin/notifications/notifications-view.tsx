@@ -81,7 +81,7 @@ export function NotificationsView() {
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Узнать свой Chat ID можно, например, у бота @userinfobot в Telegram. Перед этим обязательно напишите нашему боту первым — иначе он не сможет прислать вам сообщение.
+                Не знаете свой Chat ID? Напишите нашему боту в Telegram команду /start — он пришлёт его в ответ.
               </p>
             </div>
             <button

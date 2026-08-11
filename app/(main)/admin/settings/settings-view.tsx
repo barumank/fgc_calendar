@@ -119,7 +119,11 @@ function TelegramBotSettings() {
       }
       setBotToken('');
       await mutate();
-      showToast('Настройки сохранены', 'success');
+      if (result?.warning) {
+        showToast(result.warning, 'error');
+      } else {
+        showToast('Настройки сохранены, бот готов отвечать на /start', 'success');
+      }
     } catch {
       showToast('Не удалось сохранить настройки', 'error');
     } finally {

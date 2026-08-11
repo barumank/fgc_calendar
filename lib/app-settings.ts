@@ -5,6 +5,7 @@ export const SETTING_KEYS = {
   discordInviteUrl: 'discord_invite_url',
   telegramBotName: 'telegram_bot_name',
   telegramBotToken: 'telegram_bot_token',
+  telegramWebhookSecret: 'telegram_webhook_secret',
 } as const;
 
 export async function getSetting(key: string): Promise<string | null> {
