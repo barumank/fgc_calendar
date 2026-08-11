@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { Settings, Key, Link as LinkIcon, User } from 'lucide-react';
+import { Key, Link as LinkIcon, User } from 'lucide-react';
 import { showToast } from '@/src/components/common/toast-notification';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
@@ -185,7 +185,6 @@ export function SettingsView() {
   return (
     <div className="px-6 pt-6">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
-      <h1 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><Settings className="w-6 h-6" />Настройки</h1>
 
       <div className="space-y-6">
         <DiscordBotSettings />

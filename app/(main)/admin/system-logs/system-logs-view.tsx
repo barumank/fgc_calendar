@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 interface ExportLogRow {
@@ -43,7 +43,6 @@ export function SystemLogsView() {
   return (
     <div className="px-6 pt-6">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
-      <h1 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><FileText className="w-6 h-6" />Системные логи</h1>
 
       <div className="flex flex-wrap gap-2 mb-6">
         {PLATFORMS.map((p) => (

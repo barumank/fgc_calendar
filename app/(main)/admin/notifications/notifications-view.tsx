@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { Bell, Hash } from 'lucide-react';
+import { Hash } from 'lucide-react';
 import { showToast } from '@/src/components/common/toast-notification';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
@@ -48,7 +48,6 @@ export function NotificationsView() {
   return (
     <div className="px-6 pt-6">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
-      <h1 className="text-2xl font-bold tracking-tight mb-6 flex items-center gap-2"><Bell className="w-6 h-6" />Уведомления</h1>
 
       <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
         <h2 className="text-sm font-semibold mb-1">Уведомления о заявках</h2>
