@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { Key, Link as LinkIcon, User } from 'lucide-react';
+import { Key, Link as LinkIcon, User, Hash } from 'lucide-react';
 import { showToast } from '@/src/components/common/toast-notification';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
@@ -181,6 +181,46 @@ function TelegramBotSettings() {
   );
 }
 
+interface Subscriber {
+  id: string;
+  name: string | null;
+  email: string;
+  telegramChatId: string | null;
+}
+
+function RequestSubscribers() {
+  const { data, isLoading } = useSWR<Subscriber[]>('/next-api/admin/notification-subscribers', fetcher);
+
+  return (
+    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+      <h2 className="text-sm font-semibold mb-1">На приёмке заявок</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        Пользователи, включившие "Участвовать в обработке заявок" в разделе "Уведомления" — им приходит Telegram-уведомление о каждой новой заявке.
+      </p>
+
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground py-4">Загрузка...</div>
+      ) : (data?.length ?? 0) === 0 ? (
+        <div className="text-sm text-muted-foreground py-4">Пока никто не подключился</div>
+      ) : (
+        <div className="space-y-2">
+          {(data ?? []).map((u) => (
+            <div key={u.id} className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white/5">
+              <div className="flex items-center gap-2 min-w-0">
+                <User className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-sm truncate">{u.name || u.email}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                <Hash className="w-3.5 h-3.5" />{u.telegramChatId || '—'}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SettingsView() {
   return (
     <div className="px-6 pt-6">
@@ -189,6 +229,7 @@ export function SettingsView() {
       <div className="space-y-6">
         <DiscordBotSettings />
         <TelegramBotSettings />
+        <RequestSubscribers />
       </div>
     </div>
   );
