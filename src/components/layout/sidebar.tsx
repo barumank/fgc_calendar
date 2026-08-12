@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
+import { Role, ROLE_LABELS } from '@/lib/roles';
+
+const MODERATOR_ADMIN_HREFS = ['/admin/requests', '/admin/notifications'];
 
 const mainLinks = [
   { href: '/calendar', label: 'Календарь', icon: CalendarDays },
@@ -37,6 +40,9 @@ export function Sidebar() {
   const pathname = usePathname() ?? '';
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
+  const role = ((session?.user as any)?.role ?? 'user') as Role;
+  const canSeeAdminPanel = role === 'admin' || role === 'moderator';
+  const visibleAdminSubLinks = role === 'admin' ? adminSubLinks : adminSubLinks.filter((l) => MODERATOR_ADMIN_HREFS.includes(l.href));
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -113,7 +119,7 @@ export function Sidebar() {
           );
         })}
 
-        {isAuthenticated && (
+        {isAuthenticated && canSeeAdminPanel && (
           <>
             {/* Divider */}
             <div className="!my-3 border-t border-border/30" />
@@ -133,7 +139,7 @@ export function Sidebar() {
             </button>
             {adminOpen && (
               <div className="ml-3 space-y-0.5">
-                {adminSubLinks?.map((link: any) => {
+                {visibleAdminSubLinks?.map((link: any) => {
                   const Icon = link?.icon;
                   const isActive = pathname === link?.href;
                   return (
@@ -166,7 +172,7 @@ export function Sidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-foreground truncate">{session?.user?.name ?? session?.user?.email}</div>
-              <div className="text-xs text-[#EF4444]">Administrator</div>
+              <div className="text-xs text-[#EF4444]">{ROLE_LABELS[role]}</div>
             </div>
             <button onClick={handleLogout} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" title="Выйти">
               <LogOut className="w-4 h-4" />

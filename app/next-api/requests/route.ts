@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { isValidBannerDataUrl } from '@/src/lib/banner-constraints';
 import { isValidDateString, isValidTimeString, tournamentDurationDays, MAX_TOURNAMENT_DURATION_DAYS } from '@/lib/date-validation';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, pruneOldSubmissions } from '@/lib/rate-limit';
 import { notifyNewRequestSubscribers } from '@/lib/notify-request';
+import { requireRole } from '@/lib/require-role';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,10 +14,8 @@ const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { error } = await requireRole(['admin', 'moderator']);
+  if (error) return error;
 
   const requests = await prisma.tournamentRequest.findMany({ orderBy: { createdAt: 'desc' } });
   return NextResponse.json(requests);

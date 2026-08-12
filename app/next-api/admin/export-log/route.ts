@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { requireRole } from '@/lib/require-role';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +8,8 @@ const PAGE_SIZE = 30;
 const VALID_PLATFORMS = ['discord', 'telegram', 'google', 'yandex'];
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { error } = await requireRole(['admin']);
+  if (error) return error;
 
   const { searchParams } = new URL(req.url);
   const platform = searchParams.get('platform') ?? 'discord';

@@ -20,17 +20,28 @@ export const authOptions: NextAuthOptions = {
         if (!user) return null;
         const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) return null;
-        return { id: user.id, email: user.email, name: user.name ?? user.email };
+        return { id: user.id, email: user.email, name: user.name ?? user.email, role: user.role };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role;
+      } else if (token.id) {
+        // Re-read the role from the DB on every session check, so a role
+        // change made in the admin panel takes effect without re-login.
+        const dbUser = await prisma.user.findUnique({ where: { id: token.id as string }, select: { role: true } });
+        token.role = dbUser?.role ?? 'user';
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) session.user.id = token.id;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = (token.role as string) ?? 'user';
+      }
       return session;
     },
   },

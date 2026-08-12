@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
 import { getSetting, setSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { setTelegramWebhook } from '@/lib/telegram';
+import { requireRole } from '@/lib/require-role';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { error } = await requireRole(['admin']);
+  if (error) return error;
 
   const botName = await getSetting(SETTING_KEYS.telegramBotName);
   const token = await getSetting(SETTING_KEYS.telegramBotToken);
@@ -19,10 +16,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { error } = await requireRole(['admin']);
+  if (error) return error;
 
   const body = await req.json();
   const botName = (body?.botName ?? '').trim();
