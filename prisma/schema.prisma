@@ -14,19 +14,16 @@ model Tournament {
   game          String
   format        String
   region        String
-  country       String
-  city          String
+  city          String?
   startDate     String
   endDate       String
   startTime     String?
   status        String   @default("upcoming")
-  prizePool     String
   playersCount  Int      @default(0)
   description   String
   bannerUrl     String?
   organizerName String
   sourceUrl     String?
-  bracketUrl    String?
   featured      Boolean  @default(false)
   requestId     String?  @unique
   discordEventId String?
@@ -52,6 +49,7 @@ model TournamentRequest {
   endDate   String
   startTime String?
   region    String
+  city      String?
   game      String
   format    String   @default("offline")
   bannerUrl String?

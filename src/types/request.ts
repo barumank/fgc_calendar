@@ -11,6 +11,7 @@ export interface TournamentRequest {
   endDate: string;
   startTime?: string;
   region: RegionType;
+  city?: string;
   game: GameType;
   format: FormatType;
   bannerUrl?: string;

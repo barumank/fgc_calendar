@@ -4,6 +4,7 @@ import { createDiscordScheduledEvent, getScheduledStart } from '@/lib/discord';
 import { getClientIp } from '@/lib/client-ip';
 import { isRateLimited, recordSubmission } from '@/lib/rate-limit';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
+import { REGION_LABELS, RegionType } from '@/src/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
         startTime: t.startTime,
         format: t.format,
         city: t.city,
-        country: t.country,
+        regionLabel: REGION_LABELS[t.region as RegionType] ?? t.region,
         sourceUrl: t.sourceUrl,
         bannerUrl: t.bannerUrl,
       });

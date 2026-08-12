@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractChallongeSlug, fetchChallongeParticipants, pointsForRank, currentUsageMonth, ChallongeParticipant } from '@/lib/challonge';
+import { REGION_LABELS, RegionType } from '@/src/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       top3: { increment: rank <= 3 ? 1 : 0 },
     };
     const baseData = {
-      country: tournament.country,
+      country: REGION_LABELS[tournament.region as RegionType] ?? tournament.region,
       region: tournament.region,
       mainGame: tournament.game,
       tournamentsPlayed: 1,

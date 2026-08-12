@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { REGION_LABELS, RegionType } from '@/src/types';
-
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -44,13 +42,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           game: request.game,
           format: request.format,
           region: request.region,
-          country: REGION_LABELS[request.region as RegionType] ?? request.region,
-          city: '—',
+          city: request.city,
           startDate: request.startDate,
           endDate: request.endDate,
           startTime: request.startTime,
           status: 'upcoming',
-          prizePool: '—',
           playersCount: 0,
           description: request.comment || 'Без описания',
           bannerUrl: request.bannerUrl,

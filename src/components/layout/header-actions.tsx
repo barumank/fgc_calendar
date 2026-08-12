@@ -20,6 +20,7 @@ const EMPTY_REPORT_FORM = {
   endDate: '',
   startTime: '',
   region: '' as RegionType | '',
+  city: '',
   game: '' as GameType | '',
   format: '' as FormatType | '',
   bannerUrl: '',
@@ -62,13 +63,15 @@ export function HeaderActions() {
     ? `Продолжительность турнира не может быть более ${MAX_TOURNAMENT_DURATION_DAYS} суток`
     : '';
 
+  const isOffline = reportForm?.format === 'offline';
+
   const isReportFormValid = !!(
     reportForm?.name?.trim?.() &&
     reportForm?.startDate &&
     reportForm?.endDate &&
-    reportForm?.region &&
     reportForm?.game &&
     reportForm?.format &&
+    (!isOffline || (reportForm?.region && reportForm?.city?.trim?.())) &&
     !durationError
   );
 
@@ -86,7 +89,8 @@ export function HeaderActions() {
           startDate: reportForm.startDate,
           endDate: reportForm.endDate,
           startTime: reportForm.startTime || undefined,
-          region: reportForm.region,
+          region: reportForm.region || undefined,
+          city: reportForm.city || undefined,
           game: reportForm.game,
           format: reportForm.format,
           bannerUrl: reportForm.bannerUrl || undefined,
@@ -169,6 +173,42 @@ export function HeaderActions() {
                 placeholder="https://..."
               />
             </div>
+            <div>
+              <label className="block text-sm text-muted-foreground mb-1.5">Тип турнира *</label>
+              <select
+                className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                value={reportForm.format}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, format: (e?.target?.value ?? '') as FormatType | '' }))}
+              >
+                <option value="" className="bg-[#1A1A2E] text-foreground">Выберите тип турнира</option>
+                {REPORT_FORM_FORMATS.map((f: FormatType) => <option key={f} value={f} className="bg-[#1A1A2E] text-foreground">{FORMAT_LABELS[f]}</option>)}
+              </select>
+            </div>
+            {isOffline && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">Регион *</label>
+                  <select
+                    className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                    value={reportForm.region}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, region: (e?.target?.value ?? '') as RegionType | '' }))}
+                  >
+                    <option value="" className="bg-[#1A1A2E] text-foreground">Выберите регион</option>
+                    {REPORT_FORM_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1.5">Город *</label>
+                  <input
+                    type="text"
+                    className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                    value={reportForm.city}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, city: e?.target?.value ?? '' }))}
+                    placeholder="Например: Москва"
+                  />
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm text-muted-foreground mb-1.5">Дата начала *</label>
@@ -200,39 +240,15 @@ export function HeaderActions() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm text-muted-foreground mb-1.5">Регион *</label>
-                <select
-                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
-                  value={reportForm.region}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, region: (e?.target?.value ?? '') as RegionType | '' }))}
-                >
-                  <option value="" className="bg-[#1A1A2E] text-foreground">Выберите регион</option>
-                  {REPORT_FORM_REGIONS.map((r: RegionType) => <option key={r} value={r} className="bg-[#1A1A2E] text-foreground">{REGION_LABELS[r]}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-muted-foreground mb-1.5">Дисциплина *</label>
-                <select
-                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
-                  value={reportForm.game}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, game: (e?.target?.value ?? '') as GameType | '' }))}
-                >
-                  <option value="" className="bg-[#1A1A2E] text-foreground">Выберите дисциплину</option>
-                  {games.map((g) => <option key={g.key} value={g.key} className="bg-[#1A1A2E] text-foreground">{g.label}</option>)}
-                </select>
-              </div>
-            </div>
             <div>
-              <label className="block text-sm text-muted-foreground mb-1.5">Тип турнира *</label>
+              <label className="block text-sm text-muted-foreground mb-1.5">Дисциплина *</label>
               <select
                 className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
-                value={reportForm.format}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, format: (e?.target?.value ?? '') as FormatType | '' }))}
+                value={reportForm.game}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, game: (e?.target?.value ?? '') as GameType | '' }))}
               >
-                <option value="" className="bg-[#1A1A2E] text-foreground">Выберите тип турнира</option>
-                {REPORT_FORM_FORMATS.map((f: FormatType) => <option key={f} value={f} className="bg-[#1A1A2E] text-foreground">{FORMAT_LABELS[f]}</option>)}
+                <option value="" className="bg-[#1A1A2E] text-foreground">Выберите дисциплину</option>
+                {games.map((g) => <option key={g.key} value={g.key} className="bg-[#1A1A2E] text-foreground">{g.label}</option>)}
               </select>
             </div>
             <div>
@@ -249,7 +265,7 @@ export function HeaderActions() {
               )}
             </div>
             <div>
-              <label className="block text-sm text-muted-foreground mb-1.5">Комментарий</label>
+              <label className="block text-sm text-muted-foreground mb-1.5">Описание турнира</label>
               <textarea
                 className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50 resize-none h-20"
                 value={reportForm.comment}

@@ -10,8 +10,8 @@ export interface DiscordEventTournament {
   endDate: string;
   startTime: string | null;
   format: string;
-  city: string;
-  country: string;
+  city: string | null;
+  regionLabel: string;
   sourceUrl: string | null;
   bannerUrl: string | null;
 }
@@ -25,7 +25,7 @@ export async function createDiscordScheduledEvent(guildId: string, botToken: str
   const scheduledStartTime = `${t.startDate}T${startTime}:00${ASSUMED_TIMEZONE_OFFSET}`;
   const scheduledEndTime = `${t.endDate}T23:59:00${ASSUMED_TIMEZONE_OFFSET}`;
 
-  const location = (t.format === 'online' ? 'Online' : `${t.city}, ${t.country}`).slice(0, 100);
+  const location = (t.format === 'online' ? 'Online' : [t.city, t.regionLabel].filter(Boolean).join(', ')).slice(0, 100);
   const description = [t.description, t.sourceUrl].filter(Boolean).join('\n\n').slice(0, 1000);
 
   const res = await fetch(`https://discord.com/api/v10/guilds/${guildId}/scheduled-events`, {

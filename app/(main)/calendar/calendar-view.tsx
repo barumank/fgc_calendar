@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Filter, MapPin, Users, DollarSign, CalendarDays, Clock, Wifi, WifiOff, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ExternalLink } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
@@ -249,14 +249,13 @@ export function CalendarView() {
             <div className="p-4 space-y-2">
               <h3 className="text-sm font-semibold">{featuredTournament?.name}</h3>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="w-3.5 h-3.5" />{featuredTournament?.startDate} — {featuredTournament?.endDate}</div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{featuredTournament?.city}, {featuredTournament?.country}</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{featuredTournament?.format === 'online' ? 'Online' : [featuredTournament?.city, REGION_LABELS[featuredTournament?.region as RegionType]].filter(Boolean).join(', ')}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="w-3.5 h-3.5" />{featuredTournament?.playersCount} игроков</div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground"><DollarSign className="w-3.5 h-3.5" />{featuredTournament?.prizePool}</div>
               <p className="text-xs text-muted-foreground mt-2">{featuredTournament?.description}</p>
               <div className="flex gap-2 mt-3">
                 <button onClick={() => setSelectedTournament(featuredTournament)} className="flex-1 bg-white/5 hover:bg-white/10 text-sm py-2 rounded-lg transition-colors">Подробнее</button>
-                {featuredTournament?.bracketUrl && (
-                  <a href={featuredTournament.bracketUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm py-2 rounded-lg text-center flex items-center justify-center gap-1 transition-colors">Сетка <ExternalLink className="w-3.5 h-3.5" /></a>
+                {featuredTournament?.sourceUrl && (
+                  <a href={featuredTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm py-2 rounded-lg text-center flex items-center justify-center gap-1 transition-colors">Турнир <ExternalLink className="w-3.5 h-3.5" /></a>
                 )}
               </div>
             </div>
@@ -275,7 +274,7 @@ export function CalendarView() {
                   <div className="text-sm font-medium truncate">{t?.name}</div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                     {t?.startTime && <span className="shrink-0">{t.startTime}</span>}
-                    <span className="flex items-center gap-1 shrink-0"><MapPin className="w-3 h-3" />{t?.format === 'online' ? 'Online' : t?.country}</span>
+                    <span className="flex items-center gap-1 shrink-0"><MapPin className="w-3 h-3" />{t?.format === 'online' ? 'Online' : (t?.city || REGION_LABELS[t?.region as RegionType])}</span>
                     <span className="ml-auto shrink-0 px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>{GAME_LABELS[t?.game]}</span>
                   </div>
                 </div>
@@ -299,16 +298,13 @@ export function CalendarView() {
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
               {selectedTournament?.startTime && <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" />{selectedTournament.startTime}</div>}
-              <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.format === 'online' ? 'Online' : selectedTournament?.country}</div>
+              <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.format === 'online' ? 'Online' : (selectedTournament?.city || '—')}</div>
               <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{selectedTournament?.playersCount} игроков</div>
             </div>
             <p className="text-sm text-muted-foreground">{selectedTournament?.description}</p>
             <div className="flex gap-3 pt-2">
               {selectedTournament?.sourceUrl && (
-                <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 py-2.5 rounded-lg text-sm font-medium text-center transition-colors">Перейти к турниру</a>
-              )}
-              {selectedTournament?.bracketUrl && (
-                <a href={selectedTournament.bracketUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Турнирная сетка <ExternalLink className="w-4 h-4" /></a>
+                <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Перейти к турниру <ExternalLink className="w-4 h-4" /></a>
               )}
             </div>
           </div>

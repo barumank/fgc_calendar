@@ -23,7 +23,7 @@ export function TournamentsView() {
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterFormat, setFilterFormat] = useState<FormatType | ''>('');
   const [filterRegion, setFilterRegion] = useState<RegionType | ''>('');
-  const [sortBy, setSortBy] = useState<'date' | 'prize' | 'players'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'players'>('date');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const dateFilter = searchParams?.get('date') ?? '';
@@ -43,11 +43,6 @@ export function TournamentsView() {
     });
     items.sort((a: Tournament, b: Tournament) => {
       if (sortBy === 'date') return (b?.startDate ?? '').localeCompare(a?.startDate ?? '');
-      if (sortBy === 'prize') {
-        const pa = parseInt((a?.prizePool ?? '0').replace(/[^0-9]/g, '') ?? '0') || 0;
-        const pb = parseInt((b?.prizePool ?? '0').replace(/[^0-9]/g, '') ?? '0') || 0;
-        return pb - pa;
-      }
       return (b?.playersCount ?? 0) - (a?.playersCount ?? 0);
     });
     return items;
@@ -92,7 +87,6 @@ export function TournamentsView() {
           <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
           <select value={sortBy} onChange={(e: any) => setSortBy(e?.target?.value ?? 'date')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
             <option value="date" className="bg-[#1A1A2E] text-foreground">По дате</option>
-            <option value="prize" className="bg-[#1A1A2E] text-foreground">По призовому фонду</option>
             <option value="players" className="bg-[#1A1A2E] text-foreground">По кол-ву игроков</option>
           </select>
         </div>
@@ -119,7 +113,7 @@ export function TournamentsView() {
                       <span className="flex items-center gap-1">{t?.format === 'online' ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{FORMAT_LABELS[t?.format]}</span>
                       <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{t?.startDate}{t?.endDate !== t?.startDate ? ` — ${t?.endDate}` : ''}</span>
                       {t?.startTime && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{t.startTime}</span>}
-                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{t?.city}, {t?.country}</span>
+                      <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{t?.format === 'online' ? 'Online' : [t?.city, REGION_LABELS[t?.region]].filter(Boolean).join(', ')}</span>
                     </div>
                   </div>
                   <div className="p-2 rounded-lg shrink-0">
@@ -134,9 +128,9 @@ export function TournamentsView() {
                     )}
                     <p className="text-sm text-muted-foreground">{t?.description}</p>
                     <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
-                    {t?.bracketUrl && (
-                      <a href={t.bracketUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
-                        Турнирная сетка <ExternalLink className="w-3.5 h-3.5" />
+                    {t?.sourceUrl && (
+                      <a href={t.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
+                        Перейти к турниру <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     )}
                   </div>
