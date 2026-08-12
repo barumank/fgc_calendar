@@ -3,9 +3,10 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ExternalLink, Bell } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
+import { showToast } from '@/src/components/common/toast-notification';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
 import { useGames } from '@/src/hooks/use-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
@@ -298,14 +299,19 @@ export function CalendarView() {
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
               {selectedTournament?.startTime && <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" />{selectedTournament.startTime}</div>}
-              <div className="flex items-center gap-2 text-sm"><MapPin className="w-4 h-4 text-muted-foreground" />{selectedTournament?.format === 'online' ? 'Online' : (selectedTournament?.city || '—')}</div>
-              <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{selectedTournament?.playersCount} игроков</div>
             </div>
             <p className="text-sm text-muted-foreground">{selectedTournament?.description}</p>
             <div className="flex gap-3 pt-2">
               {selectedTournament?.sourceUrl && (
                 <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Перейти к турниру <ExternalLink className="w-4 h-4" /></a>
               )}
+            </div>
+            <div className="pt-3 border-t border-border/20">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня</div>
+              <div className="flex gap-3">
+                <button onClick={() => showToast('Уведомления скоро заработают', 'info')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За день</button>
+                <button onClick={() => showToast('Уведомления скоро заработают', 'info')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За час</button>
+              </div>
             </div>
           </div>
         )}
