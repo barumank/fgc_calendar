@@ -67,8 +67,15 @@ export function RequestsView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       });
+      const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error('Action failed');
-      await mutate();
+      // Update the list from the PATCH response immediately instead of
+      // waiting on a second full GET round-trip — that extra wait was
+      // making every approve/reject/unapprove feel sluggish.
+      mutate(
+        (current) => (current ?? []).map((r) => (r.id === data.request.id ? data.request : r)),
+        { revalidate: false },
+      );
       setSelectedRequest(null);
       const messages = {
         approve: [`Турнир «${request.name}» создан`, 'success'] as const,
