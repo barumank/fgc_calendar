@@ -18,10 +18,18 @@ export async function notifyNewRequestSubscribers(request: TournamentRequest): P
   const regionLabel = REGION_LABELS[request.region as RegionType] ?? request.region;
   const formatLabel = FORMAT_LABELS[request.format as FormatType] ?? request.format;
   const siteUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const createdAtLabel = new Date(request.createdAt).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   const text = [
     '🆕 Новая заявка на турнир',
     `Название: ${request.name}`,
+    `Создана: ${createdAtLabel}`,
     `Дата: ${request.startDate} — ${request.endDate}`,
     `Дисциплина: ${gameLabel}`,
     `Регион: ${regionLabel}`,
