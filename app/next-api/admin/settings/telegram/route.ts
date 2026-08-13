@@ -7,7 +7,8 @@ import { requireRole } from '@/lib/require-role';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { error } = await requireRole(['admin']);
+  // Bot name/hasToken are shown to any role on the "Уведомления" page instructions block.
+  const { error } = await requireRole(['admin', 'moderator', 'user']);
   if (error) return error;
 
   const botName = await getSetting(SETTING_KEYS.telegramBotName);

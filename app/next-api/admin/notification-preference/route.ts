@@ -5,7 +5,7 @@ import { requireRole } from '@/lib/require-role';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { session, error } = await requireRole(['admin', 'moderator']);
+  const { session, error } = await requireRole(['admin', 'moderator', 'user']);
   if (error) return error;
 
   const user = await prisma.user.findUnique({ where: { id: session!.user.id } });
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { session, error } = await requireRole(['admin', 'moderator']);
+  const { session, error } = await requireRole(['admin', 'moderator', 'user']);
   if (error) return error;
 
   const body = await req.json();

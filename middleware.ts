@@ -1,9 +1,14 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
-// Moderators only get the request-processing workflow and their own
-// notification preferences; everything else under /admin is admin-only.
-const MODERATOR_ALLOWED_PREFIXES = ['/admin/requests', '/admin/notifications'];
+// null = full access to everything under /admin for this role.
+// Moderators get the request-processing workflow + their own notification
+// preferences; plain users only get their own notification preferences.
+const ADMIN_ALLOWED_PREFIXES: Record<string, string[] | null> = {
+  admin: null,
+  moderator: ['/admin/requests', '/admin/notifications'],
+  user: ['/admin/notifications'],
+};
 
 export default withAuth(
   function middleware() {
@@ -17,12 +22,11 @@ export default withAuth(
       authorized: ({ token, req }) => {
         if (!token) return false;
         const role = (token as any).role ?? 'user';
-        if (role === 'admin') return true;
-        if (role === 'moderator') {
-          const path = req.nextUrl.pathname;
-          return MODERATOR_ALLOWED_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
-        }
-        return false;
+        const allowed = ADMIN_ALLOWED_PREFIXES[role];
+        if (allowed === undefined) return false;
+        if (allowed === null) return true;
+        const path = req.nextUrl.pathname;
+        return allowed.some((p) => path === p || path.startsWith(`${p}/`));
       },
     },
   },

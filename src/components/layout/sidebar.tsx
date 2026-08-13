@@ -13,7 +13,12 @@ import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { Role, ROLE_LABELS } from '@/lib/roles';
 
-const MODERATOR_ADMIN_HREFS = ['/admin/requests', '/admin/notifications'];
+// null = every subsection is visible for this role
+const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
+  admin: null,
+  moderator: ['/admin/requests', '/admin/notifications'],
+  user: ['/admin/notifications'],
+};
 
 const mainLinks = [
   { href: '/calendar', label: 'Календарь', icon: CalendarDays },
@@ -41,8 +46,8 @@ export function Sidebar() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const role = ((session?.user as any)?.role ?? 'user') as Role;
-  const canSeeAdminPanel = role === 'admin' || role === 'moderator';
-  const visibleAdminSubLinks = role === 'admin' ? adminSubLinks : adminSubLinks.filter((l) => MODERATOR_ADMIN_HREFS.includes(l.href));
+  const allowedAdminHrefs = ADMIN_HREFS_BY_ROLE[role];
+  const visibleAdminSubLinks = allowedAdminHrefs === null ? adminSubLinks : adminSubLinks.filter((l) => allowedAdminHrefs.includes(l.href));
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -79,8 +84,7 @@ export function Sidebar() {
   };
 
   const handleLogout = async () => {
-    await signOut({ redirect: false });
-    showToast('Вы вышли из системы', 'info');
+    await signOut({ callbackUrl: '/calendar' });
   };
 
   return (
@@ -119,7 +123,7 @@ export function Sidebar() {
           );
         })}
 
-        {isAuthenticated && canSeeAdminPanel && (
+        {isAuthenticated && (
           <>
             {/* Divider */}
             <div className="!my-3 border-t border-border/30" />
@@ -134,7 +138,7 @@ export function Sidebar() {
               }`}
             >
               <Shield className="w-[18px] h-[18px] shrink-0" />
-              <span className="flex-1 text-left">Админ Панель</span>
+              <span className="flex-1 text-left">Личный Кабинет</span>
               {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
             {adminOpen && (
