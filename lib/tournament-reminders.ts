@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { sendTelegramMessage } from '@/lib/telegram';
+import { getScheduledStart } from '@/lib/discord';
 
 const CHECK_INTERVAL_MS = 60 * 1000;
 const OFFSET_MS: Record<string, number> = { hour: 60 * 60 * 1000, day: 24 * 60 * 60 * 1000 };
@@ -11,6 +12,7 @@ let started = false;
 export function startReminderScheduler() {
   if (started) return;
   started = true;
+  console.log('[tournament-reminders] scheduler started, checking every 60s');
   setInterval(() => {
     checkDueReminders().catch((e) => console.error('[tournament-reminders] check failed', e));
   }, CHECK_INTERVAL_MS);
@@ -43,7 +45,7 @@ async function checkDueReminders() {
       continue;
     }
 
-    const startMs = new Date(`${tournament.startDate}T${tournament.startTime || '00:00'}:00Z`).getTime();
+    const startMs = getScheduledStart(tournament.startDate, tournament.startTime).getTime();
     if (Number.isNaN(startMs) || now >= startMs) {
       await prisma.tournamentReminder.update({ where: { id: reminder.id }, data: { sent: true } }).catch(() => {});
       continue;

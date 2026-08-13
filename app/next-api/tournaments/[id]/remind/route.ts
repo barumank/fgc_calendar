@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
+import { getScheduledStart } from '@/lib/discord';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Турнир не найден' }, { status: 404 });
   }
 
-  const startMs = new Date(`${tournament.startDate}T${tournament.startTime || '00:00'}:00Z`).getTime();
+  const startMs = getScheduledStart(tournament.startDate, tournament.startTime).getTime();
   if (Number.isNaN(startMs)) {
     return NextResponse.json({ error: 'У турнира не указана корректная дата начала' }, { status: 400 });
   }
