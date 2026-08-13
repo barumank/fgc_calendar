@@ -6,6 +6,12 @@ export const dynamic = 'force-dynamic';
 
 const OFFSET_MS: Record<string, number> = { hour: 60 * 60 * 1000, day: 24 * 60 * 60 * 1000 };
 
+function formatTournamentStart(startDate: string, startTime?: string | null) {
+  const [y, m, d] = startDate.split('-');
+  const datePart = `${d}.${m}.${y}`;
+  return startTime ? `${datePart}, ${startTime}` : datePart;
+}
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { session, error } = await requireRole(['admin', 'moderator', 'user']);
   if (error) return error;
@@ -39,11 +45,27 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'До начала турнира осталось меньше выбранного интервала' }, { status: 400 });
   }
 
+  const existing = await prisma.tournamentReminder.findUnique({
+    where: { tournamentId_userId_offset: { tournamentId: tournament.id, userId: user.id, offset } },
+  });
+  if (existing && !existing.sent) {
+    return NextResponse.json({ error: 'Вы уже подписаны на это уведомление по этому турниру' }, { status: 409 });
+  }
+
   await prisma.tournamentReminder.upsert({
     where: { tournamentId_userId_offset: { tournamentId: tournament.id, userId: user.id, offset } },
     update: { sent: false },
     create: { tournamentId: tournament.id, userId: user.id, offset },
   });
+
+  await prisma.subscriptionLog.create({
+    data: {
+      userEmail: user.email,
+      tournamentName: tournament.name,
+      offset,
+      tournamentStartAt: formatTournamentStart(tournament.startDate, tournament.startTime),
+    },
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

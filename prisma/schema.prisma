@@ -115,6 +115,15 @@ model AppSetting {
   value String
 }
 
+model SubscriptionLog {
+  id                String   @id @default(uuid())
+  userEmail         String
+  tournamentName    String
+  offset            String
+  tournamentStartAt String
+  createdAt         DateTime @default(now())
+}
+
 model TournamentReminder {
   id           String   @id @default(uuid())
   tournamentId String

@@ -74,7 +74,11 @@ export function CalendarView() {
   const closeFilters = useCallback(() => setShowFilters(false), []);
   useClickOutside(filterRef, closeFilters);
 
+  const [remindedKeys, setRemindedKeys] = useState<Set<string>>(new Set());
+  const isReminded = (tournamentId: string, offset: 'day' | 'hour') => remindedKeys.has(`${tournamentId}:${offset}`);
+
   const handleRemind = async (tournamentId: string, offset: 'day' | 'hour') => {
+    if (isReminded(tournamentId, offset)) return;
     if (authStatus !== 'authenticated') {
       showToast('Авторизуйтесь и настройте Telegram в разделе «Уведомления» личного кабинета, чтобы подписаться на уведомления', 'info');
       return;
@@ -87,9 +91,15 @@ export function CalendarView() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
+        if (res.status === 409) {
+          setRemindedKeys((prev) => new Set(prev).add(`${tournamentId}:${offset}`));
+          showToast(data?.error ?? 'Вы уже подписаны на это уведомление по этому турниру', 'info');
+          return;
+        }
         showToast(data?.error ?? 'Не удалось оформить подписку', 'error');
         return;
       }
+      setRemindedKeys((prev) => new Set(prev).add(`${tournamentId}:${offset}`));
       showToast('Вы подписались на уведомление об этом турнире', 'success');
     } catch {
       showToast('Не удалось оформить подписку', 'error');
@@ -333,8 +343,28 @@ export function CalendarView() {
             <div className="pt-3 border-t border-border/20">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня</div>
               <div className="flex gap-3">
-                <button onClick={() => handleRemind(selectedTournament.id, 'day')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За день</button>
-                <button onClick={() => handleRemind(selectedTournament.id, 'hour')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За час</button>
+                <button
+                  onClick={() => handleRemind(selectedTournament.id, 'day')}
+                  disabled={isReminded(selectedTournament.id, 'day')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isReminded(selectedTournament.id, 'day')
+                      ? 'bg-[#EF4444]/15 text-[#EF4444] cursor-not-allowed'
+                      : 'bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  {isReminded(selectedTournament.id, 'day') ? '✓ За день' : 'За день'}
+                </button>
+                <button
+                  onClick={() => handleRemind(selectedTournament.id, 'hour')}
+                  disabled={isReminded(selectedTournament.id, 'hour')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isReminded(selectedTournament.id, 'hour')
+                      ? 'bg-[#EF4444]/15 text-[#EF4444] cursor-not-allowed'
+                      : 'bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  {isReminded(selectedTournament.id, 'hour') ? '✓ За час' : 'За час'}
+                </button>
               </div>
             </div>
           </div>
