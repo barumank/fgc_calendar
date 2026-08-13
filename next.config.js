@@ -8,6 +8,7 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   experimental: {
     outputFileTracingRoot: path.join(__dirname, '../'),
+    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ExternalLink, Bell } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
@@ -56,6 +57,7 @@ function formatDateRange(startDate: string, endDate: string) {
 }
 
 export function CalendarView() {
+  const { status: authStatus } = useSession();
   const { gameKeys: ALL_GAMES, labels: GAME_LABELS, shortLabels: GAME_SHORT_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
@@ -71,6 +73,28 @@ export function CalendarView() {
 
   const closeFilters = useCallback(() => setShowFilters(false), []);
   useClickOutside(filterRef, closeFilters);
+
+  const handleRemind = async (tournamentId: string, offset: 'day' | 'hour') => {
+    if (authStatus !== 'authenticated') {
+      showToast('Авторизуйтесь и настройте Telegram в разделе «Уведомления» личного кабинета, чтобы подписаться на уведомления', 'info');
+      return;
+    }
+    try {
+      const res = await fetch(`/next-api/tournaments/${tournamentId}/remind`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ offset }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось оформить подписку', 'error');
+        return;
+      }
+      showToast('Вы подписались на уведомление об этом турнире', 'success');
+    } catch {
+      showToast('Не удалось оформить подписку', 'error');
+    }
+  };
 
   const filteredTournaments = useMemo(() => {
     return (tournaments ?? []).filter((t: Tournament) => {
@@ -309,8 +333,8 @@ export function CalendarView() {
             <div className="pt-3 border-t border-border/20">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня</div>
               <div className="flex gap-3">
-                <button onClick={() => showToast('Уведомления скоро заработают', 'info')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За день</button>
-                <button onClick={() => showToast('Уведомления скоро заработают', 'info')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За час</button>
+                <button onClick={() => handleRemind(selectedTournament.id, 'day')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За день</button>
+                <button onClick={() => handleRemind(selectedTournament.id, 'hour')} className="flex-1 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-medium transition-colors">За час</button>
               </div>
             </div>
           </div>

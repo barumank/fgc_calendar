@@ -31,14 +31,15 @@ model Tournament {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  password         String
-  name             String?
-  role             String   @default("admin")
-  notifyOnRequests Boolean  @default(false)
-  telegramChatId   String?
-  createdAt        DateTime @default(now())
+  id                       String   @id @default(uuid())
+  email                    String   @unique
+  password                 String
+  name                     String?
+  role                     String   @default("admin")
+  notifyOnRequests         Boolean  @default(false)
+  telegramChatId           String?
+  tournamentTelegramChatId String?
+  createdAt                DateTime @default(now())
 }
 
 model TournamentRequest {
@@ -112,6 +113,17 @@ model RequestSubmission {
 model AppSetting {
   key   String @id
   value String
+}
+
+model TournamentReminder {
+  id           String   @id @default(uuid())
+  tournamentId String
+  userId       String
+  offset       String
+  sent         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@unique([tournamentId, userId, offset])
 }
 
 model ExportLog {
