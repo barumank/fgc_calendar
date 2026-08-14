@@ -93,8 +93,8 @@ function DiscordBotSettings() {
   );
 }
 
-function TelegramBotSettings() {
-  const { data, mutate, isLoading } = useSWR<{ botName: string; hasToken: boolean }>('/next-api/admin/settings/telegram', fetcher);
+function TelegramBotSettings({ title, description, endpoint }: { title: string; description: string; endpoint: string }) {
+  const { data, mutate, isLoading } = useSWR<{ botName: string; hasToken: boolean }>(endpoint, fetcher);
   const [botName, setBotName] = useState('');
   const [botToken, setBotToken] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -107,7 +107,7 @@ function TelegramBotSettings() {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const res = await fetch('/next-api/admin/settings/telegram', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ botName: botName.trim(), botToken: botToken.trim() }),
@@ -133,10 +133,8 @@ function TelegramBotSettings() {
 
   return (
     <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
-      <h2 className="text-sm font-semibold mb-1">Телеграм бот для заявок</h2>
-      <p className="text-xs text-muted-foreground mb-4">
-        Этот бот используется для уведомлений о новых заявках на турниры (раздел "Уведомления").
-      </p>
+      <h2 className="text-sm font-semibold mb-1">{title}</h2>
+      <p className="text-xs text-muted-foreground mb-4">{description}</p>
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground py-4">Загрузка...</div>
@@ -228,7 +226,16 @@ export function SettingsView() {
 
       <div className="space-y-6">
         <DiscordBotSettings />
-        <TelegramBotSettings />
+        <TelegramBotSettings
+          title="Телеграм бот для заявок"
+          description='Этот бот используется для уведомлений о новых заявках на турниры (раздел "Уведомления").'
+          endpoint="/next-api/admin/settings/telegram"
+        />
+        <TelegramBotSettings
+          title="Телеграм бот для регистрации и восстановления пароля"
+          description="Пользователи пишут этому боту, чтобы получить логин/пароль для входа на сайт (или новый пароль, если аккаунт уже есть). Показывается в форме входа."
+          endpoint="/next-api/admin/settings/telegram-auth"
+        />
         <RequestSubscribers />
       </div>
     </div>

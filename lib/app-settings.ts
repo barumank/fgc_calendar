@@ -6,6 +6,9 @@ export const SETTING_KEYS = {
   telegramBotName: 'telegram_bot_name',
   telegramBotToken: 'telegram_bot_token',
   telegramWebhookSecret: 'telegram_webhook_secret',
+  authTelegramBotName: 'auth_telegram_bot_name',
+  authTelegramBotToken: 'auth_telegram_bot_token',
+  authTelegramWebhookSecret: 'auth_telegram_webhook_secret',
 } as const;
 
 export async function getSetting(key: string): Promise<string | null> {

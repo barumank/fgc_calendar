@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import useSWR from 'swr';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
@@ -12,6 +13,8 @@ import {
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { Role, ROLE_LABELS } from '@/lib/roles';
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 // null = every subsection is visible for this role
 const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
@@ -50,6 +53,7 @@ export function Sidebar() {
   const visibleAdminSubLinks = allowedAdminHrefs === null ? adminSubLinks : adminSubLinks.filter((l) => allowedAdminHrefs.includes(l.href));
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const { data: authBotSettings } = useSWR<{ botName: string }>('/next-api/admin/settings/telegram-auth', fetcher);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -196,15 +200,20 @@ export function Sidebar() {
       {/* Login modal */}
       <Modal isOpen={showLoginModal} onClose={closeLoginModal} title="Вход">
         <div className="space-y-4">
+          <div className="bg-[#229ED9]/10 border border-[#229ED9]/30 rounded-lg p-3 text-xs text-muted-foreground leading-relaxed">
+            На сайте реализована регистрация через Telegram — напишите нашему боту
+            {authBotSettings?.botName ? <> (<span className="text-[#229ED9] font-medium">@{authBotSettings.botName.replace(/^@/, '')}</span>)</> : ''}
+            , и он в ответ пришлёт вам логин и пароль. Если пароль забыт — напишите тому же боту ещё раз, он вышлет новый.
+          </div>
           <div>
-            <label className="block text-sm text-muted-foreground mb-1.5">Email</label>
+            <label className="block text-sm text-muted-foreground mb-1.5">Логин</label>
             <input
-              type="email"
+              type="text"
               className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
               value={loginForm.email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLoginForm(prev => ({ ...prev, email: e?.target?.value ?? '' }))}
               onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleLogin()}
-              placeholder="you@example.com"
+              placeholder="Логин из Telegram или email"
               autoFocus
             />
           </div>

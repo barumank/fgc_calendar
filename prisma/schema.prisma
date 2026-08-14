@@ -39,6 +39,7 @@ model User {
   notifyOnRequests         Boolean  @default(false)
   telegramChatId           String?
   tournamentTelegramChatId String?
+  authTelegramChatId       String?  @unique
   createdAt                DateTime @default(now())
 }
 
