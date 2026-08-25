@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import useSWR from 'swr';
 import { CalendarDays, Newspaper, ChevronLeft, ChevronRight } from 'lucide-react';
-import { mockNews } from '@/src/data/mock-news';
 import { NewsItem, NewsCategory, NEWS_CATEGORY_LABELS } from '@/src/types/news';
 import { Modal } from '@/src/components/common/modal';
 import { HeaderActions } from '@/src/components/layout/header-actions';
@@ -16,17 +16,26 @@ const CATEGORY_COLORS: Record<NewsCategory, string> = {
 };
 const PAGE_SIZE = 20;
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 export function NewsView() {
+  const { data: news } = useSWR<NewsItem[]>('/next-api/news', fetcher);
   const [filterCategory, setFilterCategory] = useState<NewsCategory | ''>('');
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
   const [page, setPage] = useState(1);
 
   const filtered = useMemo(() => {
-    return (mockNews ?? []).filter((n: NewsItem) => {
+    return (news ?? []).filter((n: NewsItem) => {
       if (filterCategory && n?.category !== filterCategory) return false;
       return true;
     }).sort((a: NewsItem, b: NewsItem) => (b?.publishedAt ?? '').localeCompare(a?.publishedAt ?? ''));
-  }, [filterCategory]);
+  }, [news, filterCategory]);
 
   useEffect(() => { setPage(1); }, [filterCategory]);
 
@@ -56,10 +65,10 @@ export function NewsView() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: CATEGORY_COLORS[n?.category] }}>{NEWS_CATEGORY_LABELS[n?.category]}</span>
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="w-3 h-3" />{n?.publishedAt}</span>
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="w-3 h-3" />{formatDate(n?.publishedAt)}</span>
                 </div>
                 <h3 className="text-base font-semibold mb-1">{n?.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">{n?.summary}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{n?.content}</p>
               </div>
             </div>
           </button>
@@ -89,7 +98,7 @@ export function NewsView() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded text-xs font-medium text-white" style={{ backgroundColor: CATEGORY_COLORS[selectedNews?.category] }}>{NEWS_CATEGORY_LABELS[selectedNews?.category]}</span>
-              <span className="text-sm text-muted-foreground">{selectedNews?.publishedAt}</span>
+              <span className="text-sm text-muted-foreground">{formatDate(selectedNews?.publishedAt)}</span>
             </div>
             <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{selectedNews?.content}</p>
           </div>

@@ -19,7 +19,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 // null = every subsection is visible for this role
 const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
   admin: null,
-  moderator: ['/admin/requests', '/admin/notifications'],
+  moderator: ['/admin/requests', '/admin/notifications', '/admin/news'],
   user: ['/admin/notifications'],
 };
 
@@ -35,6 +35,7 @@ const mainLinks = [
 const adminSubLinks = [
   { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
   { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
+  { href: '/admin/news', label: 'Управление новостями', icon: Newspaper },
   { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },

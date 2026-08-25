@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 // preferences; plain users only get their own notification preferences.
 const ADMIN_ALLOWED_PREFIXES: Record<string, string[] | null> = {
   admin: null,
-  moderator: ['/admin/requests', '/admin/notifications'],
+  moderator: ['/admin/requests', '/admin/notifications', '/admin/news'],
   user: ['/admin/notifications'],
 };
 

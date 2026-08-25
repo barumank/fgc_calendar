@@ -97,6 +97,14 @@ model Game {
   createdAt  DateTime @default(now())
 }
 
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  category    String
+  content     String
+  publishedAt DateTime @default(now())
+}
+
 model BacklogItem {
   id        String   @id @default(uuid())
   text      String
