@@ -128,11 +128,18 @@ export function TournamentsView() {
                     )}
                     <p className="text-sm text-muted-foreground">{t?.description}</p>
                     <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
-                    {t?.sourceUrl && (
-                      <a href={t.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
-                        Перейти к турниру <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    )}
+                    <div className="flex items-center gap-4">
+                      {t?.sourceUrl && (
+                        <a href={t.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
+                          Перейти к турниру <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                      {t?.communicationUrl && (
+                        <a href={t.communicationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
+                          Канал связи <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

@@ -11,14 +11,18 @@ import { useGames } from '@/src/hooks/use-games';
 
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
 const REPORT_FORM_FORMATS: FormatType[] = ['online', 'offline'];
+const START_HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const START_MINUTES = ['00', '10', '20', '30', '40', '50'];
 
 const EMPTY_REPORT_FORM = {
   name: '',
   url: '',
+  communicationUrl: '',
   comment: '',
   startDate: '',
   endDate: '',
-  startTime: '',
+  startHour: '',
+  startMinute: '',
   region: '' as RegionType | '',
   city: '',
   game: '' as GameType | '',
@@ -69,6 +73,8 @@ export function HeaderActions() {
     reportForm?.name?.trim?.() &&
     reportForm?.startDate &&
     reportForm?.endDate &&
+    reportForm?.startHour &&
+    reportForm?.startMinute &&
     reportForm?.game &&
     reportForm?.format &&
     (!isOffline || (reportForm?.region && reportForm?.city?.trim?.())) &&
@@ -85,10 +91,11 @@ export function HeaderActions() {
         body: JSON.stringify({
           name: reportForm.name.trim(),
           url: reportForm.url,
+          communicationUrl: reportForm.communicationUrl,
           comment: reportForm.comment,
           startDate: reportForm.startDate,
           endDate: reportForm.endDate,
-          startTime: reportForm.startTime || undefined,
+          startTime: `${reportForm.startHour}:${reportForm.startMinute}`,
           region: reportForm.region || undefined,
           city: reportForm.city || undefined,
           game: reportForm.game,
@@ -231,13 +238,26 @@ export function HeaderActions() {
                 {durationError && <span className="text-xs text-red-500 mt-1 block">{durationError}</span>}
               </div>
               <div>
-                <label className="block text-sm text-muted-foreground mb-1.5">Время начала</label>
-                <input
-                  type="time"
-                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
-                  value={reportForm.startTime}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, startTime: e?.target?.value ?? '' }))}
-                />
+                <label className="block text-sm text-muted-foreground mb-1.5">Время начала *</label>
+                <div className="flex items-center gap-1.5">
+                  <select
+                    className="w-full bg-white/5 border border-border/50 rounded-lg px-2 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                    value={reportForm.startHour}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, startHour: e?.target?.value ?? '' }))}
+                  >
+                    <option value="" className="bg-[#1A1A2E] text-foreground">ЧЧ</option>
+                    {START_HOURS.map((h) => <option key={h} value={h} className="bg-[#1A1A2E] text-foreground">{h}</option>)}
+                  </select>
+                  <span className="text-muted-foreground shrink-0">:</span>
+                  <select
+                    className="w-full bg-white/5 border border-border/50 rounded-lg px-2 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                    value={reportForm.startMinute}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, startMinute: e?.target?.value ?? '' }))}
+                  >
+                    <option value="" className="bg-[#1A1A2E] text-foreground">ММ</option>
+                    {START_MINUTES.map((m) => <option key={m} value={m} className="bg-[#1A1A2E] text-foreground">{m}</option>)}
+                  </select>
+                </div>
               </div>
             </div>
             <div>
@@ -273,6 +293,18 @@ export function HeaderActions() {
                 placeholder="Расскажите подробнее..."
               />
             </div>
+            {reportForm.format === 'online' && (
+              <div>
+                <label className="block text-sm text-muted-foreground mb-1.5">Канал для коммуникации игроков</label>
+                <input
+                  type="text"
+                  className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
+                  value={reportForm.communicationUrl}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReportForm(prev => ({ ...prev, communicationUrl: e?.target?.value ?? '' }))}
+                  placeholder="Discord-сервер или Telegram-канал турнира"
+                />
+              </div>
+            )}
             <div className="h-0 w-0 overflow-hidden">
               <input
                 type="text"

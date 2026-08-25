@@ -25,7 +25,7 @@ const DEFAULT_ONLINE_REGION = 'other';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { name, url, comment, startDate, endDate, startTime, region, city, game, format, bannerUrl, website } = body ?? {};
+  const { name, url, communicationUrl, comment, startDate, endDate, startTime, region, city, game, format, bannerUrl, website } = body ?? {};
 
   // Honeypot: this field is hidden from real users but bots that
   // auto-fill forms tend to populate it. Pretend success and stop.
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Слишком много заявок с вашего адреса. Попробуйте позже.' }, { status: 429 });
   }
 
-  if (!name?.trim() || !startDate || !endDate || !game || !format) {
+  if (!name?.trim() || !startDate || !endDate || !startTime || !game || !format) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
 
@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       data: {
         name: name.trim(),
         url: url || null,
+        communicationUrl: communicationUrl || null,
         comment: comment || null,
         startDate,
         endDate,

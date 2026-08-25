@@ -339,6 +339,9 @@ export function CalendarView() {
               {selectedTournament?.sourceUrl && (
                 <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Перейти к турниру <ExternalLink className="w-4 h-4" /></a>
               )}
+              {selectedTournament?.communicationUrl && (
+                <a href={selectedTournament.communicationUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 text-foreground py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Канал связи <ExternalLink className="w-4 h-4" /></a>
+              )}
             </div>
             <div className="pt-3 border-t border-border/20">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня</div>

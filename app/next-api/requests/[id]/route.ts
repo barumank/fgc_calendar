@@ -49,6 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           bannerUrl: request.bannerUrl,
           organizerName: '—',
           sourceUrl: request.url,
+          communicationUrl: request.communicationUrl,
           requestId: request.id,
         },
       }),

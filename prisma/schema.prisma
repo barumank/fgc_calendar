@@ -24,6 +24,7 @@ model Tournament {
   bannerUrl     String?
   organizerName String
   sourceUrl     String?
+  communicationUrl String?
   featured      Boolean  @default(false)
   requestId     String?  @unique
   discordEventId String?
@@ -47,6 +48,7 @@ model TournamentRequest {
   id        String   @id @default(uuid())
   name      String
   url       String?
+  communicationUrl String?
   comment   String?
   startDate String
   endDate   String

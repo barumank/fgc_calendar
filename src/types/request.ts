@@ -6,6 +6,7 @@ export interface TournamentRequest {
   id: string;
   name: string;
   url: string;
+  communicationUrl?: string;
   comment: string;
   startDate: string;
   endDate: string;

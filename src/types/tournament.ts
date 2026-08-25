@@ -21,6 +21,7 @@ export interface Tournament {
   bannerUrl?: string;
   organizerName: string;
   sourceUrl?: string;
+  communicationUrl?: string;
   featured?: boolean;
   discordEventId?: string;
   createdAt?: string;
