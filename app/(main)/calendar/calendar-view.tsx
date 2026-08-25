@@ -328,7 +328,9 @@ export function CalendarView() {
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1 rounded-lg text-xs font-medium text-white" style={{ backgroundColor: GAME_COLORS[selectedTournament?.game] }}>{GAME_LABELS[selectedTournament?.game]}</span>
               <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{FORMAT_LABELS[selectedTournament?.format]}</span>
-              <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
+              {selectedTournament?.format !== 'online' && (
+                <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
@@ -340,7 +342,7 @@ export function CalendarView() {
                 <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Перейти к турниру <ExternalLink className="w-4 h-4" /></a>
               )}
               {selectedTournament?.communicationUrl && (
-                <a href={selectedTournament.communicationUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 text-foreground py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Канал связи <ExternalLink className="w-4 h-4" /></a>
+                <a href={selectedTournament.communicationUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 text-foreground py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Общение по турниру <ExternalLink className="w-4 h-4" /></a>
               )}
             </div>
             <div className="pt-3 border-t border-border/20">

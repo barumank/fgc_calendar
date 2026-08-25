@@ -222,7 +222,7 @@ export function RequestsView() {
               )}
               {selectedRequest.communicationUrl && (
                 <a href={selectedRequest.communicationUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#EF4444] hover:underline">
-                  Канал связи <ExternalLink className="w-3.5 h-3.5" />
+                  Общение по турниру <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
             </div>

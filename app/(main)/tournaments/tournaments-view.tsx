@@ -136,7 +136,7 @@ export function TournamentsView() {
                       )}
                       {t?.communicationUrl && (
                         <a href={t.communicationUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-[#EF4444] hover:underline">
-                          Канал связи <ExternalLink className="w-3.5 h-3.5" />
+                          Общение по турниру <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                     </div>

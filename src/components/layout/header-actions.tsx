@@ -21,8 +21,8 @@ const EMPTY_REPORT_FORM = {
   comment: '',
   startDate: '',
   endDate: '',
-  startHour: '',
-  startMinute: '',
+  startHour: '19',
+  startMinute: '00',
   region: '' as RegionType | '',
   city: '',
   game: '' as GameType | '',
@@ -245,7 +245,6 @@ export function HeaderActions() {
                     value={reportForm.startHour}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, startHour: e?.target?.value ?? '' }))}
                   >
-                    <option value="" className="bg-[#1A1A2E] text-foreground">ЧЧ</option>
                     {START_HOURS.map((h) => <option key={h} value={h} className="bg-[#1A1A2E] text-foreground">{h}</option>)}
                   </select>
                   <span className="text-muted-foreground shrink-0">:</span>
@@ -254,7 +253,6 @@ export function HeaderActions() {
                     value={reportForm.startMinute}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setReportForm(prev => ({ ...prev, startMinute: e?.target?.value ?? '' }))}
                   >
-                    <option value="" className="bg-[#1A1A2E] text-foreground">ММ</option>
                     {START_MINUTES.map((m) => <option key={m} value={m} className="bg-[#1A1A2E] text-foreground">{m}</option>)}
                   </select>
                 </div>
