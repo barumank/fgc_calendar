@@ -25,6 +25,26 @@ function formatDate(iso: string) {
   return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function UserNameCell({ user, onSave }: { user: AdminUser; onSave: (user: AdminUser, name: string) => void }) {
+  const [value, setValue] = useState(user.name ?? '');
+
+  React.useEffect(() => {
+    setValue(user.name ?? '');
+  }, [user.name]);
+
+  return (
+    <input
+      type="text"
+      value={value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+      onBlur={() => onSave(user, value.trim())}
+      onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && e.currentTarget.blur()}
+      placeholder="Не указано"
+      className="w-full bg-transparent text-sm text-foreground outline-none border-b border-transparent hover:border-border/50 focus:border-[#EF4444]/50 transition-colors"
+    />
+  );
+}
+
 export function UsersView() {
   const { data: session } = useSession();
   const { data: users, mutate, isLoading } = useSWR<AdminUser[]>('/next-api/users', fetcher);
@@ -81,6 +101,26 @@ export function UsersView() {
     }
   };
 
+  const handleNameChange = async (user: AdminUser, name: string) => {
+    if (name === (user.name ?? '')) return;
+    try {
+      const res = await fetch(`/next-api/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось сохранить имя', 'error');
+        return;
+      }
+      mutate((current) => (current ?? []).map((u) => (u.id === data.id ? data : u)), { revalidate: false });
+      showToast('Имя сохранено', 'success');
+    } catch {
+      showToast('Не удалось сохранить имя', 'error');
+    }
+  };
+
   return (
     <div className="px-6 pt-6">
       <div className="flex items-center justify-between mb-6 gap-3">
@@ -114,7 +154,7 @@ export function UsersView() {
               {(users ?? []).map((u) => (
                 <tr key={u.id} className="border-b border-border/10 last:border-0">
                   <td className="px-4 py-3">{u.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{u.name || '—'}</td>
+                  <td className="px-4 py-3"><UserNameCell user={u} onSave={handleNameChange} /></td>
                   <td className="px-4 py-3">
                     <select
                       value={u.role}

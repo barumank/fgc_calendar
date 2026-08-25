@@ -6,6 +6,7 @@ export interface NewsItem {
   content: string;
   publishedAt: string;
   category: NewsCategory;
+  authorName?: string;
 }
 
 export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {

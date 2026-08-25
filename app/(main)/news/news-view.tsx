@@ -101,6 +101,9 @@ export function NewsView() {
               <span className="text-sm text-muted-foreground">{formatDate(selectedNews?.publishedAt)}</span>
             </div>
             <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{selectedNews?.content}</p>
+            {selectedNews?.authorName && (
+              <p className="text-xs text-muted-foreground text-right">{selectedNews.authorName}</p>
+            )}
           </div>
         )}
       </Modal>

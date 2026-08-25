@@ -15,21 +15,32 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const body = await req.json();
-  const role = body?.role;
-  if (!isRole(role)) {
-    return NextResponse.json({ error: 'Некорректная роль' }, { status: 400 });
+  const data: { role?: string; name?: string | null } = {};
+
+  if (body?.role !== undefined) {
+    if (!isRole(body.role)) {
+      return NextResponse.json({ error: 'Некорректная роль' }, { status: 400 });
+    }
+    if (existing.id === session!.user.id && body.role !== 'admin') {
+      const adminCount = await prisma.user.count({ where: { role: 'admin' } });
+      if (adminCount <= 1) {
+        return NextResponse.json({ error: 'Нельзя понизить последнего администратора' }, { status: 400 });
+      }
+    }
+    data.role = body.role;
   }
 
-  if (existing.id === session!.user.id && role !== 'admin') {
-    const adminCount = await prisma.user.count({ where: { role: 'admin' } });
-    if (adminCount <= 1) {
-      return NextResponse.json({ error: 'Нельзя понизить последнего администратора' }, { status: 400 });
-    }
+  if (body?.name !== undefined) {
+    data.name = (body.name ?? '').trim() || null;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: 'Нечего обновлять' }, { status: 400 });
   }
 
   const user = await prisma.user.update({
     where: { id: params.id },
-    data: { role },
+    data,
     select: { id: true, email: true, name: true, role: true, createdAt: true },
   });
 

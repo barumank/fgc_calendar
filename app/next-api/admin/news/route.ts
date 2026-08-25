@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 const CATEGORIES = ['announcement', 'results', 'update', 'interview'];
 
 export async function POST(req: NextRequest) {
-  const { error } = await requireRole(['admin', 'moderator']);
+  const { session, error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 
   const body = await req.json();
@@ -22,6 +22,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Некорректный тип новости' }, { status: 400 });
   }
 
-  const news = await prisma.news.create({ data: { title, content, category } });
+  const news = await prisma.news.create({ data: { title, content, category, authorId: session!.user.id } });
   return NextResponse.json(news, { status: 201 });
 }

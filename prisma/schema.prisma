@@ -102,6 +102,7 @@ model News {
   title       String
   category    String
   content     String
+  authorId    String?
   publishedAt DateTime @default(now())
 }
 
