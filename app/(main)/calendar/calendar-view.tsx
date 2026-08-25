@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ExternalLink, Bell } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, ExternalLink, Bell } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -238,7 +238,7 @@ export function CalendarView() {
                         {stretched ? (
                           <>
                             <span className="flex items-center gap-1 min-w-0">
-                              {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
+                              {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <MapPin className="w-2.5 h-2.5 shrink-0" />}
                               <span className="truncate">{t?.name}</span>
                             </span>
                             <span className="flex items-center gap-1">
@@ -248,7 +248,7 @@ export function CalendarView() {
                           </>
                         ) : (
                           <>
-                            {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <WifiOff className="w-2.5 h-2.5 shrink-0" />}
+                            {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <MapPin className="w-2.5 h-2.5 shrink-0" />}
                             <span className="truncate flex-1 min-w-0">{t?.name}</span>
                             {t?.startTime && <span className="shrink-0 opacity-80">{t.startTime}</span>}
                             <span className="shrink-0 opacity-80">{GAME_SHORT_LABELS[t?.game]}</span>
@@ -309,7 +309,10 @@ export function CalendarView() {
                   <div className="text-sm font-medium truncate">{t?.name}</div>
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                     {t?.startTime && <span className="shrink-0">{t.startTime}</span>}
-                    <span className="flex items-center gap-1 shrink-0"><MapPin className="w-3 h-3" />{t?.format === 'online' ? 'Online' : (t?.city || REGION_LABELS[t?.region as RegionType])}</span>
+                    <span className="flex items-center gap-1 shrink-0">
+                      {t?.format === 'online' ? <Wifi className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
+                      {t?.format === 'online' ? 'Online' : 'Offline'}
+                    </span>
                     <span className="ml-auto shrink-0 px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }}>{GAME_LABELS[t?.game]}</span>
                   </div>
                 </div>
