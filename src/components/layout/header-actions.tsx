@@ -276,7 +276,7 @@ export function HeaderActions() {
                 <span className="truncate">{reportForm.bannerUrl ? 'Изображение выбрано' : 'Загрузить JPEG или PNG'}</span>
                 <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleBannerChange} />
               </label>
-              <p className="text-xs text-muted-foreground mt-1">Только JPEG или PNG, не более {MAX_BANNER_BYTES / 1024 / 1024} МБ</p>
+              <p className="text-xs text-muted-foreground mt-1">Только файлы JPEG/PNG до {MAX_BANNER_BYTES / 1024 / 1024} МБ. Пропорция баннера 4:1</p>
               {reportForm.bannerUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={reportForm.bannerUrl} alt="Превью баннера" className="mt-2 h-24 w-full object-cover rounded-lg border border-border/30" />
