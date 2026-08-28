@@ -6,6 +6,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
+import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
@@ -130,7 +131,7 @@ export function TournamentsView() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={expandedDetail.bannerUrl} alt={t?.name} className="w-full max-w-2xl mx-auto h-40 object-cover rounded-lg" />
                     )}
-                    <p className="text-sm text-muted-foreground">{t?.description}</p>
+                    <LinkifiedText text={t?.description} className="text-sm text-muted-foreground" />
                     <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>
                     <div className="flex items-center gap-4">
                       {t?.sourceUrl && (

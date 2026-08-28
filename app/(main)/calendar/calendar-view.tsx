@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, ExternalLink, Bell } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
+import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
 import { useGames } from '@/src/hooks/use-games';
@@ -334,18 +335,16 @@ export function CalendarView() {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={selectedTournamentDetail.bannerUrl} alt={selectedTournament?.name} className="w-full h-40 object-cover rounded-lg" />
             )}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-lg text-xs font-medium text-white" style={{ backgroundColor: GAME_COLORS[selectedTournament?.game] }}>{GAME_LABELS[selectedTournament?.game]}</span>
               <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{FORMAT_LABELS[selectedTournament?.format]}</span>
               {selectedTournament?.format !== 'online' && (
                 <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
               )}
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground ml-1"><CalendarDays className="w-4 h-4" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</span>
+              {selectedTournament?.startTime && <span className="flex items-center gap-1.5 text-sm text-muted-foreground"><Clock className="w-4 h-4" />{selectedTournament.startTime}</span>}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 text-sm"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</div>
-              {selectedTournament?.startTime && <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-muted-foreground" />{selectedTournament.startTime}</div>}
-            </div>
-            <p className="text-sm text-muted-foreground">{selectedTournament?.description}</p>
+            <LinkifiedText text={selectedTournament?.description} className="text-sm text-muted-foreground" />
             <div className="flex gap-3 pt-2">
               {selectedTournament?.sourceUrl && (
                 <a href={selectedTournament.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] text-white py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Перейти к турниру <ExternalLink className="w-4 h-4" /></a>
@@ -355,7 +354,7 @@ export function CalendarView() {
               )}
             </div>
             <div className="pt-3 border-t border-border/20">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня</div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня в Telegram</div>
               <div className="flex gap-3">
                 <button
                   onClick={() => handleRemind(selectedTournament.id, 'day')}

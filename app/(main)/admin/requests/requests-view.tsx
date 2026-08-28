@@ -6,6 +6,7 @@ import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Tr
 import { TournamentRequest, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
+import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
 import { HeaderActions } from '@/src/components/layout/header-actions';
@@ -227,7 +228,7 @@ export function RequestsView() {
               )}
             </div>
             {selectedRequest.comment && (
-              <p className="text-sm text-muted-foreground">{selectedRequest.comment}</p>
+              <LinkifiedText text={selectedRequest.comment} className="text-sm text-muted-foreground" />
             )}
             {selectedRequest.status === 'pending' && (
               <div className="flex gap-3 pt-2">
