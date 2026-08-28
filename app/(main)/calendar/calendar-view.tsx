@@ -381,7 +381,7 @@ export function CalendarView() {
                   </button>
                 </div>
               </div>
-              <div>
+              <div className="ml-auto">
                 <div className="text-xs text-muted-foreground mb-2">Добавить в свой календарь</div>
                 <div className="flex gap-2">
                   <button

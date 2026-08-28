@@ -13,7 +13,7 @@ export function LinkifiedText({ text, className = '' }: { text?: string; classNa
             href={/^https?:\/\//i.test(part) ? part : `https://${part}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#EF4444] hover:underline"
+            className="text-[#229ED9] hover:underline"
           >
             {part}
           </a>
