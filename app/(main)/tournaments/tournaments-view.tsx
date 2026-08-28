@@ -32,6 +32,10 @@ export function TournamentsView() {
 
   const toggleExpand = (id: string) => setExpandedId((prev: string | null) => (prev === id ? null : id));
 
+  // The list endpoint omits bannerUrl (can be several MB each); fetch the
+  // one being viewed on demand instead of shipping every banner up front.
+  const { data: expandedDetail } = useSWR<Tournament>(expandedId ? `/next-api/tournaments/${expandedId}` : null, fetcher);
+
   const filtered = useMemo(() => {
     let items = (tournaments ?? []).filter((t: Tournament) => {
       if (search && !(t?.name ?? '').toLowerCase().includes(search.toLowerCase())) return false;
@@ -122,9 +126,9 @@ export function TournamentsView() {
                 </div>
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t border-border/20 space-y-3">
-                    {t?.bannerUrl && (
+                    {expandedDetail?.id === t?.id && expandedDetail?.bannerUrl && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={t.bannerUrl} alt={t?.name} className="w-full max-w-2xl mx-auto h-40 object-cover rounded-lg" />
+                      <img src={expandedDetail.bannerUrl} alt={t?.name} className="w-full max-w-2xl mx-auto h-40 object-cover rounded-lg" />
                     )}
                     <p className="text-sm text-muted-foreground">{t?.description}</p>
                     <div className="flex items-center gap-2 text-sm"><Users className="w-4 h-4 text-muted-foreground" />{t?.playersCount} игроков</div>

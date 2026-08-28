@@ -63,6 +63,12 @@ export function CalendarView() {
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  // The list endpoint omits bannerUrl (can be several MB each); fetch the
+  // one being viewed on demand instead of shipping every banner up front.
+  const { data: selectedTournamentDetail } = useSWR<Tournament>(
+    selectedTournament ? `/next-api/tournaments/${selectedTournament.id}` : null,
+    fetcher,
+  );
   const [showFilters, setShowFilters] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const [filterGames, setFilterGames] = useState<GameType[]>([]);
@@ -324,9 +330,9 @@ export function CalendarView() {
       <Modal isOpen={!!selectedTournament} onClose={() => setSelectedTournament(null)} title={selectedTournament?.name ?? ''}>
         {selectedTournament && (
           <div className="space-y-4">
-            {selectedTournament?.bannerUrl && (
+            {selectedTournamentDetail?.bannerUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedTournament.bannerUrl} alt={selectedTournament?.name} className="w-full h-40 object-cover rounded-lg" />
+              <img src={selectedTournamentDetail.bannerUrl} alt={selectedTournament?.name} className="w-full h-40 object-cover rounded-lg" />
             )}
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1 rounded-lg text-xs font-medium text-white" style={{ backgroundColor: GAME_COLORS[selectedTournament?.game] }}>{GAME_LABELS[selectedTournament?.game]}</span>
