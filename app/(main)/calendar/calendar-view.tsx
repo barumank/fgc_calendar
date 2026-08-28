@@ -12,6 +12,7 @@ import { showToast } from '@/src/components/common/toast-notification';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
 import { useGames } from '@/src/hooks/use-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
+import { buildGoogleCalendarUrl, buildTournamentIcs } from '@/src/lib/add-to-calendar';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -111,6 +112,37 @@ export function CalendarView() {
     } catch {
       showToast('Не удалось оформить подписку', 'error');
     }
+  };
+
+  const toCalendarEventTournament = (t: Tournament) => ({
+    id: t.id,
+    name: t.name,
+    description: t.description,
+    startDate: t.startDate,
+    startTime: t.startTime,
+    format: t.format,
+    city: t.city,
+    regionLabel: REGION_LABELS[t.region as RegionType],
+    sourceUrl: t.sourceUrl,
+  });
+
+  const handleAddToGoogleCalendar = (t: Tournament) => {
+    const url = buildGoogleCalendarUrl(toCalendarEventTournament(t));
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleAddToYandexCalendar = (t: Tournament) => {
+    const ics = buildTournamentIcs(toCalendarEventTournament(t));
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `${t.name.replace(/[\\/:*?"<>|]/g, '').trim() || 'tournament'}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+    showToast('Файл .ics скачан — откройте его, чтобы добавить событие в Яндекс Календарь', 'success');
   };
 
   const filteredTournaments = useMemo(() => {
@@ -385,13 +417,13 @@ export function CalendarView() {
                 <div className="text-xs text-muted-foreground mb-2">Добавить в свой календарь</div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => showToast('Функция скоро появится', 'info')}
+                    onClick={() => handleAddToYandexCalendar(selectedTournament)}
                     className="px-4 py-2 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 transition-colors"
                   >
                     В Яндекс
                   </button>
                   <button
-                    onClick={() => showToast('Функция скоро появится', 'info')}
+                    onClick={() => handleAddToGoogleCalendar(selectedTournament)}
                     className="px-4 py-2 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 transition-colors"
                   >
                     В Google
