@@ -44,6 +44,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       id: e.id,
       name: e.name,
       videogameName: e.videogameName,
+      videogameId: e.videogameId,
       isOnline: e.isOnline,
       startDate: e.startAt ? unixToMoscowDateTime(e.startAt).date : null,
       startTime: e.startAt ? unixToMoscowDateTime(e.startAt).time : null,

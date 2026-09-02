@@ -16,6 +16,7 @@ interface StartggPreviewEvent {
   id: string;
   name: string;
   videogameName: string | null;
+  videogameId: string | null;
   isOnline: boolean;
   startDate: string | null;
   startTime: string | null;
@@ -334,7 +335,7 @@ export function RequestsView() {
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">{e.name}</div>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                          <span>{e.videogameName ?? 'Игра не указана'}</span>
+                          <span>{e.videogameName ?? 'Игра не указана'}{e.videogameId ? <span className="font-mono"> (ID: {e.videogameId})</span> : ''}</span>
                           {e.mappedGameLabel ? (
                             <span className="text-green-400">→ {e.mappedGameLabel}</span>
                           ) : (
