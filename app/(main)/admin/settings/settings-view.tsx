@@ -219,6 +219,73 @@ function RequestSubscribers() {
   );
 }
 
+function StartggSettings() {
+  const { data, mutate, isLoading } = useSWR<{ hasToken: boolean }>('/next-api/admin/settings/startgg', fetcher);
+  const [apiToken, setApiToken] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSave = async () => {
+    if (!apiToken.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/next-api/admin/settings/startgg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiToken: apiToken.trim() }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showToast(result?.error ?? 'Не удалось сохранить токен', 'error');
+        return;
+      }
+      setApiToken('');
+      await mutate();
+      showToast('Токен сохранён', 'success');
+    } catch {
+      showToast('Не удалось сохранить токен', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+      <h2 className="text-sm font-semibold mb-1">start.gg API</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        Токен используется для импорта турниров со start.gg при одобрении заявок (если ссылка на турнир ведёт на start.gg и внутри несколько событий/дисциплин).
+        Создать токен можно на <a href="https://start.gg/admin/profile/developer" target="_blank" rel="noopener noreferrer" className="text-[#229ED9] hover:underline">start.gg/admin/profile/developer</a> — учтите, что срок его действия год, потом нужно будет создать новый.
+      </p>
+
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground py-4">Загрузка...</div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">API Token</label>
+            <div className="flex items-center bg-white/5 rounded-lg border border-border/50 px-3 py-2 gap-2">
+              <Key className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                type="password"
+                value={apiToken}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setApiToken(e?.target?.value ?? '')}
+                className="bg-transparent text-sm outline-none flex-1"
+                placeholder={data?.hasToken ? 'Задан — оставьте пустым, чтобы не менять' : 'Токен не задан'}
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={!apiToken.trim() || submitting}
+            className="bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors"
+          >
+            {submitting ? 'Сохранение...' : 'Сохранить'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SettingsView() {
   return (
     <div className="px-6 pt-6">
@@ -236,6 +303,7 @@ export function SettingsView() {
           description="Пользователи пишут этому боту, чтобы получить логин/пароль для входа на сайт (или новый пароль, если аккаунт уже есть). Показывается в форме входа."
           endpoint="/next-api/admin/settings/telegram-auth"
         />
+        <StartggSettings />
         <RequestSubscribers />
       </div>
     </div>

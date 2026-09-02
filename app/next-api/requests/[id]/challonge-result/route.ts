@@ -23,7 +23,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'URL is not a Challonge tournament link' }, { status: 400 });
   }
 
-  const tournament = await prisma.tournament.findUnique({ where: { requestId: request.id } });
+  const tournament = await prisma.tournament.findFirst({ where: { requestId: request.id } });
   if (!tournament) {
     return NextResponse.json({ error: 'Tournament not found for this request' }, { status: 404 });
   }

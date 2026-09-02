@@ -9,6 +9,7 @@ export const SETTING_KEYS = {
   authTelegramBotName: 'auth_telegram_bot_name',
   authTelegramBotToken: 'auth_telegram_bot_token',
   authTelegramWebhookSecret: 'auth_telegram_webhook_secret',
+  startggApiToken: 'startgg_api_token',
 } as const;
 
 export async function getSetting(key: string): Promise<string | null> {

@@ -17,11 +17,22 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const label = (body?.label ?? '').trim();
   const shortLabel = (body?.shortLabel ?? '').trim();
   const color = (body?.color ?? '').trim();
+  const startggVideogameId = (body?.startggVideogameId ?? '').trim();
   if (!label || !color) {
     return NextResponse.json({ error: 'Название и цвет обязательны' }, { status: 400 });
   }
 
-  const game = await prisma.game.update({ where: { id: params.id }, data: { label, shortLabel: shortLabel || null, color } });
+  if (startggVideogameId) {
+    const clash = await prisma.game.findUnique({ where: { startggVideogameId } });
+    if (clash && clash.id !== params.id) {
+      return NextResponse.json({ error: 'Этот ID игры на start.gg уже привязан к другой дисциплине' }, { status: 409 });
+    }
+  }
+
+  const game = await prisma.game.update({
+    where: { id: params.id },
+    data: { label, shortLabel: shortLabel || null, color, startggVideogameId: startggVideogameId || null },
+  });
   return NextResponse.json(game);
 }
 

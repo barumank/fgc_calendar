@@ -2,14 +2,26 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
-import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight, Gamepad2 } from 'lucide-react';
 import { TournamentRequest, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
 import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
+import { extractStartggTournamentSlug } from '@/lib/startgg';
 import { HeaderActions } from '@/src/components/layout/header-actions';
+
+interface StartggPreviewEvent {
+  id: string;
+  name: string;
+  videogameName: string | null;
+  isOnline: boolean;
+  startDate: string | null;
+  startTime: string | null;
+  mappedGameKey: string | null;
+  mappedGameLabel: string | null;
+}
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -45,6 +57,10 @@ export function RequestsView() {
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterDate, setFilterDate] = useState('');
   const [page, setPage] = useState(1);
+  const [startggEvents, setStartggEvents] = useState<StartggPreviewEvent[] | null>(null);
+  const [startggLoading, setStartggLoading] = useState(false);
+  const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
+  const [importing, setImporting] = useState(false);
 
   const filtered = useMemo(() => {
     return (requests ?? []).filter((r: TournamentRequest) => {
@@ -77,7 +93,7 @@ export function RequestsView() {
         (current) => (current ?? []).map((r) => (r.id === data.request.id ? data.request : r)),
         { revalidate: false },
       );
-      setSelectedRequest(null);
+      closeRequestModal();
       const messages = {
         approve: [`Турнир «${request.name}» создан`, 'success'] as const,
         reject: [`Заявка «${request.name}» отклонена`, 'info'] as const,
@@ -115,6 +131,73 @@ export function RequestsView() {
     }
   };
 
+  const closeRequestModal = () => {
+    setSelectedRequest(null);
+    setStartggEvents(null);
+    setSelectedEventIds(new Set());
+  };
+
+  const openRequest = (r: TournamentRequest) => {
+    setSelectedRequest(r);
+    setStartggEvents(null);
+    setSelectedEventIds(new Set());
+  };
+
+  const handleStartggPreview = async (request: TournamentRequest) => {
+    if (startggLoading) return;
+    setStartggLoading(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/startgg-preview`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось получить события со start.gg', 'error');
+        return;
+      }
+      setStartggEvents(data.events ?? []);
+      setSelectedEventIds(new Set((data.events ?? []).filter((e: StartggPreviewEvent) => e.mappedGameKey).map((e: StartggPreviewEvent) => e.id)));
+    } catch {
+      showToast('Не удалось получить события со start.gg', 'error');
+    } finally {
+      setStartggLoading(false);
+    }
+  };
+
+  const toggleStartggEvent = (id: string) => {
+    setSelectedEventIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleStartggImport = async (request: TournamentRequest) => {
+    if (importing || selectedEventIds.size === 0) return;
+    setImporting(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/startgg-import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventIds: [...selectedEventIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось импортировать турниры', 'error');
+        return;
+      }
+      mutate(
+        (current) => (current ?? []).map((r) => (r.id === data.request.id ? data.request : r)),
+        { revalidate: false },
+      );
+      closeRequestModal();
+      showToast(`Создано турниров: ${data.createdCount}`, 'success');
+    } catch {
+      showToast('Не удалось импортировать турниры', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="px-6 pt-6">
       {/* Filters */}
@@ -148,7 +231,7 @@ export function RequestsView() {
           {(paginated ?? []).map((r: TournamentRequest) => (
             <button
               key={r.id}
-              onClick={() => setSelectedRequest(r)}
+              onClick={() => openRequest(r)}
               className="w-full text-left bg-[#1A1A2E] rounded-xl border border-border/30 hover:border-border/60 transition-colors p-4 flex items-center gap-4"
             >
               {r.bannerUrl ? (
@@ -197,7 +280,7 @@ export function RequestsView() {
         </div>
       )}
 
-      <Modal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} title={selectedRequest?.name ?? ''}>
+      <Modal isOpen={!!selectedRequest} onClose={closeRequestModal} title={selectedRequest?.name ?? ''}>
         {selectedRequest && (
           <div className="space-y-4">
             {selectedRequest.bannerUrl && (
@@ -230,15 +313,77 @@ export function RequestsView() {
             {selectedRequest.comment && (
               <LinkifiedText text={selectedRequest.comment} className="text-sm text-muted-foreground" />
             )}
-            {selectedRequest.status === 'pending' && (
+            {selectedRequest.status === 'pending' && startggEvents && (
+              <div className="pt-2 space-y-3">
+                <div className="text-xs text-muted-foreground">
+                  Найдено событий на start.gg: {startggEvents.length}. Отметьте, какие турниры создать — событиям без сопоставленной дисциплины нужно сначала задать «ID игры на start.gg» в разделе «Дисциплины».
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {startggEvents.map((e) => (
+                    <label
+                      key={e.id}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg bg-white/5 ${!e.mappedGameKey ? 'opacity-50' : 'cursor-pointer'}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedEventIds.has(e.id)}
+                        disabled={!e.mappedGameKey}
+                        onChange={() => toggleStartggEvent(e.id)}
+                        className="rounded border-border"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{e.name}</div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span>{e.videogameName ?? 'Игра не указана'}</span>
+                          {e.mappedGameLabel ? (
+                            <span className="text-green-400">→ {e.mappedGameLabel}</span>
+                          ) : (
+                            <span className="text-red-400">нет сопоставления дисциплины</span>
+                          )}
+                          {e.startDate && <span>{e.startDate}{e.startTime ? `, ${e.startTime}` : ''}</span>}
+                          <span>{e.isOnline ? 'Онлайн' : 'Офлайн'}</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setStartggEvents(null)}
+                    disabled={importing}
+                    className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Назад
+                  </button>
+                  <button
+                    onClick={() => handleStartggImport(selectedRequest)}
+                    disabled={importing || selectedEventIds.size === 0}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" /> {importing ? 'Создаём...' : `Создать турниры (${selectedEventIds.size})`}
+                  </button>
+                </div>
+              </div>
+            )}
+            {selectedRequest.status === 'pending' && !startggEvents && (
               <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => handleAction(selectedRequest, 'approve')}
-                  disabled={processing}
-                  className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Check className="w-4 h-4" /> Создать турнир
-                </button>
+                {extractStartggTournamentSlug(selectedRequest.url) ? (
+                  <button
+                    onClick={() => handleStartggPreview(selectedRequest)}
+                    disabled={startggLoading}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Gamepad2 className="w-4 h-4" /> {startggLoading ? 'Загружаем события...' : 'Импортировать со start.gg'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleAction(selectedRequest, 'approve')}
+                    disabled={processing}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" /> Создать турнир
+                  </button>
+                )}
                 <button
                   onClick={() => handleAction(selectedRequest, 'reject')}
                   disabled={processing}

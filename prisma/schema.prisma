@@ -26,9 +26,11 @@ model Tournament {
   sourceUrl     String?
   communicationUrl String?
   featured      Boolean  @default(false)
-  requestId     String?  @unique
+  requestId     String?
   discordEventId String?
   createdAt     DateTime @default(now())
+
+  @@index([requestId])
 }
 
 model User {
@@ -88,13 +90,14 @@ model ChallongeApiUsage {
 }
 
 model Game {
-  id         String   @id @default(uuid())
-  key        String   @unique
-  label      String
-  shortLabel String?
-  color      String
-  order      Int      @default(0)
-  createdAt  DateTime @default(now())
+  id                 String   @id @default(uuid())
+  key                String   @unique
+  label              String
+  shortLabel         String?
+  color              String
+  order              Int      @default(0)
+  startggVideogameId String?  @unique
+  createdAt          DateTime @default(now())
 }
 
 model News {

@@ -5,6 +5,7 @@ export interface GameRecord {
   shortLabel?: string | null;
   color: string;
   order: number;
+  startggVideogameId?: string | null;
 }
 
 export const DEFAULT_GAMES: GameRecord[] = [
