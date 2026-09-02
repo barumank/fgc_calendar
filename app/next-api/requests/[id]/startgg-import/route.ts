@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
-import { extractStartggTournamentSlug, fetchStartggTournamentEvents, regionFromCountryCode, unixToMoscowDateTime } from '@/lib/startgg';
+import { extractStartggTournamentSlug, fetchStartggTournamentEvents, regionFromCountryCode, unixToMoscowDateTime, StartggTournament } from '@/lib/startgg';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Не задан токен start.gg API в разделе «Настройки»' }, { status: 400 });
   }
 
-  let tournament;
+  let tournament: StartggTournament;
   try {
     tournament = await fetchStartggTournamentEvents(slug, apiToken);
   } catch (e: any) {
