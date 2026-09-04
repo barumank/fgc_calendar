@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
@@ -28,6 +28,9 @@ export function TournamentsView() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const dateFilter = searchParams?.get('date') ?? '';
+  const highlightId = searchParams?.get('tournament') ?? '';
+  const highlightAppliedRef = useRef<string | null>(null);
+  const highlightedRowRef = useRef<HTMLDivElement | null>(null);
 
   const clearDateFilter = () => router.push(pathname);
 
@@ -57,6 +60,24 @@ export function TournamentsView() {
 
   const totalPages = Math.max(1, Math.ceil((filtered?.length ?? 0) / PAGE_SIZE));
   const paginated = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
+
+  // Jump to and expand a specific tournament linked from elsewhere (e.g. a
+  // player's card), once per distinct id — a ref (not state) tracks this so
+  // it doesn't fight with the user's own later page/filter changes.
+  useEffect(() => {
+    if (!highlightId || highlightId === highlightAppliedRef.current || filtered.length === 0) return;
+    const idx = filtered.findIndex((t) => t?.id === highlightId);
+    if (idx === -1) return;
+    highlightAppliedRef.current = highlightId;
+    setPage(Math.floor(idx / PAGE_SIZE) + 1);
+    setExpandedId(highlightId);
+  }, [highlightId, filtered]);
+
+  useEffect(() => {
+    if (expandedId && expandedId === highlightId) {
+      highlightedRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [expandedId, highlightId, page]);
 
   return (
     <div className="px-6 pt-6">
@@ -102,7 +123,11 @@ export function TournamentsView() {
         {(paginated ?? []).map((t: Tournament) => {
           const isExpanded = expandedId === t?.id;
           return (
-            <div key={t?.id} className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden transition-all hover:border-border/60">
+            <div
+              key={t?.id}
+              ref={t?.id === highlightId ? highlightedRowRef : undefined}
+              className={`bg-[#1A1A2E] rounded-xl border overflow-hidden transition-all hover:border-border/60 ${t?.id === highlightId ? 'border-[#EF4444]/60' : 'border-border/30'}`}
+            >
               <div className="h-1" style={{ backgroundColor: GAME_COLORS[t?.game] ?? '#666' }} />
               <div className="p-4">
                 <div

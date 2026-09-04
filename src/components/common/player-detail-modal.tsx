@@ -1,10 +1,19 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import useSWR from 'swr';
 import { Trophy, Target, Medal } from 'lucide-react';
 import { Player } from '@/src/types/player';
 import { REGION_LABELS, GameType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+interface PlayerTournament {
+  id: string;
+  name: string;
+}
 
 export function PlayerDetailModal({ player, gameLabels, gameColors, onClose }: {
   player: Player | null;
@@ -12,6 +21,11 @@ export function PlayerDetailModal({ player, gameLabels, gameColors, onClose }: {
   gameColors: Record<GameType, string>;
   onClose: () => void;
 }) {
+  const { data: tournaments } = useSWR<PlayerTournament[]>(
+    player ? `/next-api/players/${player.id}/tournaments` : null,
+    fetcher,
+  );
+
   return (
     <Modal isOpen={!!player} onClose={onClose} title={player?.tag ?? ''}>
       {player && (
@@ -40,6 +54,23 @@ export function PlayerDetailModal({ player, gameLabels, gameColors, onClose }: {
                 {player?.socialLinks?.discord && <span className="bg-white/5 px-2 py-1 rounded">Discord: {player.socialLinks.discord}</span>}
                 {player?.socialLinks?.twitter && <span className="bg-white/5 px-2 py-1 rounded">Twitter: {player.socialLinks.twitter}</span>}
                 {player?.socialLinks?.twitch && <span className="bg-white/5 px-2 py-1 rounded">Twitch: {player.socialLinks.twitch}</span>}
+              </div>
+            </div>
+          )}
+          {(tournaments?.length ?? 0) > 0 && (
+            <div className="space-y-1">
+              <h4 className="text-sm font-semibold">Турниры</h4>
+              <div className="space-y-1">
+                {tournaments!.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/tournaments?tournament=${t.id}`}
+                    onClick={onClose}
+                    className="block text-sm text-[#229ED9] hover:underline truncate"
+                  >
+                    {t.name}
+                  </Link>
+                ))}
               </div>
             </div>
           )}
