@@ -95,6 +95,14 @@ export async function fetchStartggTournamentEvents(slug: string, apiToken: strin
   };
 }
 
+// Event names on start.gg are often just the discipline ("Tekken 8"), so
+// prefix the parent tournament's name to keep the resulting tournaments
+// identifiable — unless the organizer already included it in the event name.
+export function buildTournamentName(tournamentName: string, eventName: string): string {
+  if (eventName.toLowerCase().startsWith(tournamentName.toLowerCase())) return eventName;
+  return `${tournamentName} — ${eventName}`;
+}
+
 // Countries commonly grouped as "СНГ" and "Европа" in this app's region filter.
 // Everything else falls back to "other" — safer than guessing wrong.
 const CIS_COUNTRY_CODES = new Set(['AM', 'AZ', 'GE', 'KG', 'MD', 'TJ', 'TM', 'UZ']);

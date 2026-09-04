@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
-import { extractStartggTournamentSlug, fetchStartggTournamentEvents, regionFromCountryCode, unixToMoscowDateTime, StartggTournament } from '@/lib/startgg';
+import { extractStartggTournamentSlug, fetchStartggTournamentEvents, regionFromCountryCode, unixToMoscowDateTime, buildTournamentName, StartggTournament } from '@/lib/startgg';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       : { date: request.startDate, time: request.startTime ?? null };
 
     return {
-      name: e.name,
+      name: buildTournamentName(tournament.name, e.name),
       game: game.key,
       format: e.isOnline ? 'online' : 'offline',
       region: e.isOnline ? 'other' : region,

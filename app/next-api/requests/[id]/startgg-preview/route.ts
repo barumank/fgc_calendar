@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
-import { extractStartggTournamentSlug, fetchStartggTournamentEvents, unixToMoscowDateTime, StartggTournament } from '@/lib/startgg';
+import { extractStartggTournamentSlug, fetchStartggTournamentEvents, unixToMoscowDateTime, buildTournamentName, StartggTournament } from '@/lib/startgg';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +42,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     const matched = e.videogameId ? gameByVideogameId.get(e.videogameId) : undefined;
     return {
       id: e.id,
-      name: e.name,
+      name: buildTournamentName(tournament.name, e.name),
       videogameName: e.videogameName,
       videogameId: e.videogameId,
       isOnline: e.isOnline,
