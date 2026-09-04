@@ -29,13 +29,14 @@ interface RequestTournament {
   name: string;
   sourceUrl: string | null;
   playersCount: number;
+  resultsFetchedAt: string | null;
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
   tournament: RequestTournament;
-  onUpdated: (playersCount: number) => void;
+  onUpdated: (playersCount: number, resultsFetchedAt: string) => void;
   onChallongeUsage: () => void;
 }) {
   const [fetching, setFetching] = useState(false);
@@ -47,11 +48,16 @@ function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
       ? `/next-api/tournaments/${tournament.id}/startgg-result`
       : null;
 
-  const handleClick = async () => {
+  const handleClick = async (force: boolean) => {
     if (!endpoint || fetching) return;
+    if (force && !window.confirm(`Пересобрать результаты для «${tournament.name}»? Прошлые начисления очков игрокам будут отменены и заменены новыми.`)) return;
     setFetching(true);
     try {
-      const res = await fetch(endpoint, { method: 'POST' });
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ force }),
+      });
       const data = await res.json();
       if (challongeSlug) onChallongeUsage();
       if (!res.ok) {
@@ -62,7 +68,7 @@ function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
         showToast(`«${tournament.name}»: турнир ещё не завершён — итоговых мест пока нет`, 'info');
         return;
       }
-      onUpdated(data.playersCount);
+      onUpdated(data.playersCount, new Date().toISOString());
       showToast(`«${tournament.name}»: обновлено — ${data.playersCount} участников, топ-8 сохранён в «Игроки»`, 'success');
     } catch {
       showToast('Не удалось получить результаты', 'error');
@@ -71,20 +77,36 @@ function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
     }
   };
 
+  const collected = !!tournament.resultsFetchedAt;
+
   return (
     <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white/5">
       <div className="min-w-0">
         <div className="text-sm font-medium truncate">{tournament.name}</div>
-        <div className="text-xs text-muted-foreground">{tournament.playersCount} игроков</div>
+        <div className="text-xs text-muted-foreground">
+          {tournament.playersCount} игроков
+          {collected && <span className="text-green-400"> · собрано {formatDateTime(tournament.resultsFetchedAt as string)}</span>}
+        </div>
       </div>
-      <button
-        onClick={handleClick}
-        disabled={fetching || !endpoint}
-        title={!endpoint ? 'Источник ссылки не поддерживает автосбор результатов' : undefined}
-        className="shrink-0 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5"
-      >
-        <Trophy className="w-4 h-4" /> {fetching ? 'Получаем...' : 'Результат'}
-      </button>
+      {collected ? (
+        <button
+          onClick={() => handleClick(true)}
+          disabled={fetching || !endpoint}
+          title={!endpoint ? 'Источник ссылки не поддерживает автосбор результатов' : undefined}
+          className="shrink-0 bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+        >
+          <RotateCcw className="w-4 h-4" /> {fetching ? 'Пересобираем...' : 'Пересобрать'}
+        </button>
+      ) : (
+        <button
+          onClick={() => handleClick(false)}
+          disabled={fetching || !endpoint}
+          title={!endpoint ? 'Источник ссылки не поддерживает автосбор результатов' : undefined}
+          className="shrink-0 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+        >
+          <Trophy className="w-4 h-4" /> {fetching ? 'Получаем...' : 'Результат'}
+        </button>
+      )}
     </div>
   );
 }
@@ -456,9 +478,9 @@ export function RequestsView() {
                         key={t.id}
                         tournament={t}
                         onChallongeUsage={() => mutateUsage()}
-                        onUpdated={(playersCount) =>
+                        onUpdated={(playersCount, resultsFetchedAt) =>
                           mutateRequestTournaments(
-                            (current) => (current ?? []).map((c) => (c.id === t.id ? { ...c, playersCount } : c)),
+                            (current) => (current ?? []).map((c) => (c.id === t.id ? { ...c, playersCount, resultsFetchedAt } : c)),
                             { revalidate: false },
                           )
                         }

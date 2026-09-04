@@ -10,7 +10,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   const tournaments = await prisma.tournament.findMany({
     where: { requestId: params.id },
-    select: { id: true, name: true, sourceUrl: true, playersCount: true },
+    select: { id: true, name: true, sourceUrl: true, playersCount: true, resultsFetchedAt: true },
     orderBy: { createdAt: 'asc' },
   });
 

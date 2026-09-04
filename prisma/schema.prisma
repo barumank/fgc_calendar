@@ -28,6 +28,7 @@ model Tournament {
   featured      Boolean  @default(false)
   requestId     String?
   discordEventId String?
+  resultsFetchedAt DateTime?
   createdAt     DateTime @default(now())
 
   @@index([requestId])
@@ -149,6 +150,17 @@ model TournamentReminder {
   createdAt    DateTime @default(now())
 
   @@unique([tournamentId, userId, offset])
+}
+
+model TournamentResultCredit {
+  id           String   @id @default(uuid())
+  tournamentId String
+  playerId     String
+  rank         Int
+  points       Int
+  createdAt    DateTime @default(now())
+
+  @@unique([tournamentId, playerId])
 }
 
 model ExportLog {

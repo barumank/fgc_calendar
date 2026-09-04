@@ -3,18 +3,28 @@ import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { extractStartggEventSlug, fetchStartggEventStandings } from '@/lib/startgg';
-import { pointsForRank } from '@/lib/challonge';
-import { REGION_LABELS, RegionType } from '@/src/types';
+import { reversePreviousCredits, creditTop8 } from '@/lib/tournament-results';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
+
+  const body = await req.json().catch(() => ({}));
+  const force = !!body?.force;
 
   const tournament = await prisma.tournament.findUnique({ where: { id: params.id } });
   if (!tournament) {
     return NextResponse.json({ error: 'Турнир не найден' }, { status: 404 });
+  }
+
+  const alreadyCollected = await prisma.tournamentResultCredit.count({ where: { tournamentId: tournament.id } });
+  if (alreadyCollected > 0 && !force) {
+    return NextResponse.json(
+      { error: 'Результаты уже собраны для этого турнира', resultsFetchedAt: tournament.resultsFetchedAt },
+      { status: 409 },
+    );
   }
 
   const eventSlug = extractStartggEventSlug(tournament.sourceUrl);
@@ -34,44 +44,25 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: e?.message ?? 'Не удалось получить результаты со start.gg' }, { status: 502 });
   }
 
-  await prisma.tournament.update({ where: { id: tournament.id }, data: { playersCount: result.numEntrants } });
-
   const top8 = result.standings
     .filter((s) => s.placement > 0)
     .sort((a, b) => a.placement - b.placement)
     .slice(0, 8);
 
-  const players: any[] = [];
-  for (const s of top8) {
-    const rank = s.placement;
-    const pts = pointsForRank(rank);
-    const statUpdate = {
-      tournamentsPlayed: { increment: 1 },
-      points: { increment: pts },
-      wins: { increment: rank === 1 ? 1 : 0 },
-      top3: { increment: rank <= 3 ? 1 : 0 },
-    };
-    const baseData = {
-      country: REGION_LABELS[tournament.region as RegionType] ?? tournament.region,
-      region: tournament.region,
-      mainGame: tournament.game,
-      tournamentsPlayed: 1,
-      points: pts,
-      wins: rank === 1 ? 1 : 0,
-      top3: rank <= 3 ? 1 : 0,
-    };
-
-    const player = s.playerId
-      ? await prisma.player.upsert({
-          where: { startggPlayerId: s.playerId },
-          update: statUpdate,
-          create: { tag: s.name, startggPlayerId: s.playerId, ...baseData },
-        })
-      : await prisma.player.create({
-          data: { tag: s.name, ...baseData },
-        });
-
-    players.push({ ...player, finalRank: rank });
+  let players: any[] = [];
+  if (top8.length > 0) {
+    if (alreadyCollected > 0) await reversePreviousCredits(tournament.id);
+    players = await creditTop8(
+      tournament.id,
+      tournament,
+      top8.map((s) => ({ rank: s.placement, name: s.name, startggPlayerId: s.playerId })),
+    );
+    await prisma.tournament.update({
+      where: { id: tournament.id },
+      data: { playersCount: result.numEntrants, resultsFetchedAt: new Date() },
+    });
+  } else {
+    await prisma.tournament.update({ where: { id: tournament.id }, data: { playersCount: result.numEntrants } });
   }
 
   return NextResponse.json({
