@@ -9,7 +9,7 @@ import { Modal } from '@/src/components/common/modal';
 import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
-import { extractStartggTournamentSlug } from '@/lib/startgg';
+import { extractStartggTournamentSlug, extractStartggEventSlug } from '@/lib/startgg';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 interface StartggPreviewEvent {
@@ -24,7 +24,70 @@ interface StartggPreviewEvent {
   mappedGameLabel: string | null;
 }
 
+interface RequestTournament {
+  id: string;
+  name: string;
+  sourceUrl: string | null;
+  playersCount: number;
+}
+
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
+  tournament: RequestTournament;
+  onUpdated: (playersCount: number) => void;
+  onChallongeUsage: () => void;
+}) {
+  const [fetching, setFetching] = useState(false);
+  const challongeSlug = extractChallongeSlug(tournament.sourceUrl);
+  const startggSlug = extractStartggEventSlug(tournament.sourceUrl);
+  const endpoint = challongeSlug
+    ? `/next-api/tournaments/${tournament.id}/challonge-result`
+    : startggSlug
+      ? `/next-api/tournaments/${tournament.id}/startgg-result`
+      : null;
+
+  const handleClick = async () => {
+    if (!endpoint || fetching) return;
+    setFetching(true);
+    try {
+      const res = await fetch(endpoint, { method: 'POST' });
+      const data = await res.json();
+      if (challongeSlug) onChallongeUsage();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось получить результаты', 'error');
+        return;
+      }
+      if (!data.tournamentFinished) {
+        showToast(`«${tournament.name}»: турнир ещё не завершён — итоговых мест пока нет`, 'info');
+        return;
+      }
+      onUpdated(data.playersCount);
+      showToast(`«${tournament.name}»: обновлено — ${data.playersCount} участников, топ-8 сохранён в «Игроки»`, 'success');
+    } catch {
+      showToast('Не удалось получить результаты', 'error');
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white/5">
+      <div className="min-w-0">
+        <div className="text-sm font-medium truncate">{tournament.name}</div>
+        <div className="text-xs text-muted-foreground">{tournament.playersCount} игроков</div>
+      </div>
+      <button
+        onClick={handleClick}
+        disabled={fetching || !endpoint}
+        title={!endpoint ? 'Источник ссылки не поддерживает автосбор результатов' : undefined}
+        className="shrink-0 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1.5"
+      >
+        <Trophy className="w-4 h-4" /> {fetching ? 'Получаем...' : 'Результат'}
+      </button>
+    </div>
+  );
+}
 
 function formatDateTime(iso: string) {
   const d = new Date(iso);
@@ -53,7 +116,10 @@ export function RequestsView() {
   const { data: usage, mutate: mutateUsage } = useSWR<{ count: number; limit: number }>('/next-api/challonge-usage', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [fetchingResult, setFetchingResult] = useState(false);
+  const { data: requestTournaments, mutate: mutateRequestTournaments } = useSWR<RequestTournament[]>(
+    selectedRequest?.status === 'approved' ? `/next-api/requests/${selectedRequest.id}/tournaments` : null,
+    fetcher,
+  );
   const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('pending');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterDate, setFilterDate] = useState('');
@@ -109,28 +175,6 @@ export function RequestsView() {
     }
   };
 
-  const handleResultClick = async (request: TournamentRequest) => {
-    if (fetchingResult) return;
-    setFetchingResult(true);
-    try {
-      const res = await fetch(`/next-api/requests/${request.id}/challonge-result`, { method: 'POST' });
-      const data = await res.json();
-      await mutateUsage();
-      if (!res.ok) {
-        showToast(data?.error ?? 'Не удалось получить результаты', 'error');
-        return;
-      }
-      if (!data.tournamentFinished) {
-        showToast('Турнир на Challonge ещё не завершён — итоговых мест пока нет', 'info');
-        return;
-      }
-      showToast(`Обновлено: ${data.playersCount} участников, топ-8 сохранён в «Игроки»`, 'success');
-    } catch {
-      showToast('Не удалось получить результаты', 'error');
-    } finally {
-      setFetchingResult(false);
-    }
-  };
 
   const closeRequestModal = () => {
     setSelectedRequest(null);
@@ -395,29 +439,40 @@ export function RequestsView() {
               </div>
             )}
             {selectedRequest.status === 'approved' && (
-              <div className="pt-2 space-y-2">
+              <div className="pt-2 space-y-3">
                 {usage && (
                   <p className="text-xs text-muted-foreground text-right">
                     Запросов к Challonge в этом месяце: {usage.count}/{usage.limit}
                   </p>
                 )}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => handleAction(selectedRequest, 'unapprove')}
-                    disabled={processing}
-                    className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <RotateCcw className="w-4 h-4" /> Отменить
-                  </button>
-                  <button
-                    onClick={() => handleResultClick(selectedRequest)}
-                    disabled={fetchingResult || !extractChallongeSlug(selectedRequest.url)}
-                    title={!extractChallongeSlug(selectedRequest.url) ? 'Ссылка на турнир не похожа на Challonge (https://challonge.com/...)' : undefined}
-                    className="flex-1 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
-                  >
-                    <Trophy className="w-4 h-4" /> {fetchingResult ? 'Получаем...' : 'Результат'}
-                  </button>
+                <div className="space-y-2">
+                  {!requestTournaments ? (
+                    <div className="text-sm text-muted-foreground py-2">Загрузка турниров...</div>
+                  ) : requestTournaments.length === 0 ? (
+                    <div className="text-sm text-muted-foreground py-2">Турниры не найдены</div>
+                  ) : (
+                    requestTournaments.map((t) => (
+                      <TournamentResultRow
+                        key={t.id}
+                        tournament={t}
+                        onChallongeUsage={() => mutateUsage()}
+                        onUpdated={(playersCount) =>
+                          mutateRequestTournaments(
+                            (current) => (current ?? []).map((c) => (c.id === t.id ? { ...c, playersCount } : c)),
+                            { revalidate: false },
+                          )
+                        }
+                      />
+                    ))
+                  )}
                 </div>
+                <button
+                  onClick={() => handleAction(selectedRequest, 'unapprove')}
+                  disabled={processing}
+                  className="w-full bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <RotateCcw className="w-4 h-4" /> Отменить
+                </button>
               </div>
             )}
           </div>

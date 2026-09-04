@@ -1,5 +1,30 @@
 const STARTGG_API_URL = 'https://api.start.gg/gql/alpha';
 
+async function postStartggQuery(query: string, variables: Record<string, unknown>, apiToken: string): Promise<any> {
+  const res = await fetch(STARTGG_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiToken}`,
+    },
+    body: JSON.stringify({ query, variables }),
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    if (res.status === 429) throw new Error('Превышен лимит запросов к start.gg API, попробуйте чуть позже');
+    throw new Error(`start.gg API error: ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (json?.errors?.length) {
+    const message = json.errors[0]?.message ?? 'unknown error';
+    throw new Error(`start.gg API error: ${message}`);
+  }
+
+  return json?.data;
+}
+
 export function extractStartggTournamentSlug(url: string | null | undefined): string | null {
   if (!url) return null;
   try {
@@ -9,6 +34,22 @@ export function extractStartggTournamentSlug(url: string | null | undefined): st
     const idx = segments.findIndex((s) => s.toLowerCase() === 'tournament');
     if (idx === -1 || !segments[idx + 1]) return null;
     return segments[idx + 1];
+  } catch {
+    return null;
+  }
+}
+
+// Event links are stored as https://www.start.gg/tournament/<slug>/event/<slug>
+// (see buildTournamentName usage) — this pulls out that "tournament/x/event/y"
+// path, which start.gg's API accepts directly as an event slug.
+export function extractStartggEventSlug(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!/(^|\.)start\.gg$/i.test(parsed.hostname)) return null;
+    const path = parsed.pathname.replace(/^\/+|\/+$/g, '');
+    const match = /^tournament\/[^/]+\/event\/[^/]+/i.exec(path);
+    return match ? match[0] : null;
   } catch {
     return null;
   }
@@ -53,28 +94,9 @@ const TOURNAMENT_EVENTS_QUERY = `
 `;
 
 export async function fetchStartggTournamentEvents(slug: string, apiToken: string): Promise<StartggTournament> {
-  const res = await fetch(STARTGG_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiToken}`,
-    },
-    body: JSON.stringify({ query: TOURNAMENT_EVENTS_QUERY, variables: { slug } }),
-    cache: 'no-store',
-  });
+  const data = await postStartggQuery(TOURNAMENT_EVENTS_QUERY, { slug }, apiToken);
 
-  if (!res.ok) {
-    if (res.status === 429) throw new Error('Превышен лимит запросов к start.gg API, попробуйте чуть позже');
-    throw new Error(`start.gg API error: ${res.status}`);
-  }
-
-  const json = await res.json();
-  if (json?.errors?.length) {
-    const message = json.errors[0]?.message ?? 'unknown error';
-    throw new Error(`start.gg API error: ${message}`);
-  }
-
-  const tournament = json?.data?.tournament;
+  const tournament = data?.tournament;
   if (!tournament) {
     throw new Error('Турнир не найден на start.gg — проверьте ссылку');
   }
@@ -144,5 +166,62 @@ export function unixToMoscowDateTime(unixSeconds: number): { date: string; time:
   return {
     date: `${get('year')}-${get('month')}-${get('day')}`,
     time: `${get('hour')}:${get('minute')}`,
+  };
+}
+
+export interface StartggStanding {
+  placement: number;
+  name: string;
+  playerId: string | null;
+}
+
+export interface StartggEventStandings {
+  numEntrants: number;
+  standings: StartggStanding[];
+}
+
+const EVENT_STANDINGS_QUERY = `
+  query EventStandings($slug: String!, $page: Int!, $perPage: Int!) {
+    event(slug: $slug) {
+      numEntrants
+      standings(query: { page: $page, perPage: $perPage }) {
+        nodes {
+          placement
+          entrant {
+            name
+            participants {
+              gamerTag
+              player {
+                id
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export async function fetchStartggEventStandings(eventSlug: string, apiToken: string, perPage = 8): Promise<StartggEventStandings> {
+  const data = await postStartggQuery(EVENT_STANDINGS_QUERY, { slug: eventSlug, page: 1, perPage }, apiToken);
+
+  const event = data?.event;
+  if (!event) {
+    throw new Error('Событие не найдено на start.gg — проверьте ссылку');
+  }
+
+  const nodes = event.standings?.nodes ?? [];
+  const standings: StartggStanding[] = nodes.map((n: any) => {
+    const participant = n?.entrant?.participants?.[0];
+    return {
+      placement: typeof n?.placement === 'number' ? n.placement : 0,
+      name: n?.entrant?.name ?? participant?.gamerTag ?? 'Unknown',
+      playerId: participant?.player?.id != null ? String(participant.player.id) : null,
+    };
+  });
+
+  return {
+    numEntrants: typeof event.numEntrants === 'number' ? event.numEntrants : standings.length,
+    standings,
   };
 }

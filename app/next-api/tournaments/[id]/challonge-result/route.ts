@@ -10,22 +10,14 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 
-  const request = await prisma.tournamentRequest.findUnique({ where: { id: params.id } });
-  if (!request) {
-    return NextResponse.json({ error: 'Request not found' }, { status: 404 });
-  }
-  if (request.status !== 'approved') {
-    return NextResponse.json({ error: 'Request is not approved' }, { status: 409 });
-  }
-
-  const slug = extractChallongeSlug(request.url);
-  if (!slug) {
-    return NextResponse.json({ error: 'URL is not a Challonge tournament link' }, { status: 400 });
-  }
-
-  const tournament = await prisma.tournament.findFirst({ where: { requestId: request.id } });
+  const tournament = await prisma.tournament.findUnique({ where: { id: params.id } });
   if (!tournament) {
-    return NextResponse.json({ error: 'Tournament not found for this request' }, { status: 404 });
+    return NextResponse.json({ error: 'Турнир не найден' }, { status: 404 });
+  }
+
+  const slug = extractChallongeSlug(tournament.sourceUrl);
+  if (!slug) {
+    return NextResponse.json({ error: 'Ссылка на турнир не похожа на Challonge' }, { status: 400 });
   }
 
   let participants: ChallongeParticipant[];

@@ -80,6 +80,7 @@ model Player {
   twitter           String?
   twitch            String?
   challongeUsername String?  @unique
+  startggPlayerId   String?  @unique
   createdAt         DateTime @default(now())
 }
 
