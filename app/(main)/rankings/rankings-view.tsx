@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { Trophy, Medal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Player } from '@/src/types/player';
 import { GameType } from '@/src/types';
+import { PlayerDetailModal } from '@/src/components/common/player-detail-modal';
 import { useGames } from '@/src/hooks/use-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
@@ -17,6 +18,7 @@ export function RankingsView() {
   const { data: players } = useSWR<Player[]>('/next-api/players', fetcher);
   const [selectedGame, setSelectedGame] = useState<GameType>('tekken8');
   const [page, setPage] = useState(1);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   const ranked = useMemo(() => {
     return (players ?? [])
@@ -52,7 +54,7 @@ export function RankingsView() {
         {(paginated ?? []).map((p: Player, idx: number) => {
           const rank = (page - 1) * PAGE_SIZE + idx;
           return (
-            <div key={p?.id} className={`grid grid-cols-[60px_1fr_120px_80px_80px_80px_100px] gap-4 px-6 py-3 items-center text-sm ${
+            <button key={p?.id} onClick={() => setSelectedPlayer(p)} className={`w-full text-left grid grid-cols-[60px_1fr_120px_80px_80px_80px_100px] gap-4 px-6 py-3 items-center text-sm hover:bg-white/5 transition-colors ${
               rank < 3 ? 'bg-white/[0.02]' : ''
             } ${idx < (paginated?.length ?? 0) - 1 ? 'border-b border-border/10' : ''}`}>
               <div className="font-bold">
@@ -69,7 +71,7 @@ export function RankingsView() {
               <div className="text-muted-foreground">{p?.tournamentsPlayed}</div>
               <div className="text-muted-foreground">{p?.wins}</div>
               <div className="text-muted-foreground">{p?.top3}</div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -92,6 +94,7 @@ export function RankingsView() {
           </button>
         </div>
       )}
+      <PlayerDetailModal player={selectedPlayer} gameLabels={GAME_LABELS} gameColors={GAME_COLORS} onClose={() => setSelectedPlayer(null)} />
     </div>
   );
 }
