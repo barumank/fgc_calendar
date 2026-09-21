@@ -18,4 +18,5 @@ export interface TournamentRequest {
   bannerUrl?: string;
   status: RequestStatus;
   createdAt: string;
+  resultsPending?: boolean;
 }

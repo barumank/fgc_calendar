@@ -142,7 +142,7 @@ export function RequestsView() {
     selectedRequest?.status === 'approved' ? `/next-api/requests/${selectedRequest.id}/tournaments` : null,
     fetcher,
   );
-  const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | ''>('pending');
+  const [filterStatus, setFilterStatus] = useState<TournamentRequest['status'] | 'awaiting_results' | ''>('pending');
   const [filterGame, setFilterGame] = useState<GameType | ''>('');
   const [filterDate, setFilterDate] = useState('');
   const [page, setPage] = useState(1);
@@ -153,7 +153,11 @@ export function RequestsView() {
 
   const filtered = useMemo(() => {
     return (requests ?? []).filter((r: TournamentRequest) => {
-      if (filterStatus && r.status !== filterStatus) return false;
+      if (filterStatus === 'awaiting_results') {
+        if (!r.resultsPending) return false;
+      } else if (filterStatus && r.status !== filterStatus) {
+        return false;
+      }
       if (filterGame && r.game !== filterGame) return false;
       if (filterDate && r.startDate !== filterDate) return false;
       return true;
@@ -272,6 +276,7 @@ export function RequestsView() {
         <select value={filterStatus} onChange={(e: any) => setFilterStatus(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
           <option value="" className="bg-[#1A1A2E] text-foreground">Все статусы</option>
           {ALL_STATUSES.map((s: TournamentRequest['status']) => <option key={s} value={s} className="bg-[#1A1A2E] text-foreground">{STATUS_LABELS[s]}</option>)}
+          <option value="awaiting_results" className="bg-[#1A1A2E] text-foreground">Ждут результата</option>
         </select>
         <select value={filterGame} onChange={(e: any) => setFilterGame(e?.target?.value ?? '')} className="bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground">
           <option value="" className="bg-[#1A1A2E] text-foreground">Все игры</option>
@@ -313,6 +318,9 @@ export function RequestsView() {
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-sm font-semibold truncate">{r.name}</h3>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-medium shrink-0 ${STATUS_STYLES[r.status]}`}>{STATUS_LABELS[r.status]}</span>
+                  {r.resultsPending && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium shrink-0 bg-yellow-500/10 text-yellow-400"><Trophy className="w-3 h-3" />Ждёт результата</span>
+                  )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{r.startDate} — {r.endDate}</span>
