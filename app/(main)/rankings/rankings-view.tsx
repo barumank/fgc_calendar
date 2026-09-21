@@ -22,7 +22,7 @@ export function RankingsView() {
 
   const ranked = useMemo(() => {
     return (players ?? [])
-      .filter((p: Player) => p?.mainGame === selectedGame || selectedGame === 'multi_game')
+      .filter((p: Player) => p?.mainGame === selectedGame)
       .sort((a: Player, b: Player) => (b?.points ?? 0) - (a?.points ?? 0));
   }, [players, selectedGame]);
 
