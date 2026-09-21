@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, ExternalLink, Bell } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, MapPin, Users, CalendarDays, Clock, Wifi, ExternalLink, Bell, Trophy } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { Modal } from '@/src/components/common/modal';
 import { LinkifiedText } from '@/src/components/common/linkified-text';
@@ -282,6 +282,7 @@ export function CalendarView() {
                             </span>
                             <span className="flex items-center gap-1">
                               {t?.startTime && <span className="opacity-80">{t.startTime}</span>}
+                              {t?.resultsFetchedAt && <Trophy className="w-2.5 h-2.5 shrink-0 opacity-80" />}
                               <span className="shrink-0 opacity-80 ml-auto">{GAME_SHORT_LABELS[t?.game]}</span>
                             </span>
                           </>
@@ -290,6 +291,7 @@ export function CalendarView() {
                             {t?.format === 'online' ? <Wifi className="w-2.5 h-2.5 shrink-0" /> : <MapPin className="w-2.5 h-2.5 shrink-0" />}
                             <span className="truncate flex-1 min-w-0">{t?.name}</span>
                             {t?.startTime && <span className="shrink-0 opacity-80">{t.startTime}</span>}
+                            {t?.resultsFetchedAt && <Trophy className="w-2.5 h-2.5 shrink-0 opacity-80" />}
                             <span className="shrink-0 opacity-80">{GAME_SHORT_LABELS[t?.game]}</span>
                           </>
                         )}
@@ -373,6 +375,9 @@ export function CalendarView() {
               {selectedTournament?.format !== 'online' && (
                 <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
               )}
+              {selectedTournament?.resultsFetchedAt && (
+                <span className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-yellow-500/15 text-yellow-400"><Trophy className="w-3.5 h-3.5" />Результаты собраны</span>
+              )}
               <span className="flex items-center gap-1.5 text-sm text-muted-foreground ml-1"><CalendarDays className="w-4 h-4" />{formatDateRange(selectedTournament?.startDate ?? '', selectedTournament?.endDate ?? '')}</span>
               {selectedTournament?.startTime && <span className="flex items-center gap-1.5 text-sm text-muted-foreground"><Clock className="w-4 h-4" />{selectedTournament.startTime}</span>}
             </div>
@@ -385,6 +390,7 @@ export function CalendarView() {
                 <a href={selectedTournament.communicationUrl} target="_blank" rel="noopener noreferrer" className="flex-1 bg-white/5 hover:bg-white/10 text-foreground py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-1.5 transition-colors">Общение по турниру <ExternalLink className="w-4 h-4" /></a>
               )}
             </div>
+            {(selectedTournament?.endDate ?? '') >= todayStr && (
             <div className="pt-3 border-t border-border/20 flex flex-wrap items-start gap-x-6 gap-y-3">
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2"><Bell className="w-3.5 h-3.5" />Уведомить меня в Telegram</div>
@@ -431,6 +437,7 @@ export function CalendarView() {
                 </div>
               </div>
             </div>
+            )}
           </div>
         )}
       </Modal>

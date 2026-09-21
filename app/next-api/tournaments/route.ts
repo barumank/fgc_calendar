@@ -29,6 +29,7 @@ export async function GET() {
       featured: true,
       requestId: true,
       discordEventId: true,
+      resultsFetchedAt: true,
       createdAt: true,
     },
   });

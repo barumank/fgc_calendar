@@ -24,6 +24,7 @@ export interface Tournament {
   communicationUrl?: string;
   featured?: boolean;
   discordEventId?: string;
+  resultsFetchedAt?: string | null;
   createdAt?: string;
 }
 
