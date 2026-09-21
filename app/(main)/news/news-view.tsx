@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { CalendarDays, Newspaper, ChevronLeft, ChevronRight } from 'lucide-react';
 import { NewsItem, NewsCategory, NEWS_CATEGORY_LABELS } from '@/src/types/news';
 import { Modal } from '@/src/components/common/modal';
+import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 const CATEGORIES: NewsCategory[] = ['announcement','results','update','interview'];
@@ -100,7 +101,7 @@ export function NewsView() {
               <span className="px-2 py-0.5 rounded text-xs font-medium text-white" style={{ backgroundColor: CATEGORY_COLORS[selectedNews?.category] }}>{NEWS_CATEGORY_LABELS[selectedNews?.category]}</span>
               <span className="text-sm text-muted-foreground">{formatDate(selectedNews?.publishedAt)}</span>
             </div>
-            <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{selectedNews?.content}</p>
+            <LinkifiedText text={selectedNews?.content} className="text-sm leading-relaxed text-foreground" />
             {selectedNews?.authorName && (
               <p className="text-xs text-muted-foreground text-right">{selectedNews.authorName}</p>
             )}
