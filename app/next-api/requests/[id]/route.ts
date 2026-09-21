@@ -3,6 +3,17 @@ import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 export const dynamic = 'force-dynamic';
 
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const { error } = await requireRole(['admin', 'moderator']);
+  if (error) return error;
+
+  const request = await prisma.tournamentRequest.findUnique({ where: { id: params.id } });
+  if (!request) {
+    return NextResponse.json({ error: 'Заявка не найдена' }, { status: 404 });
+  }
+  return NextResponse.json(request);
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;

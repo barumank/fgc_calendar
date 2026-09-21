@@ -138,6 +138,12 @@ export function RequestsView() {
   const { data: usage, mutate: mutateUsage } = useSWR<{ count: number; limit: number }>('/next-api/challonge-usage', fetcher);
   const [selectedRequest, setSelectedRequest] = useState<TournamentRequest | null>(null);
   const [processing, setProcessing] = useState(false);
+  // The list endpoint omits bannerUrl (can be several MB each); fetch the
+  // one being viewed on demand instead of shipping every banner up front.
+  const { data: selectedRequestDetail } = useSWR<TournamentRequest>(
+    selectedRequest ? `/next-api/requests/${selectedRequest.id}` : null,
+    fetcher,
+  );
   const { data: requestTournaments, mutate: mutateRequestTournaments } = useSWR<RequestTournament[]>(
     selectedRequest?.status === 'approved' ? `/next-api/requests/${selectedRequest.id}/tournaments` : null,
     fetcher,
@@ -306,14 +312,9 @@ export function RequestsView() {
               onClick={() => openRequest(r)}
               className="w-full text-left bg-[#1A1A2E] rounded-xl border border-border/30 hover:border-border/60 transition-colors p-4 flex items-center gap-4"
             >
-              {r.bannerUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.bannerUrl} alt="" className="w-14 h-14 rounded-lg object-cover shrink-0" />
-              ) : (
-                <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                  <ClipboardList className="w-5 h-5 text-muted-foreground" />
-                </div>
-              )}
+              <div className="w-14 h-14 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-5 h-5 text-muted-foreground" />
+              </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="text-sm font-semibold truncate">{r.name}</h3>
@@ -358,9 +359,9 @@ export function RequestsView() {
       <Modal isOpen={!!selectedRequest} onClose={closeRequestModal} title={selectedRequest?.name ?? ''}>
         {selectedRequest && (
           <div className="space-y-4">
-            {selectedRequest.bannerUrl && (
+            {selectedRequestDetail?.id === selectedRequest.id && selectedRequestDetail?.bannerUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedRequest.bannerUrl} alt="" className="w-full h-40 object-cover rounded-lg" />
+              <img src={selectedRequestDetail.bannerUrl} alt="" className="w-full h-40 object-cover rounded-lg" />
             )}
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[selectedRequest.status]}`}>

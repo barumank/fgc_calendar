@@ -19,7 +19,29 @@ export async function GET() {
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 
-  const requests = await prisma.tournamentRequest.findMany({ orderBy: { createdAt: 'desc' } });
+  // bannerUrl is a base64 data URL and can be several MB per request — the
+  // list used to include it for all requests, so this endpoint returned
+  // tens of MB of JSON on every load. It's fetched on demand instead, via
+  // GET /next-api/requests/[id], only for the one request being viewed.
+  const requests = await prisma.tournamentRequest.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      url: true,
+      communicationUrl: true,
+      comment: true,
+      startDate: true,
+      endDate: true,
+      startTime: true,
+      region: true,
+      city: true,
+      game: true,
+      format: true,
+      status: true,
+      createdAt: true,
+    },
+  });
 
   // "Ждут результата": an approved request with at least one tournament
   // that has a collectible bracket link (Challonge/start.gg) but no
