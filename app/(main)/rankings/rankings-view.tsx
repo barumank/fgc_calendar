@@ -36,7 +36,7 @@ export function RankingsView() {
   return (
     <div className="px-6 pt-6">
       <div className="flex flex-wrap items-center gap-2 mb-6">
-        {ALL_GAMES.map((g: GameType) => (
+        {ALL_GAMES.filter((g: GameType) => g !== 'multi_game').map((g: GameType) => (
           <button key={g} onClick={() => setSelectedGame(g)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedGame === g ? 'text-white' : 'bg-white/5 text-muted-foreground hover:bg-white/10'
