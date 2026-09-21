@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Search, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X } from 'lucide-react';
+import { Search, MapPin, Users, CalendarDays, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ExternalLink, ArrowUpDown, X, Trophy } from 'lucide-react';
 import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
 import { LinkifiedText } from '@/src/components/common/linkified-text';
@@ -138,6 +138,9 @@ export function TournamentsView() {
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="text-base font-semibold truncate">{t?.name}</h3>
                       <span className="px-2 py-0.5 rounded text-[10px] font-medium text-white shrink-0" style={{ backgroundColor: GAME_COLORS[t?.game] }}>{GAME_LABELS[t?.game]}</span>
+                      {t?.resultsFetchedAt && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-500/15 text-yellow-400 shrink-0"><Trophy className="w-3 h-3" />Результаты собраны</span>
+                      )}
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">{t?.format === 'online' ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{FORMAT_LABELS[t?.format]}</span>
