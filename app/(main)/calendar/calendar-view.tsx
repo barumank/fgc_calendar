@@ -344,7 +344,7 @@ export function CalendarView() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-4 mt-4 justify-center">
-          {ALL_GAMES.map((g: GameType) => (<div key={g} className="flex items-center gap-2"><div className="w-5 h-5 rounded-full" style={{ backgroundColor: GAME_COLORS[g] }} /><span className="text-2xl text-muted-foreground">{GAME_LABELS[g]}</span></div>))}
+          {ALL_GAMES.map((g: GameType) => (<div key={g} className="flex items-center gap-2"><div className={`${isMobile ? 'w-2.5 h-2.5' : 'w-5 h-5'} rounded-full`} style={{ backgroundColor: GAME_COLORS[g] }} /><span className={`${isMobile ? 'text-xs' : 'text-2xl'} text-muted-foreground`}>{GAME_LABELS[g]}</span></div>))}
         </div>
       </div>
       {!isMobile && (
