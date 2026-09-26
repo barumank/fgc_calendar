@@ -16,7 +16,7 @@ export const metadata = {
   title: 'FightNexus Tournaments',
   description: 'Онлайн-платформа для турниров по файтингам',
   icons: {
-    icon: '/favicon.svg',
+    icon: '/favicon.ico',
   },
 }
 
