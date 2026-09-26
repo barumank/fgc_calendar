@@ -8,7 +8,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
-  ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell
+  ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell, HelpCircle
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -30,6 +30,7 @@ const mainLinks = [
   { href: '/rankings', label: 'Рейтинг', icon: BarChart3 },
   { href: '/news', label: 'Новости', icon: Newspaper },
   { href: '/calendar-export', label: 'Экспорт календаря', icon: UploadCloud },
+  { href: '/faq', label: 'FAQ', icon: HelpCircle },
 ];
 
 const adminSubLinks = [

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import useSWR from 'swr';
-import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight, Gamepad2 } from 'lucide-react';
+import { ClipboardList, CalendarDays, Clock, ExternalLink, Check, X as XIcon, Trophy, RotateCcw, ChevronLeft, ChevronRight, Gamepad2, Star } from 'lucide-react';
 import { TournamentRequest, REGION_LABELS, FORMAT_LABELS, GameType } from '@/src/types';
 import { useGames } from '@/src/hooks/use-games';
 import { Modal } from '@/src/components/common/modal';
@@ -30,6 +30,7 @@ interface RequestTournament {
   sourceUrl: string | null;
   playersCount: number;
   resultsFetchedAt: string | null;
+  featured: boolean;
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -154,6 +155,7 @@ export function RequestsView() {
   const [page, setPage] = useState(1);
   const [startggEvents, setStartggEvents] = useState<StartggPreviewEvent[] | null>(null);
   const [startggLoading, setStartggLoading] = useState(false);
+  const [togglingFeatured, setTogglingFeatured] = useState(false);
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
 
@@ -272,6 +274,32 @@ export function RequestsView() {
       showToast('Не удалось импортировать турниры', 'error');
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleToggleFeatured = async (request: TournamentRequest, featured: boolean) => {
+    if (togglingFeatured) return;
+    setTogglingFeatured(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/featured`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featured }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось изменить Featured', 'error');
+        return;
+      }
+      mutateRequestTournaments(
+        (current) => (current ?? []).map((c) => ({ ...c, featured })),
+        { revalidate: false },
+      );
+      showToast(featured ? 'Турнир(ы) этой заявки отмечены как Featured' : 'Убрано из Featured', 'success');
+    } catch {
+      showToast('Не удалось изменить Featured', 'error');
+    } finally {
+      setTogglingFeatured(false);
     }
   };
 
@@ -475,6 +503,20 @@ export function RequestsView() {
                   <p className="text-xs text-muted-foreground text-right">
                     Запросов к Challonge в этом месяце: {usage.count}/{usage.limit}
                   </p>
+                )}
+                {requestTournaments && requestTournaments.length > 0 && (
+                  <button
+                    onClick={() => handleToggleFeatured(selectedRequest, !requestTournaments.some((t) => t.featured))}
+                    disabled={togglingFeatured}
+                    className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50 ${
+                      requestTournaments.some((t) => t.featured)
+                        ? 'bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25'
+                        : 'bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <Star className="w-4 h-4" />
+                    {requestTournaments.some((t) => t.featured) ? 'Убрать из Featured' : 'Показывать как Featured в календаре'}
+                  </button>
                 )}
                 <div className="space-y-2">
                   {!requestTournaments ? (
