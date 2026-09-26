@@ -169,7 +169,7 @@ export function Sidebar() {
         )}
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-3 space-y-0.5">
+        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-3 px-3 space-y-0.5">
           {mainLinks?.map((link: any) => {
             const Icon = link?.icon;
             const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
