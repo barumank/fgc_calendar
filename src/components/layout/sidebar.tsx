@@ -8,11 +8,13 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
-  ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell, HelpCircle
+  ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell, HelpCircle,
+  Menu, X, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { Role, ROLE_LABELS } from '@/lib/roles';
+import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -59,6 +61,10 @@ export function Sidebar() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { tier, mobileOpen, setMobileOpen, railExpanded, setRailExpanded } = useSidebarLayout();
+
+  const isOffCanvas = tier === 'compact';
+  const isIconOnly = tier === 'collapsed' && !railExpanded;
 
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -93,113 +99,197 @@ export function Sidebar() {
     await signOut({ callbackUrl: '/calendar' });
   };
 
+  const closeMobileMenu = () => {
+    if (isOffCanvas) setMobileOpen(false);
+  };
+
+  // Transform utilities are only applied on the off-canvas tier: an element with
+  // any transform (even translate-x-0) becomes a containing block for its
+  // fixed-position descendants, which would break the full-viewport login modal
+  // if it were nested inside the sidebar while a desktop tier is active.
+  const asideStateClasses = isOffCanvas
+    ? `w-[240px] transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`
+    : tier === 'collapsed'
+    ? `${railExpanded ? 'w-[240px]' : 'w-[72px]'} transition-[width] duration-200`
+    : 'w-[240px]';
+
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] bg-[#111128] border-r border-border/50 flex flex-col z-40">
-      {/* Logo */}
-      <div className="px-5 py-5 border-b border-border/30">
-        <Link href="/calendar" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-[#EF4444] rounded-lg flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-white" />
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-bold text-white tracking-wide">FIGHT<span className="text-[#EF4444]">NEXUS</span></div>
-            <div className="text-[10px] text-muted-foreground tracking-[0.2em]">TOURNAMENTS</div>
-          </div>
-        </Link>
-      </div>
+    <>
+      {isOffCanvas && !mobileOpen && (
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="fixed top-4 left-4 z-30 p-2.5 rounded-lg bg-[#111128] border border-border/50 text-foreground shadow-lg"
+          aria-label="Открыть меню"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-        {mainLinks?.map((link: any) => {
-          const Icon = link?.icon;
-          const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
-          return (
-            <Link
-              key={link?.href}
-              href={link?.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                isActive
-                  ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-              }`}
-            >
-              {Icon && <Icon className="w-[18px] h-[18px] shrink-0" />}
-              <span>{link?.label}</span>
-            </Link>
-          );
-        })}
+      {isOffCanvas && mobileOpen && (
+        <div className="fixed inset-0 bg-black/60 z-30" onClick={closeMobileMenu} />
+      )}
 
-        {isAuthenticated && (
-          <>
-            {/* Divider */}
-            <div className="!my-3 border-t border-border/30" />
-
-            {/* Admin Panel */}
-            <button
-              onClick={() => setAdminOpen((p: boolean) => !p)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${
-                pathname?.startsWith('/admin')
-                  ? 'text-[#EF4444] font-medium'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-              }`}
-            >
-              <Shield className="w-[18px] h-[18px] shrink-0" />
-              <span className="flex-1 text-left">Личный Кабинет</span>
-              {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </button>
-            {adminOpen && (
-              <div className="ml-3 space-y-0.5">
-                {visibleAdminSubLinks?.map((link: any) => {
-                  const Icon = link?.icon;
-                  const isActive = pathname === link?.href;
-                  return (
-                    <Link
-                      key={link?.href}
-                      href={link?.href}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        isActive
-                          ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                      }`}
-                    >
-                      {Icon && <Icon className="w-4 h-4 shrink-0" />}
-                      <span>{link?.label}</span>
-                    </Link>
-                  );
-                })}
+      <aside className={`fixed left-0 top-0 h-screen ${asideStateClasses} bg-[#111128] border-r border-border/50 flex flex-col z-40`}>
+        {/* Logo */}
+        <div className={`flex items-center border-b border-border/30 ${isIconOnly ? 'justify-center px-2 py-5' : 'justify-between px-5 py-5'}`}>
+          <Link href="/calendar" className="flex items-center gap-2 min-w-0" onClick={closeMobileMenu}>
+            <div className="w-9 h-9 bg-[#EF4444] rounded-lg flex items-center justify-center shrink-0">
+              <Trophy className="w-5 h-5 text-white" />
+            </div>
+            {!isIconOnly && (
+              <div className="leading-tight min-w-0">
+                <div className="text-sm font-bold text-white tracking-wide truncate">FIGHT<span className="text-[#EF4444]">NEXUS</span></div>
+                <div className="text-[10px] text-muted-foreground tracking-[0.2em]">TOURNAMENTS</div>
               </div>
             )}
-          </>
-        )}
-      </nav>
+          </Link>
 
-      {/* User */}
-      <div className="px-4 py-4 border-t border-border/30">
-        {isAuthenticated ? (
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
-              {(session?.user?.name ?? session?.user?.email ?? '?').charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-foreground truncate">{session?.user?.name ?? session?.user?.email}</div>
-              <div className="text-xs text-[#EF4444]">{ROLE_LABELS[role]}</div>
-            </div>
-            <button onClick={handleLogout} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" title="Выйти">
-              <LogOut className="w-4 h-4" />
+          {isOffCanvas && (
+            <button onClick={closeMobileMenu} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" aria-label="Закрыть меню">
+              <X className="w-5 h-5" />
             </button>
-          </div>
-        ) : (
+          )}
+
+          {tier === 'collapsed' && railExpanded && (
+            <button onClick={() => setRailExpanded(false)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" aria-label="Свернуть меню" title="Свернуть меню">
+              <ChevronsLeft className="w-[18px] h-[18px]" />
+            </button>
+          )}
+        </div>
+
+        {isIconOnly && (
           <button
-            onClick={() => setShowLoginModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 text-foreground transition-colors"
+            onClick={() => setRailExpanded(true)}
+            className="mx-2 mt-2 p-2.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors flex items-center justify-center"
+            aria-label="Развернуть меню"
+            title="Развернуть меню"
           >
-            <LogIn className="w-4 h-4" />
-            Войти
+            <ChevronsRight className="w-[18px] h-[18px]" />
           </button>
         )}
-      </div>
 
-      {/* Login modal */}
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-3 space-y-0.5">
+          {mainLinks?.map((link: any) => {
+            const Icon = link?.icon;
+            const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
+            return (
+              <Link
+                key={link?.href}
+                href={link?.href}
+                onClick={closeMobileMenu}
+                title={isIconOnly ? link?.label : undefined}
+                className={`flex items-center gap-3 py-2.5 rounded-lg text-sm transition-colors ${isIconOnly ? 'justify-center px-0' : 'px-3'} ${
+                  isActive
+                    ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                }`}
+              >
+                {Icon && <Icon className="w-[18px] h-[18px] shrink-0" />}
+                {!isIconOnly && <span>{link?.label}</span>}
+              </Link>
+            );
+          })}
+
+          {isAuthenticated && !isIconOnly && (
+            <>
+              {/* Divider */}
+              <div className="!my-3 border-t border-border/30" />
+
+              {/* Admin Panel */}
+              <button
+                onClick={() => setAdminOpen((p: boolean) => !p)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${
+                  pathname?.startsWith('/admin')
+                    ? 'text-[#EF4444] font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                }`}
+              >
+                <Shield className="w-[18px] h-[18px] shrink-0" />
+                <span className="flex-1 text-left">Личный Кабинет</span>
+                {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </button>
+              {adminOpen && (
+                <div className="ml-3 space-y-0.5">
+                  {visibleAdminSubLinks?.map((link: any) => {
+                    const Icon = link?.icon;
+                    const isActive = pathname === link?.href;
+                    return (
+                      <Link
+                        key={link?.href}
+                        href={link?.href}
+                        onClick={closeMobileMenu}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          isActive
+                            ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                        }`}
+                      >
+                        {Icon && <Icon className="w-4 h-4 shrink-0" />}
+                        <span>{link?.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+
+          {isAuthenticated && isIconOnly && (
+            <>
+              <div className="!my-3 border-t border-border/30" />
+              <button
+                onClick={() => setRailExpanded(true)}
+                title="Личный Кабинет"
+                className={`flex items-center justify-center py-2.5 rounded-lg text-sm w-full transition-colors ${
+                  pathname?.startsWith('/admin')
+                    ? 'text-[#EF4444] font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                }`}
+              >
+                <Shield className="w-[18px] h-[18px] shrink-0" />
+              </button>
+            </>
+          )}
+        </nav>
+
+        {/* User */}
+        <div className={`border-t border-border/30 ${isIconOnly ? 'px-2 py-4' : 'px-4 py-4'}`}>
+          {isAuthenticated ? (
+            <div className={`flex items-center ${isIconOnly ? 'justify-center' : 'gap-3'}`}>
+              <div
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shrink-0"
+                title={isIconOnly ? (session?.user?.name ?? session?.user?.email ?? undefined) : undefined}
+              >
+                {(session?.user?.name ?? session?.user?.email ?? '?').charAt(0).toUpperCase()}
+              </div>
+              {!isIconOnly && (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-foreground truncate">{session?.user?.name ?? session?.user?.email}</div>
+                    <div className="text-xs text-[#EF4444]">{ROLE_LABELS[role]}</div>
+                  </div>
+                  <button onClick={handleLogout} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors shrink-0" title="Выйти">
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              title={isIconOnly ? 'Войти' : undefined}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium bg-white/5 hover:bg-white/10 text-foreground transition-colors ${isIconOnly ? 'px-0' : 'px-3'}`}
+            >
+              <LogIn className="w-4 h-4" />
+              {!isIconOnly && 'Войти'}
+            </button>
+          )}
+        </div>
+      </aside>
+
+      {/* Login modal — kept as a sibling of <aside>, not nested inside it, so it
+          always overlays the full viewport regardless of the sidebar's tier. */}
       <Modal isOpen={showLoginModal} onClose={closeLoginModal} title="Вход">
         <div className="space-y-4">
           <div className="bg-[#229ED9]/10 border border-[#229ED9]/30 rounded-lg p-3 text-xs text-muted-foreground leading-relaxed">
@@ -240,6 +330,6 @@ export function Sidebar() {
           </button>
         </div>
       </Modal>
-    </aside>
+    </>
   );
 }
