@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
@@ -65,6 +65,35 @@ export function Sidebar() {
 
   const isOffCanvas = tier === 'compact';
   const isIconOnly = tier === 'collapsed' && !railExpanded;
+
+  // Auto-shrink nav item spacing when the full list (main links + expanded
+  // admin submenu) doesn't fit the viewport height, so the user/role block
+  // always stays pinned to the bottom without a scrollbar appearing — this
+  // depends on real available height (DPI scaling, browser chrome), which
+  // can't be predicted from a fixed breakpoint, so it's measured at runtime.
+  const navRef = useRef<HTMLElement>(null);
+  const [dense, setDense] = useState(false);
+
+  // Re-measure from a clean (normal-padding) slate whenever the content set,
+  // viewport, or fonts change — fonts matter because a layout effect can run
+  // before the self-hosted font swaps in, and the fallback font's metrics
+  // would otherwise get baked in as a wrong, permanently-cached measurement.
+  useLayoutEffect(() => {
+    setDense(false);
+  }, [isAuthenticated, adminOpen, visibleAdminSubLinks.length, isIconOnly]);
+
+  useLayoutEffect(() => {
+    const el = navRef.current;
+    if (!el || dense) return;
+    if (el.scrollHeight > el.clientHeight) setDense(true);
+  });
+
+  useEffect(() => {
+    const recheck = () => setDense(false);
+    window.addEventListener('resize', recheck);
+    document.fonts?.ready?.then(recheck);
+    return () => window.removeEventListener('resize', recheck);
+  }, []);
 
   const closeLoginModal = () => {
     setShowLoginModal(false);
@@ -169,7 +198,7 @@ export function Sidebar() {
         )}
 
         {/* Nav */}
-        <nav className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-3 px-3 space-y-0.5">
+        <nav ref={navRef} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 ${dense ? 'py-1.5 space-y-0' : 'py-3 space-y-0.5'}`}>
           {mainLinks?.map((link: any) => {
             const Icon = link?.icon;
             const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
@@ -179,7 +208,7 @@ export function Sidebar() {
                 href={link?.href}
                 onClick={closeMobileMenu}
                 title={isIconOnly ? link?.label : undefined}
-                className={`flex items-center gap-3 py-2.5 rounded-lg text-sm transition-colors ${isIconOnly ? 'justify-center px-0' : 'px-3'} ${
+                className={`flex items-center gap-3 ${dense ? 'py-1' : 'py-2.5'} rounded-lg text-sm transition-colors ${isIconOnly ? 'justify-center px-0' : 'px-3'} ${
                   isActive
                     ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -194,12 +223,12 @@ export function Sidebar() {
           {isAuthenticated && !isIconOnly && (
             <>
               {/* Divider */}
-              <div className="!my-3 border-t border-border/30" />
+              <div className={`${dense ? '!my-1' : '!my-3'} border-t border-border/30`} />
 
               {/* Admin Panel */}
               <button
                 onClick={() => setAdminOpen((p: boolean) => !p)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm w-full transition-colors ${
+                className={`flex items-center gap-3 px-3 ${dense ? 'py-1' : 'py-2.5'} rounded-lg text-sm w-full transition-colors ${
                   pathname?.startsWith('/admin')
                     ? 'text-[#EF4444] font-medium'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -210,7 +239,7 @@ export function Sidebar() {
                 {adminOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </button>
               {adminOpen && (
-                <div className="ml-3 space-y-0.5">
+                <div className={`ml-3 ${dense ? 'space-y-0' : 'space-y-0.5'}`}>
                   {visibleAdminSubLinks?.map((link: any) => {
                     const Icon = link?.icon;
                     const isActive = pathname === link?.href;
@@ -219,7 +248,7 @@ export function Sidebar() {
                         key={link?.href}
                         href={link?.href}
                         onClick={closeMobileMenu}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        className={`flex items-center gap-3 px-3 ${dense ? 'py-1' : 'py-2'} rounded-lg text-sm transition-colors ${
                           isActive
                             ? 'bg-[#EF4444]/10 text-[#EF4444] font-medium'
                             : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -237,11 +266,11 @@ export function Sidebar() {
 
           {isAuthenticated && isIconOnly && (
             <>
-              <div className="!my-3 border-t border-border/30" />
+              <div className={`${dense ? '!my-1' : '!my-3'} border-t border-border/30`} />
               <button
                 onClick={() => setRailExpanded(true)}
                 title="Личный Кабинет"
-                className={`flex items-center justify-center py-2.5 rounded-lg text-sm w-full transition-colors ${
+                className={`flex items-center justify-center ${dense ? 'py-1' : 'py-2.5'} rounded-lg text-sm w-full transition-colors ${
                   pathname?.startsWith('/admin')
                     ? 'text-[#EF4444] font-medium'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
