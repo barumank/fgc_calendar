@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -22,6 +22,10 @@ const MONTH_NAMES = ['Январь','Февраль','Март','Апрель','
 const MONTH_ABBR = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
+
+// Matches the day cell's min-h-[165px]; used to cap the grid to a whole
+// number of visible weeks on narrow screens instead of shrinking cells further.
+const GRID_ROW_HEIGHT_PX = 165;
 
 function getCalendarDays(year: number, month: number) {
   const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -81,6 +85,12 @@ export function CalendarView() {
   const [filterRegions, setFilterRegions] = useState<RegionType[]>([]);
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
+
+  // <1090px shows 4 weeks, 1090-1274px shows 5, >=1275px is unchanged (all 6,
+  // no scroll wrapper). Rows beyond the cap aren't removed, just scrolled to.
+  const visibleGridRows = tier === 'compact' ? 4 : tier === 'collapsed' ? 5 : null;
+  const gridScrollRef = useRef<HTMLDivElement>(null);
+  const todayCellRef = useRef<HTMLDivElement>(null);
 
   const closeFilters = useCallback(() => setShowFilters(false), []);
   useClickOutside(filterRef, closeFilters);
@@ -160,6 +170,21 @@ export function CalendarView() {
   }, [tournaments, filterGames, filterFormat, filterRegions, filterDateFrom, filterDateTo]);
 
   const calendarDays = useMemo(() => getCalendarDays(currentYear, currentMonth), [currentYear, currentMonth]);
+
+  // When the grid is height-capped, default the scroll position to today's
+  // week (if the real current month is being viewed) so it's never hidden
+  // below the fold; otherwise start from the top of the displayed month.
+  useEffect(() => {
+    const container = gridScrollRef.current;
+    if (!container || !visibleGridRows) return;
+    const now = new Date();
+    const isViewingCurrentMonth = currentMonth === now.getMonth() && currentYear === now.getFullYear();
+    if (isViewingCurrentMonth && todayCellRef.current) {
+      todayCellRef.current.scrollIntoView({ block: 'start' });
+    } else {
+      container.scrollTop = 0;
+    }
+  }, [currentMonth, currentYear, visibleGridRows]);
 
   const prevMonth = () => {
     if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear((y: number) => y - 1); }
@@ -261,7 +286,11 @@ export function CalendarView() {
           <div className="grid grid-cols-7">
             {DAY_NAMES.map((d: string) => (<div key={d} className="text-center text-xs font-medium text-muted-foreground py-3 border-b border-border/20">{d}</div>))}
           </div>
-          <div className="grid grid-cols-7">
+          <div
+            ref={visibleGridRows ? gridScrollRef : undefined}
+            className={`grid grid-cols-7 ${visibleGridRows ? 'overflow-y-auto' : ''}`}
+            style={visibleGridRows ? { maxHeight: visibleGridRows * GRID_ROW_HEIGHT_PX } : undefined}
+          >
             {(calendarDays ?? []).map((dayObj: any, idx: number) => {
               const dayTournaments = (filteredTournaments ?? []).filter((t: Tournament) => isTournamentOnDay(t, dayObj?.year, dayObj?.month, dayObj?.day));
               const visible = dayTournaments.slice(0, 4);
@@ -270,7 +299,7 @@ export function CalendarView() {
               const isToday = dayObj?.isCurrentMonth && dateStr(dayObj?.year, dayObj?.month, dayObj?.day) === todayStr;
               const stretched = (visible?.length ?? 0) <= 2;
               return (
-                <div key={idx} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''} ${isToday ? 'ring-2 ring-inset ring-white' : ''}`}>
+                <div key={idx} ref={isToday ? todayCellRef : undefined} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''} ${isToday ? 'ring-2 ring-inset ring-white' : ''}`}>
                   <div className="text-xs text-muted-foreground mb-1 pl-1 shrink-0">{dayObj?.day}</div>
                   <div className="flex-1 flex flex-col gap-1">
                     {(visible ?? []).map((t: Tournament) => (
