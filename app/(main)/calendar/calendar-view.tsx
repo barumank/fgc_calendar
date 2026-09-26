@@ -12,6 +12,7 @@ import { showToast } from '@/src/components/common/toast-notification';
 import { useClickOutside } from '@/src/hooks/use-click-outside';
 import { useGames } from '@/src/hooks/use-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
+import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context';
 import { buildGoogleCalendarUrl, buildTournamentIcs } from '@/src/lib/add-to-calendar';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -60,6 +61,8 @@ function formatDateRange(startDate: string, endDate: string) {
 
 export function CalendarView() {
   const { status: authStatus } = useSession();
+  const { tier } = useSidebarLayout();
+  const isMobile = tier === 'compact';
   const { gameKeys: ALL_GAMES, labels: GAME_LABELS, shortLabels: GAME_SHORT_LABELS, colors: GAME_COLORS } = useGames();
   const { data: tournaments } = useSWR<Tournament[]>('/next-api/tournaments', fetcher);
   const [currentMonth, setCurrentMonth] = useState(() => new Date().getMonth());
@@ -251,7 +254,7 @@ export function CalendarView() {
               </div>
             )}
             </div>
-            <HeaderActions />
+            <HeaderActions hideReportButtonOnMobile />
           </div>
         </div>
         <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
@@ -315,6 +318,7 @@ export function CalendarView() {
           {ALL_GAMES.map((g: GameType) => (<div key={g} className="flex items-center gap-2"><div className="w-5 h-5 rounded-full" style={{ backgroundColor: GAME_COLORS[g] }} /><span className="text-2xl text-muted-foreground">{GAME_LABELS[g]}</span></div>))}
         </div>
       </div>
+      {!isMobile && (
       <div className="w-full xl:w-[340px] xl:shrink-0 space-y-6">
         {featuredTournament && (
           <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
@@ -362,6 +366,7 @@ export function CalendarView() {
           </div>
         </div>
       </div>
+      )}
       <Modal isOpen={!!selectedTournament} onClose={() => setSelectedTournament(null)} title={selectedTournament?.name ?? ''}>
         {selectedTournament && (
           <div className="space-y-4">

@@ -8,6 +8,7 @@ import { GameType, RegionType, FormatType, REGION_LABELS, FORMAT_LABELS } from '
 import { MAX_BANNER_BYTES, isAllowedBannerMimeType } from '@/src/lib/banner-constraints';
 import { tournamentDurationDays, MAX_TOURNAMENT_DURATION_DAYS } from '@/lib/date-validation';
 import { useGames } from '@/src/hooks/use-games';
+import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context';
 
 const REPORT_FORM_REGIONS: RegionType[] = ['russia', 'belarus', 'kazakhstan', 'usa', 'japan', 'cis', 'other'];
 const REPORT_FORM_FORMATS: FormatType[] = ['online', 'offline'];
@@ -31,8 +32,10 @@ const EMPTY_REPORT_FORM = {
   website: '',
 };
 
-export function HeaderActions() {
+export function HeaderActions({ hideReportButtonOnMobile = false }: { hideReportButtonOnMobile?: boolean }) {
   const { games } = useGames();
+  const { tier } = useSidebarLayout();
+  const isMobile = tier === 'compact';
   const [showReportModal, setShowReportModal] = useState(false);
   const [showLangToast, setShowLangToast] = useState(false);
   const [reportSent, setReportSent] = useState(false);
@@ -125,20 +128,24 @@ export function HeaderActions() {
   return (
     <>
       <div className="flex items-center gap-3 shrink-0">
-        <button
-          onClick={handleLangClick}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-sm"
-        >
-          <Globe className="w-4 h-4" />
-          RU
-        </button>
+        {!isMobile && (
+          <button
+            onClick={handleLangClick}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-sm"
+          >
+            <Globe className="w-4 h-4" />
+            RU
+          </button>
+        )}
 
-        <button
-          onClick={() => setShowReportModal(true)}
-          className="bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-        >
-          Сообщить о турнире
-        </button>
+        {!(isMobile && hideReportButtonOnMobile) && (
+          <button
+            onClick={() => setShowReportModal(true)}
+            className="bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+          >
+            Сообщить о турнире
+          </button>
+        )}
       </div>
 
       {/* Lang toast */}
