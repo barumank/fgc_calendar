@@ -221,18 +221,18 @@ export function CalendarView() {
   return (
     <div className="flex flex-col xl:flex-row gap-6 px-6 pt-6">
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-3">
-            <button onClick={goToday} className="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors">Сегодня</button>
+        <div className={`flex items-center justify-between gap-3 mb-4 ${isMobile ? 'pl-10' : ''}`}>
+          <div className={`flex items-center ${isMobile ? 'gap-1.5' : 'gap-3'}`}>
+            <button onClick={goToday} className={`${isMobile ? 'px-2.5' : 'px-4'} py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium transition-colors`}>Сегодня</button>
             <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors"><ChevronLeft className="w-4 h-4" /></button>
             <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-lg transition-colors"><ChevronRight className="w-4 h-4" /></button>
-            <h2 className="text-lg font-semibold">{MONTH_NAMES[currentMonth]} {currentYear}</h2>
+            <h2 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>{MONTH_NAMES[currentMonth]} {currentYear}</h2>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative" ref={filterRef}>
-              <button onClick={() => setShowFilters((p: boolean) => !p)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${showFilters ? 'bg-[#EF4444] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
-                <Filter className="w-4 h-4" /> Фильтры
+              <button onClick={() => setShowFilters((p: boolean) => !p)} title={isMobile ? 'Фильтры' : undefined}
+                className={`flex items-center gap-2 ${isMobile ? 'px-2.5' : 'px-4'} py-2 rounded-lg text-sm font-medium transition-colors ${showFilters ? 'bg-[#EF4444] text-white' : 'bg-white/5 hover:bg-white/10'}`}>
+                <Filter className="w-4 h-4" /> {!isMobile && 'Фильтры'}
                 {((filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)) > 0 && (
                   <span className="ml-1 bg-[#EF4444] text-white text-xs rounded-full px-1.5 py-0.5">{(filterGames?.length ?? 0) + (filterRegions?.length ?? 0) + (filterFormat ? 1 : 0)}</span>
                 )}
