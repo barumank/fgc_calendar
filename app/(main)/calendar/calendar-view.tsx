@@ -302,11 +302,12 @@ export function CalendarView() {
               const dayTournaments = (filteredTournaments ?? []).filter((t: Tournament) => isTournamentOnDay(t, dayObj?.year, dayObj?.month, dayObj?.day));
               const visible = dayTournaments.slice(0, 4);
               const remaining = (dayTournaments?.length ?? 0) - 4;
-              const isPastDay = dayObj?.isCurrentMonth && dateStr(dayObj?.year, dayObj?.month, dayObj?.day) < todayStr;
-              const isToday = dayObj?.isCurrentMonth && dateStr(dayObj?.year, dayObj?.month, dayObj?.day) === todayStr;
+              const cellDateStr = dateStr(dayObj?.year, dayObj?.month, dayObj?.day);
+              const isPastDay = cellDateStr < todayStr;
+              const isToday = cellDateStr === todayStr;
               const stretched = (visible?.length ?? 0) <= 2;
               return (
-                <div key={idx} ref={isToday ? todayCellRef : undefined} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${!dayObj?.isCurrentMonth || isPastDay ? 'opacity-30' : ''} ${isToday ? 'ring-2 ring-inset ring-white' : ''}`}>
+                <div key={idx} ref={isToday ? todayCellRef : undefined} className={`min-h-[165px] p-1.5 border-b border-r border-border/10 flex flex-col ${isPastDay ? 'opacity-30' : ''} ${isToday ? 'ring-2 ring-inset ring-white' : ''}`}>
                   <div className="text-xs text-muted-foreground mb-1 pl-1 shrink-0">{dayObj?.day}</div>
                   <div className="flex-1 flex flex-col gap-1">
                     {(visible ?? []).map((t: Tournament) => (
