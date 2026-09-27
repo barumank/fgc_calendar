@@ -63,6 +63,13 @@ function formatDateRange(startDate: string, endDate: string) {
   return startDate === endDate ? formatDate(startDate) : `${formatDate(startDate)} — ${formatDate(endDate)}`;
 }
 
+const FEATURED_DESCRIPTION_MAX_LENGTH = 430;
+
+function truncateText(text: string | undefined, maxLength: number) {
+  if (!text || text.length <= maxLength) return text ?? '';
+  return `${text.slice(0, maxLength).trimEnd()}…`;
+}
+
 export function CalendarView() {
   const { status: authStatus } = useSession();
   const { tier } = useSidebarLayout();
@@ -360,7 +367,7 @@ export function CalendarView() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="w-3.5 h-3.5" />{featuredTournament?.startDate} — {featuredTournament?.endDate}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{featuredTournament?.format === 'online' ? 'Online' : [featuredTournament?.city, REGION_LABELS[featuredTournament?.region as RegionType]].filter(Boolean).join(', ')}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="w-3.5 h-3.5" />{featuredTournament?.playersCount} игроков</div>
-              <p className="text-xs text-muted-foreground mt-2">{featuredTournament?.description}</p>
+              <p className="text-xs text-muted-foreground mt-2">{truncateText(featuredTournament?.description, FEATURED_DESCRIPTION_MAX_LENGTH)}</p>
               <div className="flex gap-2 mt-3">
                 <button onClick={() => setSelectedTournament(featuredTournament)} className="flex-1 bg-white/5 hover:bg-white/10 text-sm py-2 rounded-lg transition-colors">Подробнее</button>
                 {featuredTournament?.sourceUrl && (
