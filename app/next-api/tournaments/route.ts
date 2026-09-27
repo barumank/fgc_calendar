@@ -9,7 +9,7 @@ export async function GET() {
   // JSON on every calendar page load. It's fetched on demand instead, via
   // GET /next-api/tournaments/[id], only for the one tournament being viewed.
   const tournaments = await prisma.tournament.findMany({
-    orderBy: { startDate: 'asc' },
+    orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
     select: {
       id: true,
       name: true,

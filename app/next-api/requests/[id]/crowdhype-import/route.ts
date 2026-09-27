@@ -72,10 +72,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const tournamentsData = selected.map((t) => {
     const game = gameByCrowdhypeId.get(t.gameId as string)!;
+    // crowdhype's own UI only ever shows a single start date/time per
+    // tournament — never an end date — and its API's endDate can land on
+    // the next calendar day (Moscow time) even for same-day tournaments,
+    // so it isn't reliable for FightNexus's separate startDate/endDate
+    // fields. Treat every crowdhype tournament as single-day.
     const startInfo = t.startDate ? isoToMoscowDateTime(t.startDate) : null;
-    const endInfo = t.endDate ? isoToMoscowDateTime(t.endDate) : startInfo;
     const startDate = startInfo?.date ?? request.startDate;
-    const endDate = endInfo?.date ?? request.endDate;
+    const endDate = startInfo?.date ?? request.endDate;
     const startTime = startInfo?.time ?? request.startTime ?? null;
 
     return {
