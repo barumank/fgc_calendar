@@ -6,6 +6,7 @@ export interface GameRecord {
   color: string;
   order: number;
   startggVideogameId?: string | null;
+  crowdhypeGameId?: string | null;
 }
 
 export const DEFAULT_GAMES: GameRecord[] = [

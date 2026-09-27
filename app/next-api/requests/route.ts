@@ -8,6 +8,7 @@ import { notifyNewRequestSubscribers } from '@/lib/notify-request';
 import { requireRole } from '@/lib/require-role';
 import { extractChallongeSlug } from '@/lib/challonge';
 import { extractStartggEventSlug } from '@/lib/startgg';
+import { extractCrowdhypeTournamentId } from '@/lib/crowdhype';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,9 +45,9 @@ export async function GET() {
   });
 
   // "Ждут результата": an approved request with at least one tournament
-  // that has a collectible bracket link (Challonge/start.gg) but no
-  // resultsFetchedAt yet. Requests with no collectible source never count,
-  // since there's nothing to actually collect for them.
+  // that has a collectible bracket link (Challonge/start.gg/crowdhype FDE)
+  // but no resultsFetchedAt yet. Requests with no collectible source never
+  // count, since there's nothing to actually collect for them.
   const approvedIds = requests.filter((r) => r.status === 'approved').map((r) => r.id);
   const tournaments = approvedIds.length
     ? await prisma.tournament.findMany({
@@ -58,7 +59,7 @@ export async function GET() {
   const pendingRequestIds = new Set<string>();
   for (const t of tournaments) {
     if (!t.requestId || t.resultsFetchedAt) continue;
-    if (extractChallongeSlug(t.sourceUrl) || extractStartggEventSlug(t.sourceUrl)) {
+    if (extractChallongeSlug(t.sourceUrl) || extractStartggEventSlug(t.sourceUrl) || extractCrowdhypeTournamentId(t.sourceUrl)) {
       pendingRequestIds.add(t.requestId);
     }
   }

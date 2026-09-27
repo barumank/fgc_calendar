@@ -82,6 +82,7 @@ model Player {
   twitch            String?
   challongeUsername String?  @unique
   startggPlayerId   String?  @unique
+  crowdhypePlayerId String?  @unique
   createdAt         DateTime @default(now())
 }
 
@@ -99,6 +100,7 @@ model Game {
   color              String
   order              Int      @default(0)
   startggVideogameId String?  @unique
+  crowdhypeGameId    String?  @unique
   createdAt          DateTime @default(now())
 }
 

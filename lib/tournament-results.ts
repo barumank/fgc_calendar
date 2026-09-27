@@ -7,6 +7,7 @@ export interface RankedResult {
   name: string;
   challongeUsername?: string | null;
   startggPlayerId?: string | null;
+  crowdhypePlayerId?: string | null;
 }
 
 // Undoes exactly what a previous collection credited to each player, using
@@ -66,7 +67,13 @@ export async function creditTop8(
             update: statUpdate,
             create: { tag: r.name, startggPlayerId: r.startggPlayerId, ...baseData },
           })
-        : await prisma.player.create({ data: { tag: r.name, ...baseData } });
+        : r.crowdhypePlayerId
+          ? await prisma.player.upsert({
+              where: { crowdhypePlayerId: r.crowdhypePlayerId },
+              update: statUpdate,
+              create: { tag: r.name, crowdhypePlayerId: r.crowdhypePlayerId, ...baseData },
+            })
+          : await prisma.player.create({ data: { tag: r.name, ...baseData } });
 
     await prisma.tournamentResultCredit.upsert({
       where: { tournamentId_playerId: { tournamentId, playerId: player.id } },

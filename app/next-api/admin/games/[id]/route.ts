@@ -18,6 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const shortLabel = (body?.shortLabel ?? '').trim();
   const color = (body?.color ?? '').trim();
   const startggVideogameId = (body?.startggVideogameId ?? '').trim();
+  const crowdhypeGameId = (body?.crowdhypeGameId ?? '').trim();
   if (!label || !color) {
     return NextResponse.json({ error: 'Название и цвет обязательны' }, { status: 400 });
   }
@@ -28,10 +29,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: 'Этот ID игры на start.gg уже привязан к другой дисциплине' }, { status: 409 });
     }
   }
+  if (crowdhypeGameId) {
+    const clash = await prisma.game.findUnique({ where: { crowdhypeGameId } });
+    if (clash && clash.id !== params.id) {
+      return NextResponse.json({ error: 'Этот ID игры на crowdhype.pro уже привязан к другой дисциплине' }, { status: 409 });
+    }
+  }
 
   const game = await prisma.game.update({
     where: { id: params.id },
-    data: { label, shortLabel: shortLabel || null, color, startggVideogameId: startggVideogameId || null },
+    data: { label, shortLabel: shortLabel || null, color, startggVideogameId: startggVideogameId || null, crowdhypeGameId: crowdhypeGameId || null },
   });
   return NextResponse.json(game);
 }

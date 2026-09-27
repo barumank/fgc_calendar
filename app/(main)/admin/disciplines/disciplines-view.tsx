@@ -8,7 +8,7 @@ import { showToast } from '@/src/components/common/toast-notification';
 import { GameRecord } from '@/src/data/default-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
-const EMPTY_FORM = { label: '', shortLabel: '', color: '#EF4444', startggVideogameId: '' };
+const EMPTY_FORM = { label: '', shortLabel: '', color: '#EF4444', startggVideogameId: '', crowdhypeGameId: '' };
 
 export function DisciplinesView() {
   const { games, mutate, isLoading } = useGames();
@@ -18,7 +18,7 @@ export function DisciplinesView() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const openCreate = () => { setForm(EMPTY_FORM); setModalGame('new'); };
-  const openEdit = (g: GameRecord) => { setForm({ label: g.label, shortLabel: g.shortLabel ?? '', color: g.color, startggVideogameId: g.startggVideogameId ?? '' }); setModalGame(g); };
+  const openEdit = (g: GameRecord) => { setForm({ label: g.label, shortLabel: g.shortLabel ?? '', color: g.color, startggVideogameId: g.startggVideogameId ?? '', crowdhypeGameId: g.crowdhypeGameId ?? '' }); setModalGame(g); };
   const closeModal = () => { setModalGame(null); setForm(EMPTY_FORM); };
 
   const isValid = !!(form.label.trim() && form.color);
@@ -33,7 +33,7 @@ export function DisciplinesView() {
       const res = await fetch(url, {
         method: isNew ? 'POST' : 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label: form.label.trim(), shortLabel: form.shortLabel.trim(), color: form.color, startggVideogameId: form.startggVideogameId.trim() }),
+        body: JSON.stringify({ label: form.label.trim(), shortLabel: form.shortLabel.trim(), color: form.color, startggVideogameId: form.startggVideogameId.trim(), crowdhypeGameId: form.crowdhypeGameId.trim() }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -173,6 +173,18 @@ export function DisciplinesView() {
               placeholder="Например: 43868"
             />
             <p className="text-xs text-muted-foreground mt-1">Нужен только для импорта турниров со start.gg — так система понимает, какой из наших дисциплин соответствует игра на start.gg. Можно оставить пустым.</p>
+          </div>
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">ID игры на crowdhype.pro</label>
+            <input
+              type="text"
+              className="w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50 font-mono"
+              value={form.crowdhypeGameId}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm((prev) => ({ ...prev, crowdhypeGameId: e?.target?.value ?? '' }))}
+              onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && handleSubmit()}
+              placeholder="Например: cmmgs6thw000ap81uj0w7k4qi"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Нужен только для импорта турниров с crowdhype.pro — так система понимает, какой из наших дисциплин соответствует игра на crowdhype.pro. Можно оставить пустым.</p>
           </div>
           <button
             onClick={handleSubmit}

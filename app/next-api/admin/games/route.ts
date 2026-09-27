@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
   const shortLabel = (body?.shortLabel ?? '').trim();
   const color = (body?.color ?? '').trim();
   const startggVideogameId = (body?.startggVideogameId ?? '').trim();
+  const crowdhypeGameId = (body?.crowdhypeGameId ?? '').trim();
   if (!label || !color) {
     return NextResponse.json({ error: 'Название и цвет обязательны' }, { status: 400 });
   }
@@ -29,10 +30,13 @@ export async function POST(req: NextRequest) {
   if (startggVideogameId && await prisma.game.findUnique({ where: { startggVideogameId } })) {
     return NextResponse.json({ error: 'Этот ID игры на start.gg уже привязан к другой дисциплине' }, { status: 409 });
   }
+  if (crowdhypeGameId && await prisma.game.findUnique({ where: { crowdhypeGameId } })) {
+    return NextResponse.json({ error: 'Этот ID игры на crowdhype.pro уже привязан к другой дисциплине' }, { status: 409 });
+  }
 
   const maxOrder = await prisma.game.aggregate({ _max: { order: true } });
   const game = await prisma.game.create({
-    data: { key, label, shortLabel: shortLabel || null, color, startggVideogameId: startggVideogameId || null, order: (maxOrder._max.order ?? -1) + 1 },
+    data: { key, label, shortLabel: shortLabel || null, color, startggVideogameId: startggVideogameId || null, crowdhypeGameId: crowdhypeGameId || null, order: (maxOrder._max.order ?? -1) + 1 },
   });
 
   return NextResponse.json(game, { status: 201 });

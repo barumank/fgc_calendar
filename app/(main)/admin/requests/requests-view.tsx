@@ -10,6 +10,7 @@ import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
 import { extractStartggTournamentSlug, extractStartggEventSlug } from '@/lib/startgg';
+import { extractCrowdhypeEventId, extractCrowdhypeTournamentId, CROWDHYPE_COLLECTIBLE_FORMAT } from '@/lib/crowdhype';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 interface StartggPreviewEvent {
@@ -20,6 +21,19 @@ interface StartggPreviewEvent {
   isOnline: boolean;
   startDate: string | null;
   startTime: string | null;
+  mappedGameKey: string | null;
+  mappedGameLabel: string | null;
+}
+
+interface CrowdhypePreviewTournament {
+  id: string;
+  name: string;
+  format: string;
+  gameName: string | null;
+  gameId: string | null;
+  participantsCount: number;
+  startDate: string | null;
+  endDate: string | null;
   mappedGameKey: string | null;
   mappedGameLabel: string | null;
 }
@@ -43,11 +57,14 @@ function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
   const [fetching, setFetching] = useState(false);
   const challongeSlug = extractChallongeSlug(tournament.sourceUrl);
   const startggSlug = extractStartggEventSlug(tournament.sourceUrl);
+  const crowdhypeTournamentId = extractCrowdhypeTournamentId(tournament.sourceUrl);
   const endpoint = challongeSlug
     ? `/next-api/tournaments/${tournament.id}/challonge-result`
     : startggSlug
       ? `/next-api/tournaments/${tournament.id}/startgg-result`
-      : null;
+      : crowdhypeTournamentId
+        ? `/next-api/tournaments/${tournament.id}/crowdhype-result`
+        : null;
 
   const handleClick = async (force: boolean) => {
     if (!endpoint || fetching) return;
@@ -155,6 +172,9 @@ export function RequestsView() {
   const [page, setPage] = useState(1);
   const [startggEvents, setStartggEvents] = useState<StartggPreviewEvent[] | null>(null);
   const [startggLoading, setStartggLoading] = useState(false);
+  const [crowdhypeTournaments, setCrowdhypeTournaments] = useState<CrowdhypePreviewTournament[] | null>(null);
+  const [crowdhypeLoading, setCrowdhypeLoading] = useState(false);
+  const [selectedCrowdhypeIds, setSelectedCrowdhypeIds] = useState<Set<string>>(new Set());
   const [togglingFeatured, setTogglingFeatured] = useState(false);
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
   const [importing, setImporting] = useState(false);
@@ -214,12 +234,16 @@ export function RequestsView() {
     setSelectedRequest(null);
     setStartggEvents(null);
     setSelectedEventIds(new Set());
+    setCrowdhypeTournaments(null);
+    setSelectedCrowdhypeIds(new Set());
   };
 
   const openRequest = (r: TournamentRequest) => {
     setSelectedRequest(r);
     setStartggEvents(null);
     setSelectedEventIds(new Set());
+    setCrowdhypeTournaments(null);
+    setSelectedCrowdhypeIds(new Set());
   };
 
   const handleStartggPreview = async (request: TournamentRequest) => {
@@ -258,6 +282,61 @@ export function RequestsView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventIds: [...selectedEventIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось импортировать турниры', 'error');
+        return;
+      }
+      mutate(
+        (current) => (current ?? []).map((r) => (r.id === data.request.id ? data.request : r)),
+        { revalidate: false },
+      );
+      closeRequestModal();
+      showToast(`Создано турниров: ${data.createdCount}`, 'success');
+    } catch {
+      showToast('Не удалось импортировать турниры', 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleCrowdhypePreview = async (request: TournamentRequest) => {
+    if (crowdhypeLoading) return;
+    setCrowdhypeLoading(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/crowdhype-preview`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось получить турниры с crowdhype.pro', 'error');
+        return;
+      }
+      setCrowdhypeTournaments(data.tournaments ?? []);
+      setSelectedCrowdhypeIds(new Set((data.tournaments ?? []).filter((t: CrowdhypePreviewTournament) => t.mappedGameKey).map((t: CrowdhypePreviewTournament) => t.id)));
+    } catch {
+      showToast('Не удалось получить турниры с crowdhype.pro', 'error');
+    } finally {
+      setCrowdhypeLoading(false);
+    }
+  };
+
+  const toggleCrowdhypeTournament = (id: string) => {
+    setSelectedCrowdhypeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleCrowdhypeImport = async (request: TournamentRequest) => {
+    if (importing || selectedCrowdhypeIds.size === 0) return;
+    setImporting(true);
+    try {
+      const res = await fetch(`/next-api/requests/${request.id}/crowdhype-import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tournamentIds: [...selectedCrowdhypeIds] }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -469,7 +548,61 @@ export function RequestsView() {
                 </div>
               </div>
             )}
-            {selectedRequest.status === 'pending' && !startggEvents && (
+            {selectedRequest.status === 'pending' && crowdhypeTournaments && (
+              <div className="pt-2 space-y-3">
+                <div className="text-xs text-muted-foreground">
+                  Найдено турниров на crowdhype.pro: {crowdhypeTournaments.length}. Отметьте, какие турниры создать — турнирам без сопоставленной дисциплины нужно сначала задать «ID игры на crowdhype.pro» в разделе «Дисциплины».
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {crowdhypeTournaments.map((t) => (
+                    <label
+                      key={t.id}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg bg-white/5 ${!t.mappedGameKey ? 'opacity-50' : 'cursor-pointer'}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCrowdhypeIds.has(t.id)}
+                        disabled={!t.mappedGameKey}
+                        onChange={() => toggleCrowdhypeTournament(t.id)}
+                        className="rounded border-border"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{t.name}</div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                          <span>{t.gameName ?? 'Игра не указана'}{t.gameId ? <span className="font-mono"> (ID: {t.gameId})</span> : ''}</span>
+                          {t.mappedGameLabel ? (
+                            <span className="text-green-400">→ {t.mappedGameLabel}</span>
+                          ) : (
+                            <span className="text-red-400">нет сопоставления дисциплины</span>
+                          )}
+                          <span>{t.format}</span>
+                          {t.format !== CROWDHYPE_COLLECTIBLE_FORMAT && <span className="text-yellow-400">результаты не собираются автоматически</span>}
+                          {t.startDate && <span>{t.startDate.slice(0, 10)}</span>}
+                          <span>{t.participantsCount} участников</span>
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setCrowdhypeTournaments(null)}
+                    disabled={importing}
+                    className="flex-1 bg-white/5 hover:bg-white/10 disabled:opacity-50 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Назад
+                  </button>
+                  <button
+                    onClick={() => handleCrowdhypeImport(selectedRequest)}
+                    disabled={importing || selectedCrowdhypeIds.size === 0}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" /> {importing ? 'Создаём...' : `Создать турниры (${selectedCrowdhypeIds.size})`}
+                  </button>
+                </div>
+              </div>
+            )}
+            {selectedRequest.status === 'pending' && !startggEvents && !crowdhypeTournaments && (
               <div className="flex gap-3 pt-2">
                 {extractStartggTournamentSlug(selectedRequest.url) ? (
                   <button
@@ -478,6 +611,14 @@ export function RequestsView() {
                     className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Gamepad2 className="w-4 h-4" /> {startggLoading ? 'Загружаем события...' : 'Импортировать со start.gg'}
+                  </button>
+                ) : extractCrowdhypeEventId(selectedRequest.url) ? (
+                  <button
+                    onClick={() => handleCrowdhypePreview(selectedRequest)}
+                    disabled={crowdhypeLoading}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Gamepad2 className="w-4 h-4" /> {crowdhypeLoading ? 'Загружаем турниры...' : 'Импортировать с crowdhype.pro'}
                   </button>
                 ) : (
                   <button
