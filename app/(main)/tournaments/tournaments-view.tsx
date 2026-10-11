@@ -8,6 +8,7 @@ import { Tournament, FORMAT_LABELS, REGION_LABELS, GameType, FormatType, RegionT
 import { useGames } from '@/src/hooks/use-games';
 import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { HeaderActions } from '@/src/components/layout/header-actions';
+import { formatDateRange } from '@/src/lib/format-date';
 
 const ALL_REGIONS: RegionType[] = ['russia','belarus','kazakhstan','usa','japan','ukraine','cis','europe','other'];
 const PAGE_SIZE = 20;
@@ -144,7 +145,7 @@ export function TournamentsView() {
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">{t?.format === 'online' ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}{FORMAT_LABELS[t?.format]}</span>
-                      <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{t?.startDate}{t?.endDate !== t?.startDate ? ` — ${t?.endDate}` : ''}</span>
+                      <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDateRange(t?.startDate ?? '', t?.endDate ?? '')}</span>
                       {t?.startTime && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{t.startTime}</span>}
                       <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{t?.format === 'online' ? 'Online' : [t?.city, REGION_LABELS[t?.region]].filter(Boolean).join(', ')}</span>
                     </div>

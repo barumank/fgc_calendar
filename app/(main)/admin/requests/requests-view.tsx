@@ -10,7 +10,8 @@ import { LinkifiedText } from '@/src/components/common/linkified-text';
 import { showToast } from '@/src/components/common/toast-notification';
 import { extractChallongeSlug } from '@/lib/challonge';
 import { extractStartggTournamentSlug, extractStartggEventSlug } from '@/lib/startgg';
-import { extractCrowdhypeEventId, extractCrowdhypeTournamentId, CROWDHYPE_COLLECTIBLE_FORMAT } from '@/lib/crowdhype';
+import { extractCrowdhypeEventId, extractCrowdhypeTournamentId, isoToMoscowDateTime, CROWDHYPE_COLLECTIBLE_FORMAT } from '@/lib/crowdhype';
+import { formatDate, formatDateRange } from '@/src/lib/format-date';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 
 interface StartggPreviewEvent {
@@ -431,7 +432,7 @@ export function RequestsView() {
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{r.startDate} — {r.endDate}</span>
+                  <span className="flex items-center gap-1"><CalendarDays className="w-3.5 h-3.5" />{formatDateRange(r.startDate, r.endDate)}</span>
                   {r.startTime && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{r.startTime}</span>}
                   <span>{GAME_LABELS[r.game]}</span>
                   <span>{REGION_LABELS[r.region]}</span>
@@ -477,7 +478,7 @@ export function RequestsView() {
               <span className="text-xs text-muted-foreground">Заявка создана: {formatDateTime(selectedRequest.createdAt)}</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" />{selectedRequest.startDate} — {selectedRequest.endDate}</div>
+              <div className="flex items-center gap-2"><CalendarDays className="w-4 h-4 text-muted-foreground" />{formatDateRange(selectedRequest.startDate, selectedRequest.endDate)}</div>
               {selectedRequest.startTime && <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" />{selectedRequest.startTime}</div>}
               <div>Дисциплина: <span className="text-foreground">{GAME_LABELS[selectedRequest.game]}</span></div>
               <div>Регион: <span className="text-foreground">{REGION_LABELS[selectedRequest.region]}</span></div>
@@ -523,7 +524,7 @@ export function RequestsView() {
                           ) : (
                             <span className="text-red-400">нет сопоставления дисциплины</span>
                           )}
-                          {e.startDate && <span>{e.startDate}{e.startTime ? `, ${e.startTime}` : ''}</span>}
+                          {e.startDate && <span>{formatDate(e.startDate)}{e.startTime ? `, ${e.startTime}` : ''}</span>}
                           <span>{e.isOnline ? 'Онлайн' : 'Офлайн'}</span>
                         </div>
                       </div>
@@ -577,7 +578,7 @@ export function RequestsView() {
                           )}
                           <span>{t.format}</span>
                           {t.format !== CROWDHYPE_COLLECTIBLE_FORMAT && <span className="text-yellow-400">результаты не собираются автоматически</span>}
-                          {t.startDate && <span>{t.startDate.slice(0, 10)}</span>}
+                          {t.startDate && <span>{formatDate(isoToMoscowDateTime(t.startDate).date)}</span>}
                           <span>{t.participantsCount} участников</span>
                         </div>
                       </div>

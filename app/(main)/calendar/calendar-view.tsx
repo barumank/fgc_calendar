@@ -14,6 +14,7 @@ import { useGames } from '@/src/hooks/use-games';
 import { HeaderActions } from '@/src/components/layout/header-actions';
 import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context';
 import { buildGoogleCalendarUrl, buildTournamentIcs } from '@/src/lib/add-to-calendar';
+import { formatDateRange } from '@/src/lib/format-date';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -52,15 +53,6 @@ function dateStr(y: number, m: number, d: number) {
 function isTournamentOnDay(t: Tournament, y: number, m: number, d: number) {
   const ds = dateStr(y, m, d);
   return ds >= (t?.startDate ?? '') && ds <= (t?.endDate ?? '');
-}
-
-function formatDate(iso: string) {
-  const [y, m, d] = (iso ?? '').split('-');
-  return d && m && y ? `${d}.${m}.${y}` : (iso ?? '');
-}
-
-function formatDateRange(startDate: string, endDate: string) {
-  return startDate === endDate ? formatDate(startDate) : `${formatDate(startDate)} — ${formatDate(endDate)}`;
 }
 
 const FEATURED_DESCRIPTION_MAX_LENGTH = 430;
@@ -365,7 +357,7 @@ export function CalendarView() {
             </div>
             <div className="p-4 space-y-2">
               <h3 className="text-sm font-semibold">{featuredTournament?.name}</h3>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="w-3.5 h-3.5" />{featuredTournament?.startDate} — {featuredTournament?.endDate}</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><CalendarDays className="w-3.5 h-3.5" />{formatDateRange(featuredTournament?.startDate ?? '', featuredTournament?.endDate ?? '')}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><MapPin className="w-3.5 h-3.5" />{featuredTournament?.format === 'online' ? 'Online' : [featuredTournament?.city, REGION_LABELS[featuredTournament?.region as RegionType]].filter(Boolean).join(', ')}</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Users className="w-3.5 h-3.5" />{featuredTournament?.playersCount} игроков</div>
               <p className="text-xs text-muted-foreground mt-2">{truncateText(featuredTournament?.description, FEATURED_DESCRIPTION_MAX_LENGTH)}</p>
