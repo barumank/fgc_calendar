@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { sendTelegramMessage } from '@/lib/telegram';
 import { REGION_LABELS, FORMAT_LABELS, RegionType, FormatType } from '@/src/types';
+import { formatDateRange } from '@/src/lib/format-date';
 import type { TournamentRequest } from '@prisma/client';
 
 export async function notifyNewRequestSubscribers(request: TournamentRequest): Promise<void> {
@@ -30,7 +31,7 @@ export async function notifyNewRequestSubscribers(request: TournamentRequest): P
     '🆕 Новая заявка на турнир',
     `Название: ${request.name}`,
     `Создана: ${createdAtLabel}`,
-    `Дата: ${request.startDate} — ${request.endDate}`,
+    `Дата: ${formatDateRange(request.startDate, request.endDate)}`,
     `Дисциплина: ${gameLabel}`,
     `Регион: ${regionLabel}`,
     `Формат: ${formatLabel}`,
