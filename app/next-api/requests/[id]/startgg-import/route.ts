@@ -1,5 +1,7 @@
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { notifyNewTournaments } from '@/lib/notify-new-tournaments';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { extractStartggTournamentSlug, fetchStartggTournamentEvents, regionFromCountryCode, unixToMoscowDateTime, buildTournamentName, StartggTournament } from '@/lib/startgg';
@@ -70,6 +72,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       : { date: request.startDate, time: request.startTime ?? null };
 
     return {
+      id: randomUUID(),
       name: buildTournamentName(tournament.name, e.name),
       game: game.key,
       format: e.isOnline ? 'online' : 'offline',
@@ -94,5 +97,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     prisma.tournamentRequest.update({ where: { id: request.id }, data: { status: 'approved' } }),
   ]);
 
+  notifyNewTournaments(tournamentsData).catch(() => {});
   return NextResponse.json({ request: updatedRequest, createdCount: tournamentsData.length });
 }

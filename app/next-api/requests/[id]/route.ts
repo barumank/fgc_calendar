@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
+import { notifyNewTournaments } from '@/lib/notify-new-tournaments';
 export const dynamic = 'force-dynamic';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
@@ -69,6 +70,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         data: { status: 'approved' },
       }),
     ]);
+    notifyNewTournaments([tournament]).catch(() => {});
     return NextResponse.json({ request: updatedRequest, tournament });
   }
 
