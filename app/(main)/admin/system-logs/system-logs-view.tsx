@@ -11,6 +11,7 @@ interface ExportLogRow {
   serverId: string;
   successCount: number;
   failCount: number;
+  details: string | null;
   createdAt: string;
 }
 
@@ -73,22 +74,27 @@ function ExportLogTable({ platform }: { platform: string }) {
     fetcher,
   );
 
+  const isTelegram = platform === 'telegram';
+  const gridCols = isTelegram ? 'grid-cols-[180px_1fr_100px_100px_1.2fr]' : 'grid-cols-[180px_1fr_120px_120px]';
+
   return (
     <>
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
-        <div className="grid grid-cols-[180px_1fr_120px_120px] gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20">
-          <div>Дата</div><div>ID сервера</div><div>Успешно</div><div>Неуспешно</div>
+        <div className={`grid ${gridCols} gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20`}>
+          <div>Дата</div><div>{isTelegram ? 'Событие' : 'ID сервера'}</div><div>Успешно</div><div>Неуспешно</div>
+          {isTelegram && <div>Причина ошибки</div>}
         </div>
         {isLoading ? (
           <div className="px-6 py-8 text-center text-sm text-muted-foreground">Загрузка...</div>
         ) : (data?.items?.length ?? 0) === 0 ? (
           <div className="px-6 py-8 text-center text-sm text-muted-foreground">Записей пока нет</div>
         ) : (data?.items ?? []).map((row) => (
-          <div key={row.id} className="grid grid-cols-[180px_1fr_120px_120px] gap-4 px-6 py-3 items-center text-sm border-b border-border/10 last:border-b-0">
+          <div key={row.id} className={`grid ${gridCols} gap-4 px-6 py-3 items-center text-sm border-b border-border/10 last:border-b-0`}>
             <div className="text-muted-foreground">{formatDateTime(row.createdAt)}</div>
-            <div className="font-mono truncate">{row.serverId}</div>
+            <div className={isTelegram ? 'break-words' : 'font-mono truncate'}>{row.serverId}</div>
             <div className="text-green-400 font-medium">{row.successCount}</div>
             <div className={row.failCount > 0 ? 'text-red-400 font-medium' : 'text-muted-foreground'}>{row.failCount}</div>
+            {isTelegram && <div className="text-xs text-red-300 break-words">{row.details ?? '—'}</div>}
           </div>
         ))}
       </div>
