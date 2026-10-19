@@ -9,7 +9,7 @@ import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
   ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell, BellRing, HelpCircle,
-  Menu, X, ChevronsLeft, ChevronsRight
+  Menu, X, ChevronsLeft, ChevronsRight, Medal, CalendarRange
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -28,6 +28,7 @@ const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
 const mainLinks = [
   { href: '/calendar', label: 'Календарь', icon: CalendarDays },
   { href: '/tournaments', label: 'Турниры', icon: Trophy },
+  { href: '/leagues', label: 'Лиги', icon: Medal },
   { href: '/players', label: 'Игроки', icon: Users },
   { href: '/rankings', label: 'Рейтинг', icon: BarChart3 },
   { href: '/news', label: 'Новости', icon: Newspaper },
@@ -41,6 +42,7 @@ const adminSubLinks = [
   { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
   { href: '/admin/news', label: 'Управление новостями', icon: Newspaper },
   { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
+  { href: '/admin/leagues', label: 'Лиги', icon: CalendarRange },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
   { href: '/admin/notifications', label: 'Уведомления', icon: Bell },

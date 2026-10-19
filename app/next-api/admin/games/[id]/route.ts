@@ -52,15 +52,16 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'Дисциплина не найдена' }, { status: 404 });
   }
 
-  const [tournamentsCount, requestsCount, playersCount] = await Promise.all([
+  const [tournamentsCount, requestsCount, playersCount, leaguesCount] = await Promise.all([
     prisma.tournament.count({ where: { game: existing.key } }),
     prisma.tournamentRequest.count({ where: { game: existing.key } }),
     prisma.player.count({ where: { mainGame: existing.key } }),
+    prisma.league.count({ where: { game: existing.key } }),
   ]);
-  const inUse = tournamentsCount + requestsCount + playersCount;
+  const inUse = tournamentsCount + requestsCount + playersCount + leaguesCount;
   if (inUse > 0) {
     return NextResponse.json(
-      { error: `Дисциплина используется: турниров — ${tournamentsCount}, заявок — ${requestsCount}, игроков — ${playersCount}. Удаление запрещено.` },
+      { error: `Дисциплина используется: турниров — ${tournamentsCount}, заявок — ${requestsCount}, игроков — ${playersCount}, лиг — ${leaguesCount}. Удаление запрещено.` },
       { status: 409 },
     );
   }

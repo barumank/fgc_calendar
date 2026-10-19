@@ -154,6 +154,17 @@ model TournamentReminder {
   @@unique([tournamentId, userId, offset])
 }
 
+model League {
+  id              String   @id @default(uuid())
+  name            String
+  game            String
+  startDate       String
+  endDate         String
+  registrationUrl String?
+  discordUrl      String?
+  createdAt       DateTime @default(now())
+}
+
 model DisciplineSubscription {
   id        String   @id @default(uuid())
   userId    String   @unique
