@@ -469,7 +469,7 @@ export function RequestsView() {
           <div className="space-y-4">
             {selectedRequestDetail?.id === selectedRequest.id && selectedRequestDetail?.bannerUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedRequestDetail.bannerUrl} alt="" className="w-full h-40 object-cover rounded-lg" />
+              <img src={selectedRequestDetail.bannerUrl} alt="" className="w-full aspect-video object-cover rounded-lg" />
             )}
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_STYLES[selectedRequest.status]}`}>

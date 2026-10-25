@@ -245,7 +245,7 @@ export function HeaderActions({ hideReportButtonOnMobile = false }: { hideReport
                 {durationError && <span className="text-xs text-red-500 mt-1 block">{durationError}</span>}
               </div>
               <div>
-                <label className="block text-sm text-muted-foreground mb-1.5">Время начала *</label>
+                <label className="block text-sm text-muted-foreground mb-1.5">Время начала (МСК) *</label>
                 <div className="flex items-center gap-1.5">
                   <select
                     className="w-full bg-white/5 border border-border/50 rounded-lg px-2 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50"
@@ -283,10 +283,10 @@ export function HeaderActions({ hideReportButtonOnMobile = false }: { hideReport
                 <span className="truncate">{reportForm.bannerUrl ? 'Изображение выбрано' : 'Загрузить JPEG или PNG'}</span>
                 <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleBannerChange} />
               </label>
-              <p className="text-xs text-muted-foreground mt-1">Только файлы JPEG/PNG до {MAX_BANNER_BYTES / 1024 / 1024} МБ. Пропорция баннера 4:1</p>
+              <p className="text-xs text-muted-foreground mt-1">Только файлы JPEG/PNG до {MAX_BANNER_BYTES / 1024 / 1024} МБ. Пропорция баннера 16:9 (например, 1920×1080)</p>
               {reportForm.bannerUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={reportForm.bannerUrl} alt="Превью баннера" className="mt-2 h-24 w-full object-cover rounded-lg border border-border/30" />
+                <img src={reportForm.bannerUrl} alt="Превью баннера" className="mt-2 w-full max-w-xs aspect-video object-cover rounded-lg border border-border/30" />
               )}
             </div>
             <div>

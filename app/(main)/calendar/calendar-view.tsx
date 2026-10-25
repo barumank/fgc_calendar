@@ -401,7 +401,7 @@ export function CalendarView() {
           <div className="space-y-4">
             {selectedTournamentDetail?.bannerUrl && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selectedTournamentDetail.bannerUrl} alt={selectedTournament?.name} className="w-full h-40 object-cover rounded-lg" />
+              <img src={selectedTournamentDetail.bannerUrl} alt={selectedTournament?.name} className="w-full aspect-video object-cover rounded-lg" />
             )}
             <div className="flex flex-wrap items-center gap-2">
               <span className="px-3 py-1 rounded-lg text-xs font-medium text-white" style={{ backgroundColor: GAME_COLORS[selectedTournament?.game] }}>{GAME_LABELS[selectedTournament?.game]}</span>
