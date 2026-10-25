@@ -165,6 +165,22 @@ model League {
   createdAt       DateTime @default(now())
 }
 
+// A donation shown on the "Поддержать проект" page. externalId identifies the
+// payment in the external donation service (null for manually added rows) so
+// a repeated import never creates duplicates. Amounts are whole rubles.
+model Donation {
+  id         String   @id @default(uuid())
+  externalId String?  @unique
+  nickname   String
+  amount     Int
+  message    String?
+  paidAt     DateTime
+  hidden     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([paidAt])
+}
+
 model DisciplineSubscription {
   id        String   @id @default(uuid())
   userId    String   @unique

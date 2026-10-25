@@ -75,7 +75,7 @@ export default function FaqPage() {
   return (
     <div className="px-6 pt-6 pb-12">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
-      <div className="max-w-5xl space-y-5">
+      <div className="space-y-5">
         <div>
           <h1 className="text-2xl font-bold text-foreground">FAQ</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -83,63 +83,65 @@ export default function FaqPage() {
           </p>
         </div>
 
-        <Card icon={<Info size={18} />} title="О проекте">
-          <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
-            <p>
-              <span className="font-semibold text-foreground">FGC-calendar</span> (фгц-календарь) — это инструмент
-              для отслеживания турниров по играм в жанре файтинг на территории СНГ и других стран.
-            </p>
-            <p>
-              Вы можете сообщать о турнирах, известных вам, рекламировать свои турниры, добавлять найденные турниры
-              к себе в календарь Яндекс и Гугл, а также выгружать информацию о турнирах в собственный дискорд-сервер
-              буквально в пару кликов.
-            </p>
-            <p>
-              Календарь не требует обязательной регистрации. Все турниры видны даже не авторизованным пользователям.
-              Авторизация требуется только в случае, если вы захотите настроить автоматические уведомления от нашего
-              телеграм бота к вам, с напоминанием о дате и времени начала предстоящих, интересующих вас, турниров.
-            </p>
-            <div className="rounded-lg border border-border/30 bg-white/[0.03] p-4">
+        <div className="grid gap-5 2xl:grid-cols-[2fr_3fr]">
+          <Card icon={<Info size={18} />} title="О проекте">
+            <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
               <p>
-                <span className="font-semibold text-foreground">Сервис не требует никакой оплаты.</span> Мы не
-                рекламируем никакую продукцию и не принимаем рекламу на размещение. Календарь полностью бесплатный и
-                поддерживает развитие Файтинг Гейм Комьюнити на территории русскоговорящих стран.
+                <span className="font-semibold text-foreground">FGC-calendar</span> (фгц-календарь) — это инструмент
+                для отслеживания турниров по играм в жанре файтинг на территории СНГ и других стран.
+              </p>
+              <p>
+                Вы можете сообщать о турнирах, известных вам, рекламировать свои турниры, добавлять найденные турниры
+                к себе в календарь Яндекс и Гугл, а также выгружать информацию о турнирах в собственный дискорд-сервер
+                буквально в пару кликов.
+              </p>
+              <p>
+                Календарь не требует обязательной регистрации. Все турниры видны даже не авторизованным пользователям.
+                Авторизация требуется только в случае, если вы захотите настроить автоматические уведомления от нашего
+                телеграм бота к вам, с напоминанием о дате и времени начала предстоящих, интересующих вас, турниров.
+              </p>
+              <div className="rounded-lg border border-border/30 bg-white/[0.03] p-4">
+                <p>
+                  <span className="font-semibold text-foreground">Сервис не требует никакой оплаты.</span> Мы не
+                  рекламируем никакую продукцию и не принимаем рекламу на размещение. Календарь полностью бесплатный и
+                  поддерживает развитие Файтинг Гейм Комьюнити на территории русскоговорящих стран.
+                </p>
+              </div>
+              <p>
+                Вопросы и предложения направляйте, пожалуйста, в телеграм чат{' '}
+                <a
+                  href="https://t.me/jackwolf357"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#229ED9] hover:underline"
+                >
+                  t.me/jackwolf357
+                </a>
+                .
               </p>
             </div>
-            <p>
-              Вопросы и предложения направляйте, пожалуйста, в телеграм чат{' '}
-              <a
-                href="https://t.me/jackwolf357"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#229ED9] hover:underline"
-              >
-                t.me/jackwolf357
-              </a>
-              .
-            </p>
-          </div>
-        </Card>
+          </Card>
 
-        <Card icon={<ListChecks size={18} />} title="Функционал" subtitle="Что сервис умеет для разных участников сообщества">
-          <div className="grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-border/30">
-            {functionality.map((group) => (
-              <div key={group.title} className="md:px-5 md:first:pl-0 md:last:pr-0">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  {group.title}
-                </h3>
-                <ul className="space-y-2.5 text-sm leading-relaxed text-muted-foreground">
-                  {group.items.map((item) => (
-                    <li key={item} className="flex gap-2">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#EF4444]" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </Card>
+          <Card icon={<ListChecks size={18} />} title="Функционал" subtitle="Что сервис умеет для разных участников сообщества">
+            <div className="grid gap-6 md:grid-cols-3 md:gap-0 md:divide-x md:divide-border/30">
+              {functionality.map((group) => (
+                <div key={group.title} className="md:px-5 md:first:pl-0 md:last:pr-0">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    {group.title}
+                  </h3>
+                  <ul className="space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+                    {group.items.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#EF4444]" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
 
         <Card icon={<Trophy size={18} />} title="Как формируется рейтинг" subtitle="Очки игроков по каждой дисциплине">
           <div className="grid gap-6 md:grid-cols-2">
