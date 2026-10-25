@@ -25,19 +25,17 @@ const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
   user: ['/admin/notifications'],
 };
 
-// adminOnly links are temporarily hidden from everyone but admins; the
-// matching pages are guarded by ADMIN_ONLY_PATHS in middleware.ts.
-const mainLinks: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; adminOnly?: boolean }[] = [
+const mainLinks = [
   { href: '/calendar', label: 'Календарь', icon: CalendarDays },
   { href: '/tournaments', label: 'Турниры', icon: Trophy },
   { href: '/leagues', label: 'Лиги', icon: Medal },
   { href: '/players', label: 'Игроки', icon: Users },
   { href: '/rankings', label: 'Рейтинг', icon: BarChart3 },
-  { href: '/support', label: 'Поддержать проект', icon: Heart, adminOnly: true },
+  { href: '/support', label: 'Поддержать проект', icon: Heart },
   { href: '/news', label: 'Новости', icon: Newspaper },
   { href: '/calendar-export', label: 'Экспорт календаря', icon: UploadCloud },
   { href: '/subscription', label: 'Подписка на турниры', icon: BellRing },
-  { href: '/faq', label: 'FAQ', icon: HelpCircle, adminOnly: true },
+  { href: '/faq', label: 'FAQ', icon: HelpCircle },
 ];
 
 const adminSubLinks = [
@@ -61,7 +59,6 @@ export function Sidebar() {
   const isAuthenticated = status === 'authenticated';
   const role = ((session?.user as any)?.role ?? 'user') as Role;
   const allowedAdminHrefs = ADMIN_HREFS_BY_ROLE[role];
-  const visibleMainLinks = mainLinks.filter((l) => !l.adminOnly || (isAuthenticated && role === 'admin'));
   const visibleAdminSubLinks = allowedAdminHrefs === null ? adminSubLinks : adminSubLinks.filter((l) => allowedAdminHrefs.includes(l.href));
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -207,7 +204,7 @@ export function Sidebar() {
 
         {/* Nav */}
         <nav ref={navRef} className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 ${dense ? 'py-1.5 space-y-0' : 'py-3 space-y-0.5'}`}>
-          {visibleMainLinks.map((link) => {
+          {mainLinks?.map((link: any) => {
             const Icon = link?.icon;
             const isActive = pathname === link?.href || (link?.href !== '/' && pathname?.startsWith(`${link?.href}/`));
             return (
