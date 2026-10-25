@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Globe, Send, Upload } from 'lucide-react';
+import { Send, Upload } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { GameType, RegionType, FormatType, REGION_LABELS, FORMAT_LABELS } from '@/src/types';
@@ -37,15 +37,9 @@ export function HeaderActions({ hideReportButtonOnMobile = false }: { hideReport
   const { tier } = useSidebarLayout();
   const isMobile = tier === 'compact';
   const [showReportModal, setShowReportModal] = useState(false);
-  const [showLangToast, setShowLangToast] = useState(false);
   const [reportSent, setReportSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reportForm, setReportForm] = useState(EMPTY_REPORT_FORM);
-
-  const handleLangClick = useCallback(() => {
-    setShowLangToast(true);
-    setTimeout(() => setShowLangToast(false), 2500);
-  }, []);
 
   const handleBannerChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e?.target?.files?.[0];
@@ -127,31 +121,14 @@ export function HeaderActions({ hideReportButtonOnMobile = false }: { hideReport
 
   return (
     <>
-      <div className="flex items-center gap-3 shrink-0">
-        {!isMobile && (
-          <button
-            onClick={handleLangClick}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-sm"
-          >
-            <Globe className="w-4 h-4" />
-            RU
-          </button>
-        )}
-
-        {!(isMobile && hideReportButtonOnMobile) && (
+      {!(isMobile && hideReportButtonOnMobile) && (
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={() => setShowReportModal(true)}
             className="bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
           >
             Сообщить о турнире
           </button>
-        )}
-      </div>
-
-      {/* Lang toast */}
-      {showLangToast && (
-        <div className="fixed top-16 right-6 z-50 bg-[#1A1A2E] border border-border/50 text-foreground text-sm px-4 py-2.5 rounded-lg shadow-lg animate-in fade-in slide-in-from-top-2">
-          Русский — единственный доступный язык
         </div>
       )}
 
