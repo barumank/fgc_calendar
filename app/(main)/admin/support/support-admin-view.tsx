@@ -23,6 +23,10 @@ interface Settings {
   goalAmount: number;
   donateUrl: string | null;
   developerMessage: string;
+  hasDonatepayKey: boolean;
+  autoPublish: boolean;
+  lastSyncAt: string | null;
+  lastAttemptAt: string | null;
 }
 
 const inputClass = 'w-full bg-white/5 border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/50';
@@ -41,7 +45,8 @@ export function SupportAdminView() {
   const { data: settings, mutate: mutateSettings } = useSWR<Settings>('/next-api/admin/support/settings', fetcher);
   const { data: donations, mutate: mutateDonations, isLoading } = useSWR<Donation[]>('/next-api/admin/support/donations', fetcher);
 
-  const [settingsForm, setSettingsForm] = useState({ goalAmount: '', donateUrl: '', developerMessage: '' });
+  const [settingsForm, setSettingsForm] = useState({ goalAmount: '', donateUrl: '', developerMessage: '', donatepayApiKey: '', autoPublish: false });
+  const [syncing, setSyncing] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyDonationForm());
@@ -54,11 +59,13 @@ export function SupportAdminView() {
       goalAmount: settings.goalAmount ? String(settings.goalAmount) : '',
       donateUrl: settings.donateUrl ?? '',
       developerMessage: settings.developerMessage ?? '',
+      donatepayApiKey: '',
+      autoPublish: settings.autoPublish,
     });
   }, [settings]);
 
-  const saveSettings = async () => {
-    if (savingSettings) return;
+  const saveSettings = async (): Promise<boolean> => {
+    if (savingSettings) return false;
     setSavingSettings(true);
     try {
       const res = await fetch('/next-api/admin/support/settings', {
@@ -69,14 +76,42 @@ export function SupportAdminView() {
       const data = await res.json();
       if (!res.ok) {
         showToast(data?.error ?? 'Не удалось сохранить настройки', 'error');
-        return;
+        return false;
       }
       await mutateSettings(data, false);
       showToast('Настройки сохранены', 'success');
+      return true;
     } catch {
       showToast('Не удалось сохранить настройки', 'error');
+      return false;
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const syncNow = async () => {
+    if (syncing) return;
+    // A freshly typed key must be stored before the server can use it.
+    if (settingsForm.donatepayApiKey && !(await saveSettings())) return;
+    setSyncing(true);
+    try {
+      const res = await fetch('/next-api/admin/support/sync', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data?.error ?? 'Не удалось выполнить синхронизацию', 'error');
+        return;
+      }
+      await Promise.all([mutateDonations(), mutateSettings()]);
+      showToast(
+        data.imported > 0
+          ? `Загружено новых платежей: ${data.imported}${data.published ? '' : ' (скрыты до одобрения)'}`
+          : 'Новых платежей нет',
+        'success',
+      );
+    } catch {
+      showToast('Не удалось выполнить синхронизацию', 'error');
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -206,7 +241,7 @@ export function SupportAdminView() {
           <p className="text-xs text-muted-foreground mt-1">Абзацы разделяйте пустой строкой.</p>
         </div>
         <button
-          onClick={saveSettings}
+          onClick={() => { void saveSettings(); }}
           disabled={savingSettings}
           className="mt-4 bg-[#EF4444] hover:bg-[#DC2626] disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
         >
@@ -214,9 +249,61 @@ export function SupportAdminView() {
         </button>
       </div>
 
+      <div className="bg-[#1A1A2E] rounded-xl border border-border/30 p-5 mb-6">
+        <h2 className="text-base font-semibold mb-1">Автоматическая загрузка из DonatePay</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Раз в сутки сервер забирает из DonatePay успешные пожертвования в рублях. Уже загруженные платежи повторно не добавляются.
+        </p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm text-muted-foreground mb-1.5">API-ключ DonatePay</label>
+            <input
+              type="password"
+              autoComplete="new-password"
+              className={inputClass}
+              value={settingsForm.donatepayApiKey}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSettingsForm((p) => ({ ...p, donatepayApiKey: e?.target?.value ?? '' }))}
+              placeholder={settings?.hasDonatepayKey ? 'Ключ сохранён — введите новый, чтобы заменить' : 'Вставьте ключ из личного кабинета DonatePay'}
+            />
+            <p className="text-xs text-muted-foreground mt-1">Ключ хранится только на сервере и на сайте не показывается.</p>
+          </div>
+          <div>
+            <label className="flex items-start gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={settingsForm.autoPublish}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSettingsForm((p) => ({ ...p, autoPublish: !!e?.target?.checked }))}
+              />
+              <span>
+                Сразу публиковать новые платежи
+                <span className="block text-xs text-muted-foreground">
+                  Если выключено, загруженные платежи появятся скрытыми, пока вы не нажмёте «Показать на сайте».
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <button
+            onClick={syncNow}
+            disabled={syncing || (!settings?.hasDonatepayKey && !settingsForm.donatepayApiKey)}
+            className="bg-white/10 hover:bg-white/15 disabled:opacity-40 disabled:cursor-not-allowed text-foreground px-5 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            {syncing ? 'Загрузка...' : 'Синхронизировать сейчас'}
+          </button>
+          <span className="text-xs text-muted-foreground">
+            {settings?.lastSyncAt
+              ? `Последняя успешная загрузка: ${new Date(settings.lastSyncAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', dateStyle: 'short', timeStyle: 'short' })} МСК`
+              : 'Загрузок ещё не было'}
+            . Подробности — в «Системные логи → Платежи DonatePay».
+          </span>
+        </div>
+      </div>
+
       <h2 className="text-base font-semibold mb-1">Платежи</h2>
       <p className="text-sm text-muted-foreground mb-4">
-        Скрытые платежи не учитываются в цели, топе и списке недавних. Платежи, добавленные вручную, помечены «вручную».
+        Скрытые платежи не учитываются в цели, топе и списке недавних. Платежи без пометки DonatePay добавлены вручную.
       </p>
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
         {isLoading ? (
@@ -232,7 +319,7 @@ export function SupportAdminView() {
                 <span className="text-xs text-muted-foreground">
                   {new Date(d.paidAt).toLocaleString('ru-RU', { timeZone: 'Europe/Moscow', dateStyle: 'short', timeStyle: 'short' })} МСК
                 </span>
-                {!d.externalId && <span className="text-xs text-muted-foreground">вручную</span>}
+                <span className="text-xs text-muted-foreground">{d.externalId?.startsWith('donatepay:') ? 'DonatePay' : 'вручную'}</span>
                 {d.hidden && <span className="text-xs text-yellow-500">скрыт</span>}
               </div>
               {d.message && <div className="text-xs text-muted-foreground italic mt-0.5 break-words">«{d.message}»</div>}

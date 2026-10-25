@@ -63,6 +63,25 @@ export async function getSupportSettings() {
   };
 }
 
+// Admin-only view of the integration state; the API key itself never leaves
+// the server.
+export async function getSupportAdminSettings() {
+  const [base, apiKey, autoPublish, lastSync, lastAttempt] = await Promise.all([
+    getSupportSettings(),
+    getSetting(SETTING_KEYS.donatepayApiKey),
+    getSetting(SETTING_KEYS.donatepayAutoPublish),
+    getSetting(SETTING_KEYS.donatepayLastSync),
+    getSetting(SETTING_KEYS.donatepayLastAttempt),
+  ]);
+  return {
+    ...base,
+    hasDonatepayKey: !!apiKey?.trim(),
+    autoPublish: autoPublish === '1',
+    lastSyncAt: lastSync,
+    lastAttemptAt: lastAttempt,
+  };
+}
+
 export async function getSupportSummary(now = new Date()): Promise<SupportSummary> {
   const { start, end } = currentMonthRangeMsk(now);
   const [settings, donations] = await Promise.all([

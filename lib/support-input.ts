@@ -31,6 +31,9 @@ export interface SupportSettingsInput {
   goalAmount: number;
   donateUrl: string;
   developerMessage: string;
+  // Empty means "keep the stored key".
+  donatepayApiKey: string;
+  autoPublish: boolean;
 }
 
 export function parseSupportSettingsInput(body: any): { data: SupportSettingsInput } | { error: string } {
@@ -45,5 +48,12 @@ export function parseSupportSettingsInput(body: any): { data: SupportSettingsInp
   if (rawUrl && !donateUrl) return { error: 'Ссылка на оплату должна начинаться с http:// или https://' };
   if (developerMessage.length > 3000) return { error: 'Сообщение слишком длинное (максимум 3000 символов)' };
 
-  return { data: { goalAmount, donateUrl: donateUrl ?? '', developerMessage } };
+  const donatepayApiKey = typeof body?.donatepayApiKey === 'string' ? body.donatepayApiKey.trim() : '';
+  if (donatepayApiKey && (donatepayApiKey.length > 200 || /\s/.test(donatepayApiKey))) {
+    return { error: 'Ключ DonatePay выглядит некорректно' };
+  }
+
+  return {
+    data: { goalAmount, donateUrl: donateUrl ?? '', developerMessage, donatepayApiKey, autoPublish: body?.autoPublish === true },
+  };
 }

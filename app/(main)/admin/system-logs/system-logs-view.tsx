@@ -29,6 +29,7 @@ const OFFSET_LABELS: Record<string, string> = { day: 'за день', hour: 'з�
 const TABS: { key: string; label: string }[] = [
   { key: 'discord', label: 'Экспорт в Дискорд' },
   { key: 'telegram', label: 'Экспорт в Телеграм' },
+  { key: 'donatepay', label: 'Платежи DonatePay' },
   { key: 'google', label: 'Экспорт в Google' },
   { key: 'yandex', label: 'Экспорт в Яндекс' },
   { key: 'subscriptions', label: 'Подписки на турниры' },
@@ -74,15 +75,18 @@ function ExportLogTable({ platform }: { platform: string }) {
     fetcher,
   );
 
-  const isTelegram = platform === 'telegram';
+  // Telegram and DonatePay rows carry a free-text event label and an error reason.
+  const isTelegram = platform === 'telegram' || platform === 'donatepay';
+  const countLabels = platform === 'donatepay' ? ['Загружено', 'Ошибок'] : ['Успешно', 'Неуспешно'];
+  const detailsLabel = platform === 'donatepay' ? 'Примечание' : 'Причина ошибки';
   const gridCols = isTelegram ? 'grid-cols-[180px_1fr_100px_100px_1.2fr]' : 'grid-cols-[180px_1fr_120px_120px]';
 
   return (
     <>
       <div className="bg-[#1A1A2E] rounded-xl border border-border/30 overflow-hidden">
         <div className={`grid ${gridCols} gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b border-border/20`}>
-          <div>Дата</div><div>{isTelegram ? 'Событие' : 'ID сервера'}</div><div>Успешно</div><div>Неуспешно</div>
-          {isTelegram && <div>Причина ошибки</div>}
+          <div>Дата</div><div>{isTelegram ? 'Событие' : 'ID сервера'}</div><div>{countLabels[0]}</div><div>{countLabels[1]}</div>
+          {isTelegram && <div>{detailsLabel}</div>}
         </div>
         {isLoading ? (
           <div className="px-6 py-8 text-center text-sm text-muted-foreground">Загрузка...</div>

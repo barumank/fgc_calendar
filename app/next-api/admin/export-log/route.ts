@@ -5,7 +5,7 @@ import { requireRole } from '@/lib/require-role';
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 30;
-const VALID_PLATFORMS = ['discord', 'telegram', 'google', 'yandex'];
+const VALID_PLATFORMS = ['discord', 'telegram', 'google', 'yandex', 'donatepay'];
 
 export async function GET(req: NextRequest) {
   const { error } = await requireRole(['admin']);

@@ -13,6 +13,10 @@ export const SETTING_KEYS = {
   supportGoalAmount: 'support_goal_amount',
   supportDonateUrl: 'support_donate_url',
   supportDeveloperMessage: 'support_developer_message',
+  donatepayApiKey: 'donatepay_api_key',
+  donatepayAutoPublish: 'donatepay_auto_publish',
+  donatepayLastSync: 'donatepay_last_sync',
+  donatepayLastAttempt: 'donatepay_last_attempt',
 } as const;
 
 export async function getSetting(key: string): Promise<string | null> {
