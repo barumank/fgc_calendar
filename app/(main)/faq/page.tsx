@@ -4,8 +4,8 @@ import { HeaderActions } from '@/src/components/layout/header-actions';
 import { specialThanks, supporters } from '@/src/data/supporters';
 
 export const metadata = {
-  title: 'FAQ — FightNexus',
-  description: 'FGC-calendar — календарь турниров по файтингам на территории СНГ и других стран. Как пользоваться сервисом, что он умеет и как с нами связаться.',
+  title: 'О проекте',
+  description: 'Ключевая информация о проекте, его функционале, целях и создателях.',
 };
 
 const functionality = [

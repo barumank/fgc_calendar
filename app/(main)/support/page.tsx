@@ -1,8 +1,8 @@
 import { SupportView } from './support-view';
 
 export const metadata = {
-  title: 'Поддержать проект — FightNexus',
-  description: 'Как поддержать FGC-calendar донатом.',
+  title: 'Помощь проекту',
+  description: 'Поддержите развитие проекта',
 };
 
 export default function SupportPage() {
