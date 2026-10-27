@@ -42,6 +42,7 @@ const adminSubLinks = [
   { href: '/admin/dashboard', label: 'Дашборд', icon: LayoutDashboard },
   { href: '/admin/requests', label: 'Заявки', icon: ClipboardList },
   { href: '/admin/news', label: 'Управление новостями', icon: Newspaper },
+  { href: '/admin/tournaments', label: 'Управление турнирами', icon: Trophy },
   { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
   { href: '/admin/leagues', label: 'Лиги', icon: CalendarRange },
   { href: '/admin/support', label: 'Поддержка проекта', icon: Heart },
