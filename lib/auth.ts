@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },
-  pages: { signIn: '/calendar' },
+  pages: { signIn: '/calendar', error: '/auth/error' },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
