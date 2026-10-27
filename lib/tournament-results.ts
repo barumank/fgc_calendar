@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db';
 import { pointsForRank } from '@/lib/challonge';
 import { REGION_LABELS, RegionType } from '@/src/types';
+import { PLATFORM_ID_FIELDS, type PlatformIdField } from '@/lib/player-merge';
+import type { Player } from '@prisma/client';
 
 export interface RankedResult {
   rank: number;
@@ -31,6 +33,29 @@ export async function reversePreviousCredits(tournamentId: string): Promise<void
   await prisma.tournamentResultCredit.deleteMany({ where: { tournamentId } });
 }
 
+// A platform account id identifies a player exactly. Without a match on any
+// id, a player in the same discipline whose tag is identical (ignoring case)
+// is taken to be the same person — unless that card already holds a different
+// account of the same platform, which means a namesake.
+async function findExistingPlayer(
+  tag: string,
+  game: string,
+  accountIds: Record<PlatformIdField, string | null>,
+): Promise<Player | null> {
+  for (const field of PLATFORM_ID_FIELDS) {
+    const value = accountIds[field];
+    if (!value) continue;
+    const found = await prisma.player.findFirst({ where: { [field]: value } });
+    if (found) return found;
+  }
+
+  const sameTag = await prisma.player.findMany({
+    where: { mainGame: game, tag: { equals: tag.trim(), mode: 'insensitive' } },
+    orderBy: { createdAt: 'asc' },
+  });
+  return sameTag.find((p) => PLATFORM_ID_FIELDS.every((f) => !accountIds[f] || !p[f] || p[f] === accountIds[f])) ?? null;
+}
+
 export async function creditTop8(
   tournamentId: string,
   tournament: { region: string; game: string },
@@ -55,25 +80,23 @@ export async function creditTop8(
       top3: r.rank <= 3 ? 1 : 0,
     };
 
-    const player = r.challongeUsername
-      ? await prisma.player.upsert({
-          where: { challongeUsername: r.challongeUsername },
-          update: statUpdate,
-          create: { tag: r.name, challongeUsername: r.challongeUsername, ...baseData },
+    const accountIds = {
+      challongeUsername: r.challongeUsername || null,
+      startggPlayerId: r.startggPlayerId || null,
+      crowdhypePlayerId: r.crowdhypePlayerId || null,
+    };
+    const existing = await findExistingPlayer(r.name, tournament.game, accountIds);
+    const player = existing
+      ? await prisma.player.update({
+          where: { id: existing.id },
+          data: {
+            ...statUpdate,
+            // A card matched by tag learns the new platform account, so later
+            // results from either platform land on the same card.
+            ...Object.fromEntries(PLATFORM_ID_FIELDS.filter((f) => accountIds[f] && !existing[f]).map((f) => [f, accountIds[f]])),
+          },
         })
-      : r.startggPlayerId
-        ? await prisma.player.upsert({
-            where: { startggPlayerId: r.startggPlayerId },
-            update: statUpdate,
-            create: { tag: r.name, startggPlayerId: r.startggPlayerId, ...baseData },
-          })
-        : r.crowdhypePlayerId
-          ? await prisma.player.upsert({
-              where: { crowdhypePlayerId: r.crowdhypePlayerId },
-              update: statUpdate,
-              create: { tag: r.name, crowdhypePlayerId: r.crowdhypePlayerId, ...baseData },
-            })
-          : await prisma.player.create({ data: { tag: r.name, ...baseData } });
+      : await prisma.player.create({ data: { tag: r.name, ...accountIds, ...baseData } });
 
     await prisma.tournamentResultCredit.upsert({
       where: { tournamentId_playerId: { tournamentId, playerId: player.id } },
