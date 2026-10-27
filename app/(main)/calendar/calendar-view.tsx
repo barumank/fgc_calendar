@@ -409,6 +409,9 @@ export function CalendarView() {
               {selectedTournament?.format !== 'online' && (
                 <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{REGION_LABELS[selectedTournament?.region]}</span>
               )}
+              {selectedTournament?.format === 'offline' && selectedTournament?.city && (
+                <span className="px-3 py-1 rounded-lg text-xs font-medium bg-white/10">{selectedTournament.city}</span>
+              )}
               {selectedTournament?.resultsFetchedAt && (
                 <span className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-yellow-500/15 text-yellow-400"><Trophy className="w-3.5 h-3.5" />Результаты собраны</span>
               )}
