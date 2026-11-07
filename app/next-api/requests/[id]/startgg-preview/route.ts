@@ -6,7 +6,8 @@ import { extractStartggTournamentSlug, fetchStartggTournamentEvents, unixToMosco
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 

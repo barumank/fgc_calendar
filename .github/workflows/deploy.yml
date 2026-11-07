@@ -1,8 +1,11 @@
-name: Deploy to VPS
+name: Deploy to Timeweb VPS
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: timeweb-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -11,7 +14,8 @@ jobs:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          host: ${{ secrets.TIMEWEB_DEPLOY_HOST }}
+          username: ${{ secrets.TIMEWEB_DEPLOY_USER }}
+          key: ${{ secrets.TIMEWEB_DEPLOY_SSH_KEY }}
+          passphrase: ${{ secrets.TIMEWEB_DEPLOY_PASSPHRASE }}
           script: bash /var/www/fightnexus/deploy.sh

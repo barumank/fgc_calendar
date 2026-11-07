@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 
 const CATEGORIES = ['announcement', 'results', 'update', 'interview'];
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 
@@ -31,7 +32,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(news);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 

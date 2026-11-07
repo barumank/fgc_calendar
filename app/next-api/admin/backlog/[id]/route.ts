@@ -4,7 +4,8 @@ import { requireRole } from '@/lib/require-role';
 
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin']);
   if (error) return error;
 

@@ -13,7 +13,8 @@ function formatTournamentStart(startDate: string, startTime?: string | null) {
   return startTime ? `${datePart}, ${startTime}` : datePart;
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { session, error } = await requireRole(['admin', 'moderator', 'user']);
   if (error) return error;
 

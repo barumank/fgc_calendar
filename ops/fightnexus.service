@@ -1,0 +1,24 @@
+[Unit]
+Description=FightNexus tournament calendar
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=fightnexus
+Group=fightnexus
+WorkingDirectory=/var/www/fightnexus
+EnvironmentFile=/etc/fightnexus/app.env
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3000
+ExecStart=/usr/bin/npm start -- --hostname 127.0.0.1 --port 3000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/www/fightnexus/.next
+
+[Install]
+WantedBy=multi-user.target

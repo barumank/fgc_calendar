@@ -10,8 +10,8 @@ const ADMIN_ALLOWED_PREFIXES: Record<string, string[] | null> = {
   user: ['/admin/notifications'],
 };
 
-export default withAuth(
-  function middleware() {
+export const proxy = withAuth(
+  function proxy() {
     return NextResponse.next();
   },
   {

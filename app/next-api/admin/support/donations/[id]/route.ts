@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 
 // Only the visibility flag is editable: payments imported from the donation
 // service must stay as they were received.
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin']);
   if (error) return error;
 
@@ -23,7 +24,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json(donation);
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin']);
   if (error) return error;
 

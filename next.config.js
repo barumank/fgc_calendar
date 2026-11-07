@@ -4,15 +4,9 @@ const path = require('path');
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   output: process.env.NEXT_OUTPUT_MODE,
+  outputFileTracingRoot: path.join(__dirname, '../'),
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
-  experimental: {
-    outputFileTracingRoot: path.join(__dirname, '../'),
-    instrumentationHook: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: false,
   },

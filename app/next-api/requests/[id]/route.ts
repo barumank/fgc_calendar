@@ -4,7 +4,8 @@ import { requireRole } from '@/lib/require-role';
 import { notifyNewTournaments } from '@/lib/notify-new-tournaments';
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 
@@ -15,7 +16,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json(request);
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const { error } = await requireRole(['admin', 'moderator']);
   if (error) return error;
 

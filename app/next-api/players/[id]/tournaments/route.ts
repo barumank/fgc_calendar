@@ -3,7 +3,8 @@ import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const credits = await prisma.tournamentResultCredit.findMany({ where: { playerId: params.id } });
   if (credits.length === 0) {
     return NextResponse.json([]);

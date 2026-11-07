@@ -40,7 +40,8 @@ const FALLBACK = {
 
 const ICONS = { server: ServerCrash, access: ShieldAlert, login: KeyRound };
 
-export default function AuthErrorPage({ searchParams }: { searchParams: { error?: string } }) {
+export default async function AuthErrorPage(props: { searchParams: Promise<{ error?: string }> }) {
+  const searchParams = await props.searchParams;
   const code = typeof searchParams?.error === 'string' ? searchParams.error : null;
   const message = (code && MESSAGES[code]) || FALLBACK;
 
