@@ -43,7 +43,7 @@ function DiscordBotSettings() {
   };
 
   return (
-    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+    <div className="w-full bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
       <h2 className="text-sm font-semibold mb-1">Discord-бот для экспорта календаря</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Этот бот и токен используются для экспорта турниров в Discord всеми пользователями сайта (раздел "Экспорт календаря").
@@ -132,7 +132,7 @@ function TelegramBotSettings({ title, description, endpoint }: { title: string; 
   };
 
   return (
-    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+    <div className="w-full bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
       <h2 className="text-sm font-semibold mb-1">{title}</h2>
       <p className="text-xs text-muted-foreground mb-4">{description}</p>
 
@@ -190,7 +190,7 @@ function RequestSubscribers() {
   const { data, isLoading } = useSWR<Subscriber[]>('/next-api/admin/notification-subscribers', fetcher);
 
   return (
-    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+    <div className="w-full bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
       <h2 className="text-sm font-semibold mb-1">На приёмке заявок</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Пользователи, включившие "Участвовать в обработке заявок" в разделе "Уведомления" — им приходит Telegram-уведомление о каждой новой заявке.
@@ -249,7 +249,7 @@ function StartggSettings() {
   };
 
   return (
-    <div className="max-w-xl bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
+    <div className="w-full bg-[#1A1A2E] rounded-xl border border-border/30 p-5">
       <h2 className="text-sm font-semibold mb-1">start.gg API</h2>
       <p className="text-xs text-muted-foreground mb-4">
         Токен используется для импорта турниров со start.gg при одобрении заявок (если ссылка на турнир ведёт на start.gg и внутри несколько событий/дисциплин).
@@ -291,7 +291,7 @@ export function SettingsView() {
     <div className="px-6 pt-6">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
 
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
         <DiscordBotSettings />
         <TelegramBotSettings
           title="Телеграм бот для заявок"
