@@ -1,12 +1,15 @@
 import type { ReactNode } from 'react';
 import { Heart, Info, ListChecks, Sparkles, Trophy } from 'lucide-react';
 import { HeaderActions } from '@/src/components/layout/header-actions';
-import { specialThanks, supporters } from '@/src/data/supporters';
+import { specialThanks } from '@/src/data/supporters';
+import { prisma } from '@/lib/db';
 
 export const metadata = {
   title: 'О проекте',
   description: 'Ключевая информация о проекте, его функционале, целях и создателях.',
 };
+
+export const dynamic = 'force-dynamic';
 
 const functionality = [
   {
@@ -71,7 +74,23 @@ function Card({ icon, title, subtitle, badge, children }: {
   );
 }
 
-export default function FaqPage() {
+export default async function FaqPage() {
+  const donations = await prisma.donation.findMany({
+    where: { hidden: false },
+    select: { nickname: true },
+    orderBy: { paidAt: 'desc' },
+  });
+  const supporterNames: string[] = [];
+  const seenSupporters = new Set<string>();
+  for (const donation of donations) {
+    const name = donation.nickname.trim();
+    const key = name.toLowerCase();
+    if (name && !seenSupporters.has(key)) {
+      supporterNames.push(name);
+      seenSupporters.add(key);
+    }
+  }
+
   return (
     <div className="px-6 pt-6 pb-12">
       <div className="flex justify-end mb-6"><HeaderActions /></div>
@@ -171,20 +190,19 @@ export default function FaqPage() {
           title="Поддержавшие проект"
           subtitle="Игроки, которые помогли проекту материально. Спасибо!"
           badge={
-            supporters.length > 0 ? (
+            supporterNames.length > 0 ? (
               <span className="rounded-full border border-pink-500/30 bg-pink-500/10 px-2.5 py-0.5 text-xs font-semibold text-pink-300">
-                {supporters.length}
+                {supporterNames.length}
               </span>
             ) : null
           }
         >
-          {supporters.length > 0 ? (
+          {supporterNames.length > 0 ? (
             <ul className="divide-y divide-border/30 rounded-lg border border-border/30 bg-white/[0.03] text-sm">
-              {supporters.map((s) => (
-                <li key={s.name} className="flex items-center gap-3 px-4 py-2.5">
+              {supporterNames.map((name) => (
+                <li key={name} className="flex items-center gap-3 px-4 py-2.5">
                   <Heart size={14} className="shrink-0 fill-pink-500/70 text-pink-500" />
-                  <span className="font-medium text-foreground">{s.name}</span>
-                  {s.note && <span className="ml-auto text-xs text-muted-foreground">{s.note}</span>}
+                  <span className="font-medium text-foreground">{name}</span>
                 </li>
               ))}
             </ul>
