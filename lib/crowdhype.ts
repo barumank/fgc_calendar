@@ -231,5 +231,5 @@ export function computeFdeStandings(bracket: BracketResponse): CrowdhypeStanding
     }
   }
 
-  return results.slice(0, 8);
+  return results.slice(0, 16);
 }

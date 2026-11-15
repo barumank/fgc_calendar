@@ -88,7 +88,7 @@ function TournamentResultRow({ tournament, onUpdated, onChallongeUsage }: {
         return;
       }
       onUpdated(data.playersCount, new Date().toISOString());
-      showToast(`«${tournament.name}»: обновлено — ${data.playersCount} участников, топ-8 сохранён в «Игроки»`, 'success');
+      showToast(`«${tournament.name}»: обновлено — ${data.playersCount} участников, топ-16 сохранён в «Игроки»`, 'success');
     } catch {
       showToast('Не удалось получить результаты', 'error');
     } finally {

@@ -56,7 +56,7 @@ async function findExistingPlayer(
   return sameTag.find((p) => PLATFORM_ID_FIELDS.every((f) => !accountIds[f] || !p[f] || p[f] === accountIds[f])) ?? null;
 }
 
-export async function creditTop8(
+export async function creditRankedPlayers(
   tournamentId: string,
   tournament: { region: string; game: string },
   top8: RankedResult[],

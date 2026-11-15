@@ -7,6 +7,7 @@ export interface Player {
   country: string;
   region: RegionType;
   mainGame: GameType;
+  games?: GameType[];
   avatarUrl?: string;
   tournamentsPlayed: number;
   wins: number;

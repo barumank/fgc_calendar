@@ -202,7 +202,7 @@ const EVENT_STANDINGS_QUERY = `
   }
 `;
 
-export async function fetchStartggEventStandings(eventSlug: string, apiToken: string, perPage = 8): Promise<StartggEventStandings> {
+export async function fetchStartggEventStandings(eventSlug: string, apiToken: string, perPage = 16): Promise<StartggEventStandings> {
   const data = await postStartggQuery(EVENT_STANDINGS_QUERY, { slug: eventSlug, page: 1, perPage }, apiToken);
 
   const event = data?.event;

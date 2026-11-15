@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import { getSetting, SETTING_KEYS } from '@/lib/app-settings';
 import { extractStartggEventSlug, fetchStartggEventStandings } from '@/lib/startgg';
-import { reversePreviousCredits, creditTop8 } from '@/lib/tournament-results';
+import { reversePreviousCredits, creditRankedPlayers } from '@/lib/tournament-results';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,18 +45,18 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     return NextResponse.json({ error: e?.message ?? 'Не удалось получить результаты со start.gg' }, { status: 502 });
   }
 
-  const top8 = result.standings
+  const top16 = result.standings
     .filter((s) => s.placement > 0)
     .sort((a, b) => a.placement - b.placement)
-    .slice(0, 8);
+    .slice(0, 16);
 
   let players: any[] = [];
-  if (top8.length > 0) {
+  if (top16.length > 0) {
     if (alreadyCollected > 0) await reversePreviousCredits(tournament.id);
-    players = await creditTop8(
+    players = await creditRankedPlayers(
       tournament.id,
       tournament,
-      top8.map((s) => ({ rank: s.placement, name: s.name, startggPlayerId: s.playerId })),
+      top16.map((s) => ({ rank: s.placement, name: s.name, startggPlayerId: s.playerId })),
     );
     await prisma.tournament.update({
       where: { id: tournament.id },
@@ -68,7 +68,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
   return NextResponse.json({
     playersCount: result.numEntrants,
-    top8: players,
-    tournamentFinished: top8.length > 0,
+    top8: players.filter((player) => player.finalRank <= 8),
+    top16Count: players.length,
+    tournamentFinished: top16.length > 0,
   });
 }

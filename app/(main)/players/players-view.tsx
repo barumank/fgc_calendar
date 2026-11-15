@@ -24,7 +24,7 @@ export function PlayersView() {
   const filtered = useMemo(() => {
     return (players ?? []).filter((p: Player) => {
       if (search && !(p?.tag ?? '').toLowerCase().includes(search.toLowerCase())) return false;
-      if (filterGame && p?.mainGame !== filterGame) return false;
+      if (filterGame && !(p?.games ?? [p?.mainGame]).includes(filterGame)) return false;
       if (filterRegion && p?.region !== filterRegion) return false;
       return true;
     });
@@ -59,8 +59,12 @@ export function PlayersView() {
                 <div className="text-xs text-muted-foreground">{p?.country}</div>
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[p?.mainGame] }}>{GAME_LABELS[p?.mainGame]}</span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-1">
+                {(p?.games?.length ? p.games : [p?.mainGame]).map((game) => (
+                  <span key={game} className="px-2 py-0.5 rounded text-[10px] font-medium text-white" style={{ backgroundColor: GAME_COLORS[game] ?? '#666' }}>{GAME_LABELS[game] ?? game}</span>
+                ))}
+              </div>
               <span className="text-sm font-mono font-bold text-[#EF4444]">{p?.points} очков</span>
             </div>
           </button>

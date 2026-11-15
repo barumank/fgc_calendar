@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { extractChallongeSlug, fetchChallongeParticipants, currentUsageMonth, ChallongeParticipant } from '@/lib/challonge';
-import { reversePreviousCredits, creditTop8 } from '@/lib/tournament-results';
+import { reversePreviousCredits, creditRankedPlayers } from '@/lib/tournament-results';
 import { requireRole } from '@/lib/require-role';
 
 export const dynamic = 'force-dynamic';
@@ -47,18 +47,18 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
   });
 
   const playersCount = participants.length;
-  const top8 = participants
+  const top16 = participants
     .filter((p) => typeof p.finalRank === 'number' && p.finalRank > 0)
     .sort((a, b) => (a.finalRank as number) - (b.finalRank as number))
-    .slice(0, 8);
+    .slice(0, 16);
 
   let players: any[] = [];
-  if (top8.length > 0) {
+  if (top16.length > 0) {
     if (alreadyCollected > 0) await reversePreviousCredits(tournament.id);
-    players = await creditTop8(
+    players = await creditRankedPlayers(
       tournament.id,
       tournament,
-      top8.map((p) => ({ rank: p.finalRank as number, name: p.name, challongeUsername: p.username })),
+      top16.map((p) => ({ rank: p.finalRank as number, name: p.name, challongeUsername: p.username })),
     );
     await prisma.tournament.update({ where: { id: tournament.id }, data: { playersCount, resultsFetchedAt: new Date() } });
   } else {
@@ -67,8 +67,9 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
   return NextResponse.json({
     playersCount,
-    top8: players,
-    tournamentFinished: top8.length > 0,
+    top8: players.filter((player) => player.finalRank <= 8),
+    top16Count: players.length,
+    tournamentFinished: top16.length > 0,
     usage: usage.count,
   });
 }

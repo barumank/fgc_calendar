@@ -8,7 +8,7 @@ import {
   computeFdeStandings,
   CROWDHYPE_COLLECTIBLE_FORMAT,
 } from '@/lib/crowdhype';
-import { reversePreviousCredits, creditTop8 } from '@/lib/tournament-results';
+import { reversePreviousCredits, creditRankedPlayers } from '@/lib/tournament-results';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,15 +61,15 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
     return NextResponse.json({ error: e?.message ?? 'Не удалось получить сетку с crowdhype.pro' }, { status: 502 });
   }
 
-  const top8 = computeFdeStandings(bracket);
+  const top16 = computeFdeStandings(bracket);
 
   let players: any[] = [];
-  if (top8.length > 0) {
+  if (top16.length > 0) {
     if (alreadyCollected > 0) await reversePreviousCredits(tournament.id);
-    players = await creditTop8(
+    players = await creditRankedPlayers(
       tournament.id,
       tournament,
-      top8.map((s) => ({ rank: s.rank, name: s.name, crowdhypePlayerId: s.crowdhypePlayerId })),
+      top16.map((s) => ({ rank: s.rank, name: s.name, crowdhypePlayerId: s.crowdhypePlayerId })),
     );
     await prisma.tournament.update({
       where: { id: tournament.id },
@@ -81,7 +81,8 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
 
   return NextResponse.json({
     playersCount: crowdhypeTournament.participantsCount,
-    top8: players,
-    tournamentFinished: top8.length > 0,
+    top8: players.filter((player) => player.finalRank <= 8),
+    top16Count: players.length,
+    tournamentFinished: top16.length > 0,
   });
 }
