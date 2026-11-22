@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { AlertTriangle } from 'lucide-react';
 import { useGames } from '@/src/hooks/use-games';
@@ -21,6 +21,10 @@ interface DuplicatePlayer {
   crowdhypePlayerId: string | null;
 }
 
+interface SearchPlayer extends DuplicatePlayer {
+  mainGame: string;
+}
+
 interface DuplicateGroup {
   key: string;
   game: string;
@@ -35,6 +39,158 @@ function accountsOf(p: DuplicatePlayer): string {
     p.startggPlayerId && `start.gg: ${p.startggPlayerId}`,
     p.crowdhypePlayerId && `crowdhype: ${p.crowdhypePlayerId}`,
   ].filter(Boolean).join(' · ') || 'без привязки к платформе';
+}
+
+function ManualMerge({ gameLabels, onMerged }: { gameLabels: Record<string, string>; onMerged: () => void }) {
+  const [queries, setQueries] = useState(['', '']);
+  const [results, setResults] = useState<SearchPlayer[][]>([[], []]);
+  const [selected, setSelected] = useState<(SearchPlayer | null)[]>([null, null]);
+  const [loading, setLoading] = useState([false, false]);
+  const [merging, setMerging] = useState(false);
+
+  useEffect(() => {
+    const controllers: AbortController[] = [];
+    const timers = queries.map((query, index) => {
+      if (selected[index] || query.trim().length < 2) return undefined;
+      return setTimeout(async () => {
+        const controller = new AbortController();
+        controllers.push(controller);
+        try {
+          const response = await fetch(`/next-api/admin/players/search?q=${encodeURIComponent(query.trim())}`, { signal: controller.signal });
+          const data = await response.json();
+          setResults((current) => current.map((items, i) => i === index ? (response.ok && Array.isArray(data) ? data : []) : items));
+        } catch {
+          if (!controller.signal.aborted) setResults((current) => current.map((items, i) => i === index ? [] : items));
+        } finally {
+          if (!controller.signal.aborted) setLoading((current) => current.map((value, i) => i === index ? false : value));
+        }
+      }, 250);
+    });
+
+    return () => {
+      timers.forEach((timer) => timer && clearTimeout(timer));
+      controllers.forEach((controller) => controller.abort());
+    };
+  }, [queries, selected]);
+
+  const choose = (index: number, player: SearchPlayer) => {
+    setSelected((current) => current.map((item, i) => i === index ? player : item));
+    setQueries((current) => current.map((query, i) => i === index ? '' : query));
+    setResults((current) => current.map((items, i) => i === index ? [] : items));
+    setLoading((current) => current.map((value, i) => i === index ? false : value));
+  };
+
+  const clear = (index: number) => {
+    setSelected((current) => current.map((item, i) => i === index ? null : item));
+    setQueries((current) => current.map((query, i) => i === index ? '' : query));
+    setResults((current) => current.map((items, i) => i === index ? [] : items));
+    setLoading((current) => current.map((value, i) => i === index ? false : value));
+  };
+
+  const sameGame = !!selected[0] && !!selected[1] && selected[0].mainGame === selected[1].mainGame;
+  const conflict = selected[0] && selected[1] ? findManualConflict([selected[0], selected[1]]) : null;
+
+  const merge = async () => {
+    if (!selected[0] || !selected[1] || selected[0].id === selected[1].id || !sameGame || conflict || merging) return;
+    const first = selected[0];
+    const second = selected[1];
+    if (!window.confirm(`Объединить карточку «${second.tag}» с основной карточкой «${first.tag}»? Очки и результаты сложатся, действие нельзя отменить.`)) return;
+
+    setMerging(true);
+    try {
+      const response = await fetch('/next-api/admin/players/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ primaryId: first.id, otherIds: [second.id] }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        showToast(data?.error ?? 'Не удалось объединить карточки', 'error');
+        return;
+      }
+      showToast(`Карточка «${second.tag}» объединена с «${first.tag}»`, 'success');
+      setSelected([null, null]);
+      setQueries(['', '']);
+      onMerged();
+    } catch {
+      showToast('Не удалось объединить карточки', 'error');
+    } finally {
+      setMerging(false);
+    }
+  };
+
+  return (
+    <section className="mb-6 rounded-xl border border-border/30 bg-[#1A1A2E] p-5">
+      <h2 className="font-semibold mb-1">Ручное объединение</h2>
+      <p className="text-xs text-muted-foreground mb-4">Найдите две карточки игрока. Первая останется основной, вторая будет объединена с ней.</p>
+      <div className="grid gap-4 md:grid-cols-2">
+        {[0, 1].map((index) => (
+          <div key={index} className="relative">
+            <label className="block text-xs text-muted-foreground mb-1.5">{index === 0 ? 'Основная карточка' : 'Карточка для объединения'}</label>
+            {selected[index] ? (
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-border/30 bg-[#242438] px-3 py-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{selected[index]!.tag}</div>
+                  <div className="text-xs text-muted-foreground">{gameLabels[selected[index]!.mainGame] ?? selected[index]!.mainGame} · {selected[index]!.points} очков · турниров {selected[index]!.tournamentsPlayed}</div>
+                </div>
+                <button type="button" onClick={() => clear(index)} className="text-xs text-muted-foreground hover:text-white">Изменить</button>
+              </div>
+            ) : (
+              <>
+                <input
+                  value={queries[index]}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setQueries((current) => current.map((query, i) => i === index ? value : query));
+                    setResults((current) => current.map((items, i) => i === index ? [] : items));
+                    setLoading((current) => current.map((pending, i) => i === index ? value.trim().length >= 2 : pending));
+                  }}
+                  placeholder="Введите ник игрока..."
+                  className="w-full rounded-lg bg-[#242438] border border-border/30 px-3 py-2 text-sm text-foreground outline-none focus:border-[#EF4444]/60"
+                />
+                {loading[index] && <div className="mt-1 text-xs text-muted-foreground">Поиск...</div>}
+                {results[index].length > 0 && (
+                  <div className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border/40 bg-[#202035] shadow-xl">
+                    {results[index].map((player) => (
+                      <button type="button" key={player.id} onClick={() => choose(index, player)} className="block w-full border-b border-border/20 px-3 py-2 text-left last:border-0 hover:bg-white/[0.06]">
+                        <span className="block text-sm font-medium">{player.tag}</span>
+                        <span className="block text-xs text-muted-foreground">{gameLabels[player.mainGame] ?? player.mainGame} · {player.points} очков · турниров {player.tournamentsPlayed}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {queries[index].trim().length >= 2 && !loading[index] && results[index].length === 0 && <div className="mt-1 text-xs text-muted-foreground">Карточек с таким ником не найдено</div>}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      {selected[0] && selected[1] && (
+        <div className={`mt-3 text-xs ${!sameGame || conflict ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+          {selected[0].id === selected[1].id ? 'Выбрана одна и та же карточка.'
+            : !sameGame ? 'У этих карточек нет общей дисциплины — объединить их нельзя.'
+              : conflict ? `${conflict}: эти карточки объединять нельзя.`
+                : `Общие дисциплины: ${gameLabels[selected[0].mainGame] ?? selected[0].mainGame}.`}
+        </div>
+      )}
+      <button type="button" onClick={merge} disabled={!sameGame || !!conflict || selected[0]?.id === selected[1]?.id || merging} className="mt-4 rounded-lg bg-[#EF4444] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#DC2626] disabled:cursor-not-allowed disabled:opacity-40">
+        {merging ? 'Объединение...' : 'Объединить карточки'}
+      </button>
+    </section>
+  );
+}
+
+function findManualConflict(players: SearchPlayer[]): string | null {
+  const accounts = [
+    ['challongeUsername', 'Challonge'],
+    ['startggPlayerId', 'start.gg'],
+    ['crowdhypePlayerId', 'crowdhype'],
+  ] as const;
+  for (const [field, label] of accounts) {
+    const values = new Set(players.map((player) => player[field]).filter(Boolean));
+    if (values.size > 1) return `Разные аккаунты ${label}`;
+  }
+  return null;
 }
 
 function GroupCard({ group, gameLabel, onMerged }: { group: DuplicateGroup; gameLabel: string; onMerged: () => void }) {
@@ -127,6 +283,8 @@ export function PlayersAdminView() {
         площадок — например, Challonge и start.gg. При объединении очки и турниры суммируются, а выбранная карточка получает
         аккаунты всех площадок. Новые результаты с совпадающим ником теперь попадают в существующую карточку автоматически.
       </p>
+
+      <ManualMerge gameLabels={labels} onMerged={() => { void mutate(); }} />
 
       {isLoading ? (
         <div className="py-8 text-center text-sm text-muted-foreground">Загрузка...</div>
