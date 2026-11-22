@@ -15,6 +15,7 @@ import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
 import { Role, ROLE_LABELS } from '@/lib/roles';
 import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context';
+import { getTelegramBotUrl } from '@/src/lib/telegram-links';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -65,6 +66,7 @@ export function Sidebar() {
   const [adminOpen, setAdminOpen] = useState(pathname?.startsWith('/admin'));
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { data: authBotSettings } = useSWR<{ botName: string }>('/next-api/admin/settings/telegram-auth', fetcher);
+  const authBotUrl = getTelegramBotUrl(authBotSettings?.botName);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -330,7 +332,14 @@ export function Sidebar() {
         <div className="space-y-4">
           <div className="bg-[#229ED9]/10 border border-[#229ED9]/30 rounded-lg p-3 text-xs text-muted-foreground leading-relaxed">
             На сайте реализована регистрация через Telegram — напишите нашему боту
-            {authBotSettings?.botName ? <> (<span className="text-[#229ED9] font-medium">@{authBotSettings.botName.replace(/^@/, '')}</span>)</> : ''}
+            {authBotSettings?.botName && authBotUrl ? (
+              <> (<a
+                href={authBotUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#229ED9] font-medium hover:underline"
+              >@{authBotSettings.botName.replace(/^@+/, '')}</a>)</>
+            ) : ''}
             , и он в ответ пришлёт вам логин и пароль. Если пароль забыт — напишите тому же боту ещё раз, он вышлет новый.
           </div>
           <div>
