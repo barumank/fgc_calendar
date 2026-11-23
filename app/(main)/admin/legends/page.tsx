@@ -3,14 +3,14 @@ import { LockKeyhole } from 'lucide-react';
 
 function MysteryPortrait({ large = false }: { large?: boolean }) {
   return (
-    <div className={`relative flex shrink-0 items-center justify-center ${large ? 'h-[220px] w-[340px] sm:h-[230px] sm:w-[360px]' : 'h-[96px] w-[144px]'}`}>
+    <div className={`relative flex shrink-0 items-center justify-center ${large ? 'h-[220px] w-[340px] translate-y-[14px] sm:h-[230px] sm:w-[360px]' : 'h-[96px] w-[144px]'}`}>
       <Image
         src="/images/legends/legend_mystery_placeholder.png"
         alt=""
         aria-hidden="true"
         fill
         sizes={large ? '(max-width: 768px) 340px, 360px' : '144px'}
-        className={`object-contain mix-blend-screen ${large ? 'drop-shadow-[0_0_18px_rgba(139,62,255,.28)]' : 'grayscale opacity-70'}`}
+        className={`object-contain mix-blend-screen ${large ? 'scale-[1.25] drop-shadow-[0_0_18px_rgba(139,62,255,.28)]' : 'grayscale opacity-70'}`}
       />
     </div>
   );
