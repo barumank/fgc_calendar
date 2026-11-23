@@ -1,35 +1,20 @@
 import Image from 'next/image';
-import { Award, LockKeyhole } from 'lucide-react';
-
-function LaurelWreath({ large = false }: { large?: boolean }) {
-  return (
-    <svg viewBox="0 0 180 150" aria-hidden="true" className={`absolute ${large ? 'h-40 w-48 sm:h-48 sm:w-56' : 'h-12 w-14'}`}>
-      <g fill="currentColor" opacity=".88">
-        <path d="M36 128c-16-18-25-43-22-70 10 9 18 21 20 36 5-10 10-17 18-23 3 14-2 27-13 36 8-3 17-4 25-2-8 12-18 19-32 20z"/>
-        <path d="M45 83c-12-14-17-31-14-50 9 8 14 19 15 30 5-7 11-12 18-15 1 11-4 21-14 27 7-1 13 0 20 3-8 7-16 10-25 5z"/>
-        <path d="M62 49C52 38 48 23 50 8c8 6 12 15 13 24 4-6 9-9 15-11 0 9-4 16-12 21 6 0 11 1 16 4-7 5-13 7-20 3z"/>
-        <path d="M144 128c16-18 25-43 22-70-10 9-18 21-20 36-5-10-10-17-18-23-3 14 2 27 13 36-8-3-17-4-25-2 8 12 18 19 32 20z"/>
-        <path d="M135 83c12-14 17-31 14-50-9 8-14 19-15 30-5-7-11-12-18-15-1 11 4 21 14 27-7-1-13 0-20 3 8 7 16 10 25 5z"/>
-        <path d="M118 49c10-11 14-26 12-41-8 6-12 15-13 24-4-6-9-9-15-11 0 9 4 16 12 21-6 0-11 1-16 4 7 5 13 7 20 3z"/>
-      </g>
-      <path d="M36 133c-10-33-9-63 3-91m105 91c10-33 9-63-3-91" fill="none" stroke="currentColor" strokeWidth="2" opacity=".55"/>
-    </svg>
-  );
-}
+import { LockKeyhole } from 'lucide-react';
 
 function MysteryPortrait({ large = false }: { large?: boolean }) {
   return (
-    <div className={`relative flex shrink-0 items-center justify-center text-violet-200 ${large ? 'h-48 w-56 sm:h-52 sm:w-60' : 'h-[72px] w-28'}`}>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_80%,rgba(168,85,247,.45),transparent_65%)]" />
-      <LaurelWreath large={large} />
-      <svg viewBox="0 0 140 170" aria-hidden="true" className={`relative z-10 h-full w-auto drop-shadow-[0_0_20px_rgba(147,51,234,.7)] ${large ? 'mt-8' : 'mt-5'}`}>
-        <path d="M70 9C48 9 39 26 39 49c0 17 6 30 16 37l-3 11c-6 7-16 12-29 17C9 120 4 133 2 151l-2 19h140l-2-19c-2-18-7-31-21-37-13-5-23-10-29-17l-3-11c10-7 16-20 16-37C101 26 92 9 70 9z" fill="#100d20" stroke="#b88cff" strokeOpacity=".45" strokeWidth="2" />
-        <text x="70" y="143" textAnchor="middle" fill="#eee7ff" fontSize={large ? 47 : 34} fontWeight="700">?</text>
-      </svg>
+    <div className={`relative flex shrink-0 items-center justify-center ${large ? 'h-[220px] w-[340px] sm:h-[230px] sm:w-[360px]' : 'h-[96px] w-[144px]'}`}>
+      <Image
+        src="/images/legends/legend_mystery_placeholder.png"
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes={large ? '(max-width: 768px) 340px, 360px' : '144px'}
+        className={`object-contain mix-blend-screen ${large ? 'drop-shadow-[0_0_18px_rgba(139,62,255,.28)]' : 'grayscale opacity-70'}`}
+      />
     </div>
   );
 }
-
 function CountdownTile({ value, label }: { value: string; label: string }) {
   return <div className="min-w-[58px] rounded-xl border border-violet-300/10 bg-[#17172d]/90 px-2.5 py-2 text-center shadow-inner shadow-white/[.02] sm:min-w-[68px] sm:px-3"><div className="text-xl font-bold tabular-nums text-white sm:text-2xl">{value}</div><div className="mt-0.5 text-[10px] text-slate-400 sm:text-xs">{label}</div></div>;
 }
