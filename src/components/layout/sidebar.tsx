@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import useSWR from 'swr';
@@ -18,6 +19,10 @@ import { useSidebarLayout } from '@/src/components/layout/sidebar-layout-context
 import { getTelegramBotUrl } from '@/src/lib/telegram-links';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+function LegendsNavIcon({ className }: { className?: string }) {
+  return <Image src="/images/legends/legend-icon.png" alt="" aria-hidden="true" width={18} height={18} className={className} />;
+}
 
 // null = every subsection is visible for this role
 const ADMIN_HREFS_BY_ROLE: Record<Role, string[] | null> = {
@@ -47,7 +52,7 @@ const adminSubLinks = [
   { href: '/admin/disciplines', label: 'Дисциплины', icon: Gamepad2 },
   { href: '/admin/leagues', label: 'Лиги', icon: CalendarRange },
   { href: '/admin/support', label: 'Поддержка проекта', icon: Heart },
-  { href: '/admin/legends', label: 'Легенды СНГ ФГЦ', icon: Medal },
+  { href: '/admin/legends', label: 'Легенды СНГ ФГЦ', icon: LegendsNavIcon },
   { href: '/admin/players', label: 'Дубликаты игроков', icon: Users },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
