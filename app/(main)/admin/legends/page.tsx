@@ -15,21 +15,6 @@ function MysteryPortrait({ large = false }: { large?: boolean }) {
     </div>
   );
 }
-function HeaderLaurel({ flip = false }: { flip?: boolean }) {
-  return (
-    <svg viewBox="0 0 72 120" aria-hidden="true" className={`h-[88px] w-[52px] text-amber-300 sm:h-[98px] sm:w-[58px] ${flip ? 'scale-x-[-1]' : ''}`}>
-      <path d="M16 113C11 79 24 42 53 13" fill="none" stroke="currentColor" strokeWidth="2.5" />
-      <g fill="currentColor" stroke="#ffe6a1" strokeOpacity=".55" strokeWidth=".7">
-        <path d="M15 101C2 95-1 83 4 70c13 6 19 17 16 29z"/>
-        <path d="M17 82C4 74 4 62 12 50c11 8 15 20 10 31z"/>
-        <path d="M23 62C12 52 14 40 24 30c9 11 10 23 2 33z"/>
-        <path d="M32 42C25 31 30 20 42 12c6 13 4 24-6 32z"/>
-        <path d="M43 25C39 14 47 6 60 2c3 13-2 23-14 27z"/>
-      </g>
-    </svg>
-  );
-}
-
 function MonthBadge() {
   return (
     <div className="absolute left-1/2 top-0 z-20 flex h-[60px] w-[min(390px,78vw)] -translate-x-1/2 -translate-y-1/2 items-center justify-center drop-shadow-[0_0_12px_rgba(248,183,48,.2)]">
@@ -76,10 +61,11 @@ export default function AdminLegendsPage() {
 
       <div className="relative mx-auto w-full max-w-none pt-[50px]">
         <header className="relative mx-auto mb-8 max-w-[820px] text-center lg:mb-[70px]">
-          <div className="absolute left-0 top-0 hidden lg:block"><HeaderLaurel /></div>
-          <div className="absolute right-0 top-0 hidden lg:block"><HeaderLaurel flip /></div>
-          <h1 className="text-3xl font-bold tracking-tight drop-shadow-[0_2px_14px_rgba(167,139,250,.3)] sm:text-4xl lg:text-[42px]">Легенды СНГ ФГЦ</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-slate-200 sm:text-base">Игроки, организаторы, комментаторы и создатели контента,<br className="hidden sm:block"/> внёсшие значимый вклад в развитие файтинг-сцены СНГ</p>
+          <Image src="/images/legends/header-laurels.png" alt="" aria-hidden="true" width={540} height={105} className="pointer-events-none absolute left-1/2 top-[-6px] z-0 hidden max-w-none -translate-x-1/2 lg:block" />
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold tracking-tight drop-shadow-[0_2px_14px_rgba(167,139,250,.3)] sm:text-4xl lg:text-[42px]">Легенды СНГ ФГЦ</h1>
+            <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-slate-200 sm:text-base">Игроки, организаторы, комментаторы и создатели контента,<br className="hidden sm:block"/> внёсшие значимый вклад в развитие файтинг-сцены СНГ</p>
+          </div>
         </header>
 
         <section className="relative mx-auto mb-6 max-w-[1350px] rounded-[18px] border border-violet-400/70 bg-[linear-gradient(110deg,rgba(36,24,63,.95),rgba(17,17,34,.98)_53%,rgba(30,19,47,.96))] px-4 pb-4 pt-5 shadow-[0_0_18px_rgba(198,85,222,.16),0_12px_50px_rgba(0,0,0,.25),inset_0_0_35px_rgba(167,139,250,.08)] sm:px-6 sm:pb-5 lg:px-8">
