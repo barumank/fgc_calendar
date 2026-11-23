@@ -37,12 +37,12 @@ function MonthBadge() {
         <path d="M34 2H356L388 30 356 58H34L2 30Z" fill="#201a24" stroke="#f7bd35" strokeWidth="2.5" />
         <path d="M38 6H352L378 30 352 54H38L12 30Z" fill="none" stroke="#745927" strokeWidth="1" />
       </svg>
-          <span className="relative px-6 text-center text-lg font-bold text-amber-300 sm:text-2xl">Легенда этого месяца</span>
+      <span className="relative px-6 text-center text-lg font-bold text-amber-300 sm:text-2xl">Легенда этого месяца</span>
     </div>
   );
 }
 function CountdownTile({ value, label }: { value: string; label: string }) {
-  return <div className="min-w-[58px] rounded-xl border border-violet-300/10 bg-[#17172d]/90 px-2.5 py-2 text-center shadow-inner shadow-white/[.02] sm:min-w-[68px] sm:px-3"><div className="text-xl font-bold tabular-nums text-white sm:text-2xl">{value}</div><div className="mt-0.5 text-[10px] text-slate-400 sm:text-xs">{label}</div></div>;
+  return <div className="min-w-[58px] rounded-xl border border-violet-300/10 bg-[#17172d]/90 px-2.5 py-2 text-center shadow-inner shadow-white/[.02] sm:min-w-[68px] sm:px-3"><div className="text-xl font-bold tabular-nums text-white sm:text-2xl">{value}</div><div className="mt-0.5 text-[10px] font-medium text-slate-400 sm:text-xs">{label}</div></div>;
 }
 
 function LegendPlaque({ number }: { number: number }) {
@@ -59,7 +59,7 @@ function LegendPlaque({ number }: { number: number }) {
 
 export default function AdminLegendsPage() {
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-[#0c0c19] px-4 pb-12 pt-5 text-white sm:px-7 lg:px-[80px]">
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#0c0c19] px-4 pb-12 pt-5 font-montserrat text-white sm:px-7 lg:px-[80px]">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_2%,rgba(76,50,130,.32),transparent_42%),linear-gradient(180deg,#101020_0%,#0b0b17_75%)]" />
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-[650px] overflow-hidden md:block lg:h-[760px]">
         <div className="absolute inset-y-0 left-0 w-[54%]">
@@ -78,8 +78,8 @@ export default function AdminLegendsPage() {
         <header className="relative mx-auto mb-8 max-w-[820px] text-center lg:mb-[70px]">
           <div className="absolute left-0 top-0 hidden lg:block"><HeaderLaurel /></div>
           <div className="absolute right-0 top-0 hidden lg:block"><HeaderLaurel flip /></div>
-          <h1 className="text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_14px_rgba(167,139,250,.3)] sm:text-4xl lg:text-[42px]">Легенды СНГ ФГЦ</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-slate-200 sm:text-base">Игроки, организаторы, комментаторы и создатели контента,<br className="hidden sm:block"/> внёсшие значимый вклад в развитие файтинг-сцены СНГ</p>
+          <h1 className="text-3xl font-bold tracking-tight drop-shadow-[0_2px_14px_rgba(167,139,250,.3)] sm:text-4xl lg:text-[42px]">Легенды СНГ ФГЦ</h1>
+          <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-slate-200 sm:text-base">Игроки, организаторы, комментаторы и создатели контента,<br className="hidden sm:block"/> внёсшие значимый вклад в развитие файтинг-сцены СНГ</p>
         </header>
 
         <section className="relative mx-auto mb-6 max-w-[1350px] rounded-[18px] border border-violet-400/70 bg-[linear-gradient(110deg,rgba(36,24,63,.95),rgba(17,17,34,.98)_53%,rgba(30,19,47,.96))] px-4 pb-4 pt-5 shadow-[0_0_18px_rgba(198,85,222,.16),0_12px_50px_rgba(0,0,0,.25),inset_0_0_35px_rgba(167,139,250,.08)] sm:px-6 sm:pb-5 lg:px-8">
@@ -87,13 +87,13 @@ export default function AdminLegendsPage() {
           <div className="grid items-center gap-4 pt-2 md:grid-cols-[.95fr_1.2fr_1.15fr] lg:gap-6">
             <div className="hidden items-center justify-center md:flex"><MysteryPortrait large /></div>
             <div className="text-center md:text-left">
-              <h2 className="text-xl font-bold leading-tight sm:text-2xl">Скоро будет раскрыта<br className="hidden lg:block"/> новая легенда!</h2>
-              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-200">Здесь будут представлены люди, которые внесли значимый вклад в развитие ФГЦ-сцены СНГ.<br className="hidden lg:block"/> Голосование появится после публичного запуска раздела.</p>
+              <h2 className="text-xl font-semibold leading-tight sm:text-2xl">Скоро будет раскрыта<br className="hidden lg:block"/> новая легенда!</h2>
+              <p className="mt-3 max-w-md text-sm font-normal leading-relaxed text-slate-200">Здесь будут представлены люди, которые внесли значимый вклад в развитие ФГЦ-сцены СНГ.<br className="hidden lg:block"/> Голосование появится после публичного запуска раздела.</p>
             </div>
             <div className="border-t border-violet-200/20 pt-4 text-center md:border-l md:border-t-0 md:pl-5 md:pt-0 lg:pl-7">
               <p className="mb-2 text-sm text-slate-100">До подведения итогов голосования:</p>
               <div className="flex justify-center gap-2"><CountdownTile value="—" label="дня"/><CountdownTile value="—" label="часов"/><CountdownTile value="—" label="минут"/><CountdownTile value="—" label="секунд"/></div>
-              <div className="mt-4 inline-flex min-w-[210px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-rose-950/30"><LockKeyhole className="h-4 w-4"/>Голосование закрыто</div>
+              <div className="mt-4 inline-flex min-w-[210px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-950/30"><LockKeyhole className="h-4 w-4"/>Голосование закрыто</div>
             </div>
           </div>
         </section>

@@ -1,4 +1,4 @@
-import { DM_Sans, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
+import { DM_Sans, Montserrat, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
@@ -8,6 +8,7 @@ import { AuthSessionProvider } from '@/src/components/providers/session-provider
 export const dynamic = 'force-dynamic';
 
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-sans' })
+const montserrat = Montserrat({ subsets: ['latin', 'cyrillic'], weight: ['400', '500', '600', '700', '800'], variable: '--font-montserrat' })
 const jakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-display' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
@@ -27,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru" suppressHydrationWarning>
-      <body className={`${dmSans.variable} ${jakartaSans.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${dmSans.variable} ${montserrat.variable} ${jakartaSans.variable} ${jetbrainsMono.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
