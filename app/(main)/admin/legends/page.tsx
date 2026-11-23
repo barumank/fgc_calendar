@@ -1,5 +1,11 @@
+'use client';
+
 import Image from 'next/image';
-import { LockKeyhole } from 'lucide-react';
+import { Vote } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { FormEvent, useState } from 'react';
+import { Modal } from '@/src/components/common/modal';
+import { showToast } from '@/src/components/common/toast-notification';
 
 function MysteryPortrait({ large = false }: { large?: boolean }) {
   return (
@@ -43,6 +49,60 @@ function LegendPlaque({ number }: { number: number }) {
 }
 
 export default function AdminLegendsPage() {
+  const { data: session, status } = useSession();
+  const [voteOpen, setVoteOpen] = useState(false);
+  const [round, setRound] = useState<number | null>(null);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [loadingVote, setLoadingVote] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [role, setRole] = useState('');
+  const [comment, setComment] = useState('');
+
+  const openVote = async () => {
+    if (status === 'loading') return;
+    if (!session) {
+      showToast('Для голосования необходимо авторизоваться', 'info');
+      return;
+    }
+    setVoteOpen(true);
+    setLoadingVote(true);
+    try {
+      const response = await fetch('/next-api/legend-votes', { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Не удалось загрузить голосование');
+      setRound(data.legendNumber);
+      setHasVoted(data.hasVoted);
+    } catch (error) {
+      setVoteOpen(false);
+      showToast(error instanceof Error ? error.message : 'Ошибка загрузки голосования', 'error');
+    } finally {
+      setLoadingVote(false);
+    }
+  };
+
+  const submitVote = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (round === null) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch('/next-api/legend-votes', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, role, comment, legendNumber: round }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Не удалось принять голос');
+      setHasVoted(true);
+      showToast('Ваш голос принят', 'success');
+      setVoteOpen(false);
+      setNickname(''); setRole(''); setComment('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Ошибка отправки голоса', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-[#0c0c19] px-4 pb-12 pt-5 font-montserrat text-white sm:px-7 lg:px-[80px]">
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_2%,rgba(76,50,130,.32),transparent_42%),linear-gradient(180deg,#101020_0%,#0b0b17_75%)]" />
@@ -74,12 +134,12 @@ export default function AdminLegendsPage() {
             <div className="hidden items-center justify-center md:flex"><MysteryPortrait large /></div>
             <div className="text-center md:text-left">
               <h2 className="text-xl font-semibold leading-tight sm:text-2xl">Скоро будет раскрыта<br className="hidden lg:block"/> новая легенда!</h2>
-              <p className="mt-3 max-w-md text-sm font-normal leading-relaxed text-slate-200">Здесь будут представлены люди, которые внесли значимый вклад в развитие ФГЦ-сцены СНГ.<br className="hidden lg:block"/> Голосование появится после публичного запуска раздела.</p>
+              <p className="mt-3 max-w-md text-sm font-normal leading-relaxed text-slate-200">Голосование за следующую легенду открыто. Предложите кандидата и расскажите, почему он достоин этого звания.</p>
             </div>
             <div className="border-t border-violet-200/20 pt-4 text-center md:border-l md:border-t-0 md:pl-5 md:pt-0 lg:pl-7">
               <p className="mb-2 text-sm text-slate-100">До подведения итогов голосования:</p>
               <div className="flex justify-center gap-2"><CountdownTile value="—" label="дня"/><CountdownTile value="—" label="часов"/><CountdownTile value="—" label="минут"/><CountdownTile value="—" label="секунд"/></div>
-              <div className="mt-4 inline-flex min-w-[210px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-950/30"><LockKeyhole className="h-4 w-4"/>Голосование закрыто</div>
+              <button type="button" onClick={openVote} className="mt-4 inline-flex min-w-[210px] items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-950/30 transition hover:brightness-110"><Vote className="h-4 w-4"/>Проголосовать</button>
             </div>
           </div>
         </section>
@@ -98,6 +158,27 @@ export default function AdminLegendsPage() {
           ))}
         </section>
       </div>
+      <Modal isOpen={voteOpen} onClose={() => setVoteOpen(false)} title={`Голосование за легенду №${round ?? '…'}`} maxWidth="max-w-xl">
+        {loadingVote ? <p className="py-5 text-center text-slate-300">Загружаем форму…</p> : hasVoted ? (
+          <div className="py-5 text-center text-slate-200">Вы уже проголосовали за легенду №{round}. Новый голос можно будет оставить после открытия следующего раунда.</div>
+        ) : (
+          <form className="space-y-4" onSubmit={submitVote}>
+            <label className="block text-sm font-medium text-slate-200">Никнейм героя
+              <input required maxLength={64} value={nickname} onChange={(event) => setNickname(event.target.value.replace(/[^\p{L}\p{N}_ -]/gu, ''))} className="mt-1.5 w-full rounded-lg border border-violet-300/20 bg-[#10101f] px-3 py-2.5 text-white outline-none focus:border-violet-400" placeholder="Введите никнейм" />
+              <span className="mt-1 block text-xs text-slate-400">Буквы, цифры, дефис, подчёркивание и пробел.</span>
+            </label>
+            <label className="block text-sm font-medium text-slate-200">Роль
+              <select required value={role} onChange={(event) => setRole(event.target.value)} className="mt-1.5 w-full rounded-lg border border-violet-300/20 bg-[#10101f] px-3 py-2.5 text-white outline-none focus:border-violet-400">
+                <option value="">Выберите роль</option><option value="player">Игрок</option><option value="organizer">Турнирный организатор</option><option value="content_maker">Контент-мейкер</option>
+              </select>
+            </label>
+            <label className="block text-sm font-medium text-slate-200">Почему этот человек достоин стать легендой ФГЦ?
+              <textarea required maxLength={5000} rows={5} value={comment} onChange={(event) => setComment(event.target.value)} className="mt-1.5 w-full resize-y rounded-lg border border-violet-300/20 bg-[#10101f] px-3 py-2.5 text-white outline-none focus:border-violet-400" placeholder="Опишите заслуги и вклад кандидата" />
+            </label>
+            <button disabled={submitting} type="submit" className="w-full rounded-lg bg-gradient-to-r from-rose-600 to-red-500 px-5 py-3 font-bold text-white transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60">{submitting ? 'Отправляем…' : 'Проголосовать'}</button>
+          </form>
+        )}
+      </Modal>
     </main>
   );
 }

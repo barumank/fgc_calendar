@@ -10,7 +10,7 @@ import {
   CalendarDays, Trophy, Users, BarChart3, UploadCloud, Newspaper,
   LayoutDashboard, Shield, UserCog, Settings, FileText, Bot, ClipboardList,
   ChevronDown, ChevronRight, LogIn, LogOut, Gamepad2, ListTodo, Bell, BellRing, HelpCircle,
-  Menu, X, ChevronsLeft, ChevronsRight, Medal, CalendarRange, Heart
+  Menu, X, ChevronsLeft, ChevronsRight, Medal, CalendarRange, Heart, Vote
 } from 'lucide-react';
 import { Modal } from '@/src/components/common/modal';
 import { showToast } from '@/src/components/common/toast-notification';
@@ -53,6 +53,7 @@ const adminSubLinks = [
   { href: '/admin/leagues', label: 'Лиги', icon: CalendarRange },
   { href: '/admin/support', label: 'Поддержка проекта', icon: Heart },
   { href: '/admin/legends', label: 'Легенды СНГ ФГЦ', icon: LegendsNavIcon },
+  { href: '/admin/legend-votes', label: 'Голосование за легенду', icon: Vote },
   { href: '/admin/players', label: 'Дубликаты игроков', icon: Users },
   { href: '/admin/users', label: 'Пользователи', icon: UserCog },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
