@@ -68,9 +68,9 @@ export default function AdminLegendsPage() {
           </div>
         </header>
 
-        <section className="relative mx-auto mb-6 max-w-[1350px] rounded-[18px] border border-violet-400/70 bg-[linear-gradient(110deg,rgba(36,24,63,.95),rgba(17,17,34,.98)_53%,rgba(30,19,47,.96))] px-4 pb-4 pt-5 shadow-[0_0_18px_rgba(198,85,222,.16),0_12px_50px_rgba(0,0,0,.25),inset_0_0_35px_rgba(167,139,250,.08)] sm:px-6 sm:pb-5 lg:px-8">
+        <section className="relative mx-auto mb-6 max-w-[1230px] rounded-[18px] border border-violet-400/70 bg-[linear-gradient(110deg,rgba(36,24,63,.95),rgba(17,17,34,.98)_53%,rgba(30,19,47,.96))] px-2 pb-4 pt-5 shadow-[0_0_18px_rgba(198,85,222,.16),0_12px_50px_rgba(0,0,0,.25),inset_0_0_35px_rgba(167,139,250,.08)] sm:px-3 sm:pb-5 lg:px-4">
           <MonthBadge />
-          <div className="grid items-center gap-4 pt-2 md:grid-cols-[.95fr_1.2fr_1.15fr] lg:gap-6">
+          <div className="grid items-center gap-2 pt-2 md:grid-cols-[.95fr_1.2fr_1.15fr] lg:gap-3 2xl:grid-cols-[320px_minmax(0,1fr)_360px]">
             <div className="hidden items-center justify-center md:flex"><MysteryPortrait large /></div>
             <div className="text-center md:text-left">
               <h2 className="text-xl font-semibold leading-tight sm:text-2xl">Скоро будет раскрыта<br className="hidden lg:block"/> новая легенда!</h2>
