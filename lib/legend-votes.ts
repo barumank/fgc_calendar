@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 
 export const LEGEND_VOTE_ROUND_SETTING_KEY = 'legend_vote_active_round';
+export const LEGEND_VOTE_DEADLINE_SETTING_KEY = 'legend_vote_round_deadline_at';
 export const LEGEND_ROUND_COUNT = 24;
 
 export const LEGEND_VOTE_ROLE_LABELS: Record<string, string> = {
@@ -18,6 +19,29 @@ export async function getActiveLegendVoteRound(): Promise<number> {
   });
   const round = Number.parseInt(setting.value, 10);
   return Number.isInteger(round) && round >= 1 && round <= LEGEND_ROUND_COUNT ? round : 1;
+}
+
+export async function getLegendVoteDeadline(): Promise<Date> {
+  const saved = await prisma.appSetting.findUnique({ where: { key: LEGEND_VOTE_DEADLINE_SETTING_KEY } });
+  if (saved) {
+    const parsed = new Date(saved.value);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  const deadline = new Date();
+  deadline.setMonth(deadline.getMonth() + 1);
+  await prisma.appSetting.upsert({
+    where: { key: LEGEND_VOTE_DEADLINE_SETTING_KEY },
+    update: { value: deadline.toISOString() },
+    create: { key: LEGEND_VOTE_DEADLINE_SETTING_KEY, value: deadline.toISOString() },
+  });
+  return deadline;
+}
+
+export async function getLegendVoteState() {
+  const [legendNumber, deadlineAt] = await Promise.all([getActiveLegendVoteRound(), getLegendVoteDeadline()]);
+  const card = await prisma.legendCard.findUnique({ where: { legendNumber } });
+  const status = card?.publishedAt ? 'published' : deadlineAt.getTime() <= Date.now() ? 'processing' : 'open';
+  return { legendNumber, deadlineAt, status, card } as const;
 }
 
 export interface LegendVoteDateFilters {

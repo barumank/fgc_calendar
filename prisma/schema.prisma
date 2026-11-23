@@ -150,6 +150,18 @@ model LegendVote {
   @@index([createdAt])
 }
 
+model LegendCard {
+  id           String    @id @default(uuid())
+  legendNumber Int       @unique
+  nickname     String
+  discipline   String
+  achievement  String
+  imageData    String    @db.Text
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 model SubscriptionLog {
   id                String   @id @default(uuid())
   userEmail         String
