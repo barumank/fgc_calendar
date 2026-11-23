@@ -74,7 +74,7 @@ export default function AdminLegendsPage() {
       </div>
       <div className="pointer-events-none absolute inset-x-0 top-[300px] -z-10 h-[540px] bg-[radial-gradient(ellipse_at_50%_25%,rgba(34,25,63,.3),transparent_68%)]" />
 
-      <div className="relative mx-auto w-full max-w-none">
+      <div className="relative mx-auto w-full max-w-none pt-[50px]">
         <header className="relative mx-auto mb-8 max-w-[820px] text-center lg:mb-[70px]">
           <div className="absolute left-0 top-0 hidden lg:block"><HeaderLaurel /></div>
           <div className="absolute right-0 top-0 hidden lg:block"><HeaderLaurel flip /></div>
