@@ -61,7 +61,7 @@ export default function AdminLegendsPage() {
 
       <div className="relative mx-auto w-full max-w-none pt-[50px]">
         <header className="relative mx-auto mb-8 max-w-[820px] text-center lg:mb-[70px]">
-          <Image src="/images/legends/header-laurels.png" alt="" aria-hidden="true" width={540} height={105} className="pointer-events-none absolute left-1/2 top-[-6px] z-0 hidden max-w-none -translate-x-1/2 lg:block" />
+          <Image src="/images/legends/header-laurels.png" alt="" aria-hidden="true" width={720} height={140} className="pointer-events-none absolute left-1/2 top-[-9px] z-0 hidden max-w-none -translate-x-1/2 lg:block" />
           <div className="relative z-10">
             <h1 className="text-3xl font-bold tracking-tight drop-shadow-[0_2px_14px_rgba(167,139,250,.3)] sm:text-4xl lg:text-[42px]">Легенды СНГ ФГЦ</h1>
             <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-relaxed text-slate-200 sm:text-base">Игроки, организаторы, комментаторы и создатели контента,<br className="hidden sm:block"/> внёсшие значимый вклад в развитие файтинг-сцены СНГ</p>
