@@ -3,7 +3,7 @@ import { LockKeyhole } from 'lucide-react';
 
 function MysteryPortrait({ large = false }: { large?: boolean }) {
   return (
-    <div className={`relative flex shrink-0 items-center justify-center ${large ? 'h-[220px] w-[340px] sm:h-[230px] sm:w-[360px]' : 'h-[96px] w-[144px]'}`}>
+    <div className={`relative flex shrink-0 items-center justify-center ${large ? 'h-[220px] w-[340px] sm:h-[230px] sm:w-[360px]' : 'h-[86px] w-[129px]'}`}>
       <Image
         src="/images/legends/legend_mystery_placeholder.png"
         alt=""
@@ -92,7 +92,7 @@ export default function AdminLegendsPage() {
           {Array.from({ length: 24 }, (_, index) => (
             <article key={index} className="group relative flex h-[135px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-violet-200/[.08] bg-[linear-gradient(145deg,rgba(26,26,45,.96),rgba(23,22,41,.96)_58%,rgba(32,25,49,.96))] px-2 pb-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-violet-300/25">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(167,139,250,.17),transparent_62%)]"/>
-              <div className="absolute top-[-3px] opacity-85 grayscale"><MysteryPortrait/></div>
+              <div className="absolute top-[6px] opacity-85 grayscale"><MysteryPortrait/></div>
               <LegendPlaque number={index + 1} />
             </article>
           ))}
