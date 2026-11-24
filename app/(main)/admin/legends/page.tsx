@@ -38,10 +38,12 @@ function CountdownTile({ value, label }: { value: string; label: string }) {
 
 interface LegendCardView {
   legendNumber: number;
+  displayPosition: number;
   nickname: string;
-  discipline: string;
+  nomination: string;
   achievement: string;
   imageData: string;
+  podcastUrl: string | null;
   publishedAt: string;
 }
 
@@ -205,7 +207,7 @@ export default function AdminLegendsPage() {
         <section aria-label="Закрытые карточки легенд" className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4 xl:grid-cols-6">
           {Array.from({ length: 24 }, (_, index) => {
             const number = index + 1;
-            const card = publishedCards.find((published) => published.legendNumber === number);
+            const card = publishedCards.find((published) => published.displayPosition === number);
             return <article key={number} className="group relative flex h-[135px] flex-col items-center justify-end overflow-hidden rounded-[10px] border border-violet-200/[.08] bg-[linear-gradient(145deg,rgba(26,26,45,.96),rgba(23,22,41,.96)_58%,rgba(32,25,49,.96))] px-2 pb-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,.025)] transition-colors hover:border-violet-300/25">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(167,139,250,.17),transparent_62%)]"/>
               {card ? <><button type="button" aria-label={`Открыть карточку легенды ${card.nickname}`} onClick={() => setSelectedCard(card)} className="absolute inset-0 z-10"><img src={card.imageData} alt={card.nickname} className="h-full w-full object-cover object-center opacity-85"/><span className="absolute inset-0 bg-gradient-to-t from-[#10101e] via-transparent to-transparent"/></button><LegendPlaque number={number} nickname={card.nickname}/></> : <><div className="absolute top-[4px] z-0 opacity-85 grayscale"><MysteryPortrait/></div><LegendPlaque number={number}/></>}
@@ -235,7 +237,7 @@ export default function AdminLegendsPage() {
         )}
       </Modal>
       <Modal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} title={selectedCard?.nickname} maxWidth="max-w-2xl">
-        {selectedCard && <div className="space-y-4 text-slate-100"><img src={selectedCard.imageData} alt={selectedCard.nickname} className="mx-auto max-h-[55vh] w-auto max-w-full rounded-xl object-contain"/><p><span className="font-semibold text-amber-300">Дисциплина:</span> {selectedCard.discipline}</p><p className="whitespace-pre-wrap leading-relaxed">{selectedCard.achievement}</p></div>}
+        {selectedCard && <div className="space-y-4 text-slate-100"><img src={selectedCard.imageData} alt={selectedCard.nickname} className="mx-auto max-h-[55vh] w-auto max-w-full rounded-xl object-contain"/><p><span className="font-semibold text-amber-300">Номинация:</span> {selectedCard.nomination}</p><p className="whitespace-pre-wrap leading-relaxed">{selectedCard.achievement}</p>{selectedCard.podcastUrl && <a href={selectedCard.podcastUrl} target="_blank" rel="noreferrer" className="inline-flex text-violet-300 underline underline-offset-4">Ссылка на подкаст</a>}</div>}
       </Modal>
     </main>
   );

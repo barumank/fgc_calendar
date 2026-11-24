@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/require-role';
 import {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
   if (filterError) return NextResponse.json({ error: filterError }, { status: 400 });
 
   const where = legendVoteWhere(filters!);
-  const [state, votes, total] = await Promise.all([
+  const [state, votes, total, allCards] = await Promise.all([
     getLegendVoteState(),
     prisma.legendVote.findMany({
       where,
@@ -29,6 +30,7 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     }),
     prisma.legendVote.count({ where }),
+    prisma.legendCard.findMany({ select: { legendNumber: true, displayPosition: true, nickname: true } }),
   ]);
 
   return NextResponse.json({
@@ -37,6 +39,7 @@ export async function GET(req: NextRequest) {
     deadlineAt: state.deadlineAt,
     roundStatus: state.status,
     card: state.card,
+    occupiedPositions: allCards,
     total,
     votes: votes.map((vote) => ({
       id: vote.id,
@@ -71,17 +74,28 @@ export async function POST(req: NextRequest) {
   if (body?.action === 'save-card') {
     if (state.status !== 'processing') return NextResponse.json({ error: 'Карточку можно подготовить после завершения голосования' }, { status: 409 });
     const nickname = typeof body.nickname === 'string' ? body.nickname.trim() : '';
-    const discipline = typeof body.discipline === 'string' ? body.discipline.trim() : '';
+    const nomination = typeof body.nomination === 'string' ? body.nomination.trim() : '';
     const achievement = typeof body.achievement === 'string' ? body.achievement.trim() : '';
     const imageData = typeof body.imageData === 'string' ? body.imageData : '';
-    if (!nickname || nickname.length > 80 || !discipline || discipline.length > 100 || !achievement || achievement.length > 2000) return NextResponse.json({ error: 'Заполните ник, дисциплину и заслугу (до 2000 символов)' }, { status: 400 });
+    const displayPosition = Number(body.displayPosition);
+    const podcastUrl = typeof body.podcastUrl === 'string' ? body.podcastUrl.trim() : '';
+    if (!nickname || nickname.length > 80 || !nomination || nomination.length > 100 || !achievement || achievement.length > 2000) return NextResponse.json({ error: 'Заполните ник, номинацию и заслугу (до 2000 символов)' }, { status: 400 });
+    if (!Number.isInteger(displayPosition) || displayPosition < 1 || displayPosition > LEGEND_ROUND_COUNT) return NextResponse.json({ error: `Выберите позицию от 1 до ${LEGEND_ROUND_COUNT}` }, { status: 400 });
+    if (podcastUrl && (podcastUrl.length > 500 || !/^https?:\/\//i.test(podcastUrl) || !URL.canParse(podcastUrl))) return NextResponse.json({ error: 'Ссылка на подкаст должна начинаться с http:// или https://' }, { status: 400 });
     if (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(imageData) || imageData.length > 4_500_000) return NextResponse.json({ error: 'Загрузите изображение PNG, JPG или WebP размером до 3 МБ' }, { status: 400 });
-    const card = await prisma.legendCard.upsert({
-      where: { legendNumber: state.legendNumber },
-      create: { legendNumber: state.legendNumber, nickname, discipline, achievement, imageData },
-      update: { nickname, discipline, achievement, imageData },
-    });
-    return NextResponse.json({ card });
+    const conflictingCard = await prisma.legendCard.findFirst({ where: { displayPosition, legendNumber: { not: state.legendNumber } }, select: { legendNumber: true } });
+    if (conflictingCard) return NextResponse.json({ error: `Позиция №${displayPosition} уже назначена карточке легенды №${conflictingCard.legendNumber}` }, { status: 409 });
+    try {
+      const card = await prisma.legendCard.upsert({
+        where: { legendNumber: state.legendNumber },
+        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, achievement, imageData, podcastUrl: podcastUrl || null },
+        update: { displayPosition, nickname, nomination, achievement, imageData, podcastUrl: podcastUrl || null },
+      });
+      return NextResponse.json({ card });
+    } catch (cause) {
+      if (cause instanceof Prisma.PrismaClientKnownRequestError && cause.code === 'P2002') return NextResponse.json({ error: `Позиция №${displayPosition} уже занята другой карточкой` }, { status: 409 });
+      throw cause;
+    }
   }
 
   if (body?.action === 'publish-card') {

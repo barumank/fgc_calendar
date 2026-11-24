@@ -8,8 +8,8 @@ export async function GET() {
   const state = await getLegendVoteState();
   const cards = await prisma.legendCard.findMany({
     where: { publishedAt: { not: null } },
-    orderBy: { legendNumber: 'asc' },
-    select: { legendNumber: true, nickname: true, discipline: true, achievement: true, imageData: true, publishedAt: true },
+    orderBy: { displayPosition: 'asc' },
+    select: { legendNumber: true, displayPosition: true, nickname: true, nomination: true, achievement: true, imageData: true, podcastUrl: true, publishedAt: true },
   });
   return NextResponse.json({
     activeLegendNumber: state.legendNumber,

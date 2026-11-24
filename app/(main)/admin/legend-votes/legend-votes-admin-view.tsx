@@ -18,10 +18,18 @@ interface VoteRow {
 
 interface LegendDraft {
   nickname: string;
-  discipline: string;
+  nomination: string;
   achievement: string;
   imageData: string;
+  displayPosition: number;
+  podcastUrl: string;
   publishedAt: string | null;
+}
+
+interface OccupiedPosition {
+  legendNumber: number;
+  displayPosition: number;
+  nickname: string;
 }
 
 function toLocalInput(value: string) {
@@ -67,7 +75,8 @@ export function LegendVotesAdminView() {
   const [savingDeadline, setSavingDeadline] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [draft, setDraft] = useState<LegendDraft>({ nickname: '', discipline: '', achievement: '', imageData: '', publishedAt: null });
+  const [draft, setDraft] = useState<LegendDraft>({ nickname: '', nomination: '', achievement: '', imageData: '', displayPosition: 1, podcastUrl: '', publishedAt: null });
+  const [occupiedPositions, setOccupiedPositions] = useState<OccupiedPosition[]>([]);
 
   const loadVotes = useCallback(async () => {
     setLoading(true);
@@ -81,8 +90,9 @@ export function LegendVotesAdminView() {
       if (!response.ok) throw new Error(data.error || 'Не удалось загрузить голоса');
       setVotes(data.votes); setActiveLegendNumber(data.activeLegendNumber); setNextLegendNumber(data.nextLegendNumber); setTotal(data.total);
       setRoundStatus(data.roundStatus);
+      setOccupiedPositions(data.occupiedPositions);
       setDeadline(toLocalInput(data.deadlineAt));
-      setDraft(data.card ? { nickname: data.card.nickname, discipline: data.card.discipline, achievement: data.card.achievement, imageData: data.card.imageData, publishedAt: data.card.publishedAt } : { nickname: '', discipline: '', achievement: '', imageData: '', publishedAt: null });
+      setDraft(data.card ? { nickname: data.card.nickname, nomination: data.card.nomination, achievement: data.card.achievement, imageData: data.card.imageData, displayPosition: data.card.displayPosition, podcastUrl: data.card.podcastUrl || '', publishedAt: data.card.publishedAt } : { nickname: '', nomination: '', achievement: '', imageData: '', displayPosition: data.activeLegendNumber, podcastUrl: '', publishedAt: null });
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Ошибка загрузки', 'error');
     } finally { setLoading(false); }
@@ -156,7 +166,7 @@ export function LegendVotesAdminView() {
   const saveCard = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSavingCard(true);
     try {
-      await postAction('save-card', { nickname: draft.nickname, discipline: draft.discipline, achievement: draft.achievement, imageData: draft.imageData });
+      await postAction('save-card', { nickname: draft.nickname, nomination: draft.nomination, achievement: draft.achievement, imageData: draft.imageData, displayPosition: draft.displayPosition, podcastUrl: draft.podcastUrl });
       showToast('Карточка сохранена как черновик', 'success'); void loadVotes();
     } catch (error) { showToast(error instanceof Error ? error.message : 'Ошибка сохранения карточки', 'error'); }
     finally { setSavingCard(false); }
@@ -166,7 +176,7 @@ export function LegendVotesAdminView() {
     if (!window.confirm(`Опубликовать легенду №${activeLegendNumber}? Карточка станет видна на странице.`)) return;
     setPublishing(true);
     try {
-      await postAction('save-card', { nickname: draft.nickname, discipline: draft.discipline, achievement: draft.achievement, imageData: draft.imageData });
+      await postAction('save-card', { nickname: draft.nickname, nomination: draft.nomination, achievement: draft.achievement, imageData: draft.imageData, displayPosition: draft.displayPosition, podcastUrl: draft.podcastUrl });
       await postAction('publish-card'); showToast('Легенда опубликована', 'success'); void loadVotes();
     }
     catch (error) { showToast(error instanceof Error ? error.message : 'Ошибка публикации', 'error'); }
@@ -187,7 +197,7 @@ export function LegendVotesAdminView() {
         <section className="mb-5 rounded-xl border border-border bg-card p-4">
           <h2 className="text-lg font-semibold">Раунд №{activeLegendNumber}: {roundStatus === 'open' ? 'голосование открыто' : roundStatus === 'processing' ? 'обработка результатов' : 'легенда опубликована'}</h2>
           {roundStatus === 'open' && <form onSubmit={saveDeadline} className="mt-4 flex flex-wrap items-end gap-3"><label className="text-sm">Голосование закрывается<input required type="datetime-local" value={deadline} min={toLocalInput(new Date().toISOString())} onChange={(event) => setDeadline(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label><button disabled={savingDeadline} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingDeadline ? 'Сохраняем…' : 'Сохранить срок'}</button></form>}
-          {roundStatus === 'processing' && <form onSubmit={saveCard} className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_1.4fr_1.2fr]"><label className="text-sm">Ник легенды<input required maxLength={80} value={draft.nickname} onChange={(event) => setDraft((value) => ({ ...value, nickname: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Дисциплина<input required maxLength={100} value={draft.discipline} onChange={(event) => setDraft((value) => ({ ...value, discipline: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Заслуга легенды<textarea required maxLength={2000} rows={3} value={draft.achievement} onChange={(event) => setDraft((value) => ({ ...value, achievement: event.target.value }))} className="mt-1 block w-full resize-y rounded-md border border-border bg-background px-3 py-2" /></label><div className="space-y-2"><label className="block text-sm">Фото или аватар<input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} className="mt-1 block w-full text-xs" /></label>{draft.imageData && <img src={draft.imageData} alt="Предпросмотр карточки" className="h-20 w-20 rounded-lg object-cover" />}<p className="text-xs text-muted-foreground">PNG, JPG или WebP. Изображение автоматически сжимается.</p></div><div className="flex flex-wrap gap-2 lg:col-span-4"><button disabled={savingCard || !!draft.publishedAt} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingCard ? 'Сохраняем…' : 'Сохранить черновик'}</button><button type="button" onClick={publishCard} disabled={publishing || !draft.nickname || !draft.discipline || !draft.achievement || !draft.imageData} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{publishing ? 'Публикуем…' : 'Опубликовать легенду'}</button></div>{draft.publishedAt && <p className="text-sm text-emerald-400 lg:col-span-4">Опубликовано {formatDate(draft.publishedAt)}. Следующее действие — открыть новый раунд.</p>}</form>}
+          {roundStatus === 'processing' && <form onSubmit={saveCard} className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_1.2fr_1.2fr]"><label className="text-sm">Ник легенды<input required maxLength={80} value={draft.nickname} onChange={(event) => setDraft((value) => ({ ...value, nickname: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Номинация<input required maxLength={100} value={draft.nomination} onChange={(event) => setDraft((value) => ({ ...value, nomination: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Место отображения<select required value={draft.displayPosition} onChange={(event) => setDraft((value) => ({ ...value, displayPosition: Number(event.target.value) }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2">{Array.from({ length: 24 }, (_, index) => { const position = index + 1; const owner = occupiedPositions.find((item) => item.displayPosition === position); return <option key={position} value={position} disabled={!!owner && owner.legendNumber !== activeLegendNumber}>{owner ? `Позиция №${position} — Легенда #${owner.legendNumber}` : `Позиция №${position} — свободна`}</option>; })}</select></label><label className="text-sm">Ссылка на подкаст <span className="text-muted-foreground">(необязательно)</span><input type="url" maxLength={500} value={draft.podcastUrl} onChange={(event) => setDraft((value) => ({ ...value, podcastUrl: event.target.value }))} placeholder="https://…" className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm lg:col-span-2">Заслуга легенды<textarea required maxLength={2000} rows={3} value={draft.achievement} onChange={(event) => setDraft((value) => ({ ...value, achievement: event.target.value }))} className="mt-1 block w-full resize-y rounded-md border border-border bg-background px-3 py-2" /></label><div className="space-y-2"><label className="block text-sm">Фото или аватар<input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} className="mt-1 block w-full text-xs" /></label>{draft.imageData && <img src={draft.imageData} alt="Предпросмотр карточки" className="h-20 w-20 rounded-lg object-cover" />}<p className="text-xs text-muted-foreground">PNG, JPG или WebP. Изображение автоматически сжимается.</p></div><div className="flex flex-wrap items-end gap-2"><button disabled={savingCard || !!draft.publishedAt} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingCard ? 'Сохраняем…' : 'Сохранить черновик'}</button><button type="button" onClick={publishCard} disabled={publishing || !draft.nickname || !draft.nomination || !draft.achievement || !draft.imageData} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{publishing ? 'Публикуем…' : 'Опубликовать легенду'}</button></div>{draft.publishedAt && <p className="text-sm text-emerald-400 lg:col-span-4">Опубликовано {formatDate(draft.publishedAt)}. Следующее действие — открыть новый раунд.</p>}</form>}
           {roundStatus === 'published' && <p className="mt-2 text-sm text-muted-foreground">Легенда №{activeLegendNumber} уже опубликована. После нажатия кнопки выше откроется новый раунд голосования на месяц.</p>}
         </section>
 
