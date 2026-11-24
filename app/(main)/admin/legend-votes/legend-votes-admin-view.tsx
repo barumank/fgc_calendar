@@ -92,7 +92,7 @@ export function LegendVotesAdminView() {
       setRoundStatus(data.roundStatus);
       setOccupiedPositions(data.occupiedPositions);
       setDeadline(toLocalInput(data.deadlineAt));
-      setDraft(data.card ? { nickname: data.card.nickname, nomination: data.card.nomination, comment: data.card.comment || '', imageData: data.card.imageData, displayPosition: data.card.displayPosition, podcastUrl: data.card.podcastUrl || '', publishedAt: data.card.publishedAt } : { nickname: '', nomination: '', comment: '', imageData: '', displayPosition: data.activeLegendNumber, podcastUrl: '', publishedAt: null });
+      setDraft(data.card ? { nickname: data.card.nickname, nomination: data.card.nomination, comment: data.card.comment || data.card.achievement || '', imageData: data.card.imageData, displayPosition: data.card.displayPosition, podcastUrl: data.card.podcastUrl || '', publishedAt: data.card.publishedAt } : { nickname: '', nomination: '', comment: '', imageData: '', displayPosition: data.activeLegendNumber, podcastUrl: '', publishedAt: null });
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Ошибка загрузки', 'error');
     } finally { setLoading(false); }

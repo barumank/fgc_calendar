@@ -9,7 +9,7 @@ export async function GET() {
   const cards = await prisma.legendCard.findMany({
     where: { publishedAt: { not: null } },
     orderBy: { displayPosition: 'asc' },
-    select: { legendNumber: true, displayPosition: true, nickname: true, nomination: true, comment: true, imageData: true, podcastUrl: true, publishedAt: true },
+    select: { legendNumber: true, displayPosition: true, nickname: true, nomination: true, achievement: true, comment: true, imageData: true, podcastUrl: true, publishedAt: true },
   });
   return NextResponse.json({
     activeLegendNumber: state.legendNumber,

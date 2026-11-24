@@ -1,5 +1,3 @@
-ALTER TABLE "LegendCard" RENAME COLUMN "discipline" TO "nomination";
-
 ALTER TABLE "LegendCard"
 ADD COLUMN "displayPosition" INTEGER,
 ADD COLUMN "podcastUrl" TEXT;
@@ -10,5 +8,8 @@ WHERE "displayPosition" IS NULL;
 
 ALTER TABLE "LegendCard"
 ALTER COLUMN "displayPosition" SET NOT NULL;
+
+ALTER TABLE "LegendCard"
+ALTER COLUMN "displayPosition" SET DEFAULT 1;
 
 CREATE UNIQUE INDEX "LegendCard_displayPosition_key" ON "LegendCard"("displayPosition");

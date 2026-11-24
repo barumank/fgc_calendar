@@ -153,9 +153,10 @@ model LegendVote {
 model LegendCard {
   id           String    @id @default(uuid())
   legendNumber Int       @unique
-  displayPosition Int    @unique
+  displayPosition Int     @unique @default(1)
   nickname     String
-  nomination   String
+  nomination   String    @map("discipline")
+  achievement  String    @default("")
   comment      String        @default("") @db.Text
   imageData    String    @db.Text
   podcastUrl   String?

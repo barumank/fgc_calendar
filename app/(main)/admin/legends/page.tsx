@@ -41,6 +41,7 @@ interface LegendCardView {
   displayPosition: number;
   nickname: string;
   nomination: string;
+  achievement: string;
   comment: string;
   imageData: string;
   podcastUrl: string | null;
@@ -312,7 +313,7 @@ export default function AdminLegendsPage() {
               <div className="my-6 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent"/>
               <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
               <p className="mt-4 text-base leading-relaxed text-slate-200 sm:text-lg">Легенда внесла значимый вклад в развитие файтинг-сцены СНГ, поддерживая сообщество, турниры и интерес к дисциплинам региона.</p>
-              <div className="mt-5"><p className="mb-2 text-sm font-semibold uppercase tracking-[.16em] text-violet-300">Комментарий</p><p className="whitespace-pre-wrap text-base leading-relaxed text-slate-100 sm:text-lg">{selectedCard.comment}</p></div>
+              <div className="mt-5"><p className="mb-2 text-sm font-semibold uppercase tracking-[.16em] text-violet-300">Комментарий</p><p className="whitespace-pre-wrap text-base leading-relaxed text-slate-100 sm:text-lg">{selectedCard.comment || selectedCard.achievement}</p></div>
               {selectedCard.podcastUrl && <div className="mt-6"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
             </div>
           </div>

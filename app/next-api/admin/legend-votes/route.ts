@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     try {
       const card = await prisma.legendCard.upsert({
         where: { legendNumber: state.legendNumber },
-        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, comment, imageData, podcastUrl: podcastUrl || null },
+        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, achievement: '', comment, imageData, podcastUrl: podcastUrl || null },
         update: { displayPosition, nickname, nomination, comment, imageData, podcastUrl: podcastUrl || null },
       });
       return NextResponse.json({ card });
