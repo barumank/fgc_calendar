@@ -12,4 +12,4 @@ ALTER COLUMN "displayPosition" SET NOT NULL;
 ALTER TABLE "LegendCard"
 ALTER COLUMN "displayPosition" SET DEFAULT 1;
 
-CREATE UNIQUE INDEX "LegendCard_displayPosition_key" ON "LegendCard"("displayPosition");
+CREATE INDEX "LegendCard_displayPosition_idx" ON "LegendCard"("displayPosition");

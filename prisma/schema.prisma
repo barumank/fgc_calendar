@@ -153,7 +153,7 @@ model LegendVote {
 model LegendCard {
   id           String    @id @default(uuid())
   legendNumber Int       @unique
-  displayPosition Int     @unique @default(1)
+  displayPosition Int     @default(1)
   nickname     String
   nomination   String    @map("discipline")
   achievement  String    @default("")
@@ -163,6 +163,8 @@ model LegendCard {
   publishedAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  @@index([displayPosition])
 }
 
 model SubscriptionLog {
