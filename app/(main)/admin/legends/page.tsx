@@ -321,7 +321,7 @@ export default function AdminLegendsPage() {
         {selectedCard && <div className="relative -mx-6 -my-4 max-h-[88vh] min-h-[660px] overflow-hidden rounded-[26px] bg-[#100c1c] p-5 sm:p-8 lg:p-10">
           <Image src="/images/legends/profile_card_background.png" alt="" aria-hidden="true" fill sizes="(max-width: 1280px) 96vw, 1280px" className="pointer-events-none absolute inset-0 z-0 h-full w-full object-fill"/>
           <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-4 top-4 z-30 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
-          <div className="relative z-10 grid items-center gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
+          <div className="relative z-10 grid items-stretch gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
             <div className="relative mx-auto w-full max-w-[380px] pt-[30px] pb-[100px]">
               <div className="relative aspect-[3/4] w-full">
                 <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
@@ -334,7 +334,7 @@ export default function AdminLegendsPage() {
                 </div>
               </div>
             </div>
-            <div className="min-w-0 pb-4 pt-2 md:pt-0">
+            <div className="min-w-0 pb-4 pt-2 md:flex md:self-stretch md:flex-col md:pt-6">
               <h2 className="break-words pr-8 text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_0_18px_rgba(200,154,255,.2)] sm:text-5xl lg:text-6xl">{selectedCard.nickname}</h2>
               <div className="relative mx-auto mt-4 aspect-[5/1] w-full max-w-[560px] md:mx-0">
                 <Image src="/images/legends/nomination_badge.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 90vw, 560px" className="object-cover object-center"/>
@@ -343,7 +343,7 @@ export default function AdminLegendsPage() {
               <div className="my-4 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent lg:my-5"/>
               <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">{selectedCard.comment || selectedCard.achievement}</p>
-              {selectedCard.podcastUrl && <div className="mt-4"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
+              {selectedCard.podcastUrl && <div className="mt-4 md:mt-auto md:pt-8"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
             </div>
           </div>
         </div>}
