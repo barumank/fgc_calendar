@@ -156,7 +156,7 @@ model LegendCard {
   displayPosition Int    @unique
   nickname     String
   nomination   String
-  achievement  String
+  comment      String        @default("") @db.Text
   imageData    String    @db.Text
   podcastUrl   String?
   publishedAt  DateTime?

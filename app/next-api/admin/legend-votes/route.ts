@@ -75,11 +75,11 @@ export async function POST(req: NextRequest) {
     if (state.status !== 'processing') return NextResponse.json({ error: 'Карточку можно подготовить после завершения голосования' }, { status: 409 });
     const nickname = typeof body.nickname === 'string' ? body.nickname.trim() : '';
     const nomination = typeof body.nomination === 'string' ? body.nomination.trim() : '';
-    const achievement = typeof body.achievement === 'string' ? body.achievement.trim() : '';
+    const comment = typeof body.comment === 'string' ? body.comment.trim() : '';
     const imageData = typeof body.imageData === 'string' ? body.imageData : '';
     const displayPosition = Number(body.displayPosition);
     const podcastUrl = typeof body.podcastUrl === 'string' ? body.podcastUrl.trim() : '';
-    if (!nickname || nickname.length > 80 || !nomination || nomination.length > 100 || !achievement || achievement.length > 2000) return NextResponse.json({ error: 'Заполните ник, номинацию и заслугу (до 2000 символов)' }, { status: 400 });
+    if (!nickname || nickname.length > 80 || !nomination || nomination.length > 100 || !comment || comment.length > 3000) return NextResponse.json({ error: 'Заполните ник, номинацию и комментарий (до 3000 символов)' }, { status: 400 });
     if (!Number.isInteger(displayPosition) || displayPosition < 1 || displayPosition > LEGEND_ROUND_COUNT) return NextResponse.json({ error: `Выберите позицию от 1 до ${LEGEND_ROUND_COUNT}` }, { status: 400 });
     if (podcastUrl && (podcastUrl.length > 500 || !/^https?:\/\//i.test(podcastUrl) || !URL.canParse(podcastUrl))) return NextResponse.json({ error: 'Ссылка на подкаст должна начинаться с http:// или https://' }, { status: 400 });
     if (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(imageData) || imageData.length > 4_500_000) return NextResponse.json({ error: 'Загрузите изображение PNG, JPG или WebP размером до 3 МБ' }, { status: 400 });
@@ -88,8 +88,8 @@ export async function POST(req: NextRequest) {
     try {
       const card = await prisma.legendCard.upsert({
         where: { legendNumber: state.legendNumber },
-        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, achievement, imageData, podcastUrl: podcastUrl || null },
-        update: { displayPosition, nickname, nomination, achievement, imageData, podcastUrl: podcastUrl || null },
+        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, comment, imageData, podcastUrl: podcastUrl || null },
+        update: { displayPosition, nickname, nomination, comment, imageData, podcastUrl: podcastUrl || null },
       });
       return NextResponse.json({ card });
     } catch (cause) {

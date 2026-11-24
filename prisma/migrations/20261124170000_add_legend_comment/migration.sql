@@ -1,0 +1,2 @@
+ALTER TABLE "LegendCard"
+ADD COLUMN "comment" TEXT NOT NULL DEFAULT '';
