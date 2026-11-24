@@ -322,16 +322,16 @@ export default function AdminLegendsPage() {
           <Image src="/images/legends/profile_card_background.png" alt="" aria-hidden="true" fill sizes="(max-width: 1280px) 96vw, 1280px" className="pointer-events-none absolute inset-0 z-0 h-full w-full object-fill"/>
           <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-4 top-4 z-30 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
           <div className="relative z-10 grid items-center gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
-            <div className="relative mx-auto w-full max-w-[420px] pb-[90px] md:pb-[100px]">
+            <div className="relative mx-auto w-full max-w-[380px] pt-[30px] pb-[100px]">
               <div className="relative aspect-[3/4] w-full">
                 <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
                 <div className="absolute inset-[3px] overflow-hidden bg-[#100c20] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]">
                   <img src={selectedCard.imageData} alt={selectedCard.nickname} className="h-full w-full object-cover object-center"/>
                   <div className="absolute inset-0 bg-gradient-to-t from-violet-950/35 via-transparent to-fuchsia-950/10"/>
                 </div>
-              </div>
-              <div className="absolute bottom-0 left-1/2 z-20 aspect-[561/328] w-[130%] -translate-x-1/2">
-                <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
+                <div className="absolute left-1/2 top-[68%] z-20 aspect-[561/328] w-[122%] -translate-x-1/2">
+                  <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
+                </div>
               </div>
             </div>
             <div className="min-w-0 pb-4 pt-2 md:pt-0">
