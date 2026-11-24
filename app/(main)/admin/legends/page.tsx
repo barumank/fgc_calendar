@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { AudioLines, Pause, Play, Trophy, Volume2, VolumeX, Vote, X } from 'lucide-react';
+import { AudioLines, Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Modal } from '@/src/components/common/modal';
@@ -294,27 +294,34 @@ export default function AdminLegendsPage() {
           </form>
         )}
       </Modal>
-      <Modal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} maxWidth="max-w-6xl">
-        {selectedCard && <div className="relative -mx-6 -my-4 max-h-[86vh] overflow-y-auto rounded-xl border border-fuchsia-400/70 bg-[radial-gradient(ellipse_at_18%_20%,rgba(103,47,179,.48),transparent_45%),linear-gradient(130deg,#171126_0%,#101020_58%,#171126_100%)] p-5 shadow-[0_0_35px_rgba(157,68,255,.25)] sm:p-8">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-20 [background-image:linear-gradient(135deg,transparent_0%,transparent_38%,rgba(197,77,255,.25)_38.2%,transparent_39%,transparent_55%,rgba(197,77,255,.15)_55.2%,transparent_56%)]"/>
-          <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-3 top-3 z-20 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
-          <div className="relative z-10 grid items-center gap-7 md:grid-cols-[minmax(240px,.82fr)_minmax(0,1.35fr)] md:gap-10">
-            <div className="relative mx-auto w-full max-w-[370px] pb-7">
-              <div className="absolute inset-[-2px] -bottom-1 rounded-[34px] bg-gradient-to-br from-fuchsia-400 via-violet-500 to-fuchsia-300 blur-[1px] [clip-path:polygon(18%_0,82%_0,100%_18%,100%_82%,82%_100%,18%_100%,0_82%,0_18%)]"/>
-              <div className="relative aspect-[3/4] overflow-hidden bg-[#100d1e] [clip-path:polygon(18%_0,82%_0,100%_18%,100%_82%,82%_100%,18%_100%,0_82%,0_18%)]">
-                <img src={selectedCard.imageData} alt={selectedCard.nickname} className="h-full w-full object-cover object-center"/>
-                <div className="absolute inset-0 bg-gradient-to-t from-violet-950/45 via-transparent to-fuchsia-950/10"/>
+      <Modal isOpen={!!selectedCard} onClose={() => setSelectedCard(null)} maxWidth="max-w-7xl">
+        {selectedCard && <div className="relative -mx-6 -my-4 max-h-[88vh] min-h-[660px] overflow-hidden rounded-[26px] bg-[#100c1c] p-5 sm:p-8 lg:p-10">
+          <Image src="/images/legends/profile_card_background.png" alt="" aria-hidden="true" fill sizes="(max-width: 1280px) 96vw, 1280px" className="pointer-events-none absolute inset-0 z-0 h-full w-full object-fill"/>
+          <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-4 top-4 z-30 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
+          <div className="relative z-10 grid items-center gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
+            <div className="relative mx-auto w-full max-w-[420px] pb-[90px] md:pb-[100px]">
+              <div className="relative aspect-[3/4] w-full">
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
+                <div className="absolute inset-[3px] overflow-hidden bg-[#100c20] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]">
+                  <img src={selectedCard.imageData} alt={selectedCard.nickname} className="h-full w-full object-cover object-center"/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-violet-950/35 via-transparent to-fuchsia-950/10"/>
+                </div>
               </div>
-              <div className="absolute -bottom-1 left-1/2 flex h-[84px] w-[104px] -translate-x-1/2 items-center justify-center bg-gradient-to-br from-amber-200 via-amber-500 to-yellow-700 shadow-[0_0_25px_rgba(255,189,49,.55)] [clip-path:polygon(50%_0,100%_25%,100%_65%,50%_100%,0_65%,0_25%)]"><div className="flex h-[72px] w-[90px] items-center justify-center border border-yellow-100/60 bg-[#271b32] [clip-path:polygon(50%_0,100%_25%,100%_65%,50%_100%,0_65%,0_25%)]"><Trophy className="h-10 w-10 text-amber-300 drop-shadow-[0_0_8px_rgba(255,199,65,.7)]"/></div></div>
+              <div className="absolute bottom-0 left-1/2 z-20 aspect-[561/328] w-[130%] -translate-x-1/2">
+                <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
+              </div>
             </div>
-            <div className="min-w-0 pt-2 md:pt-0">
+            <div className="min-w-0 pb-4 pt-2 md:pt-0">
               <h2 className="break-words pr-8 text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_0_18px_rgba(200,154,255,.2)] sm:text-5xl lg:text-6xl">{selectedCard.nickname}</h2>
-              <div className="mt-5 inline-flex max-w-full items-center gap-3 border border-amber-400/90 bg-[linear-gradient(110deg,rgba(54,39,29,.98),rgba(30,24,34,.96))] px-5 py-3 text-lg font-bold text-amber-300 shadow-[0_0_20px_rgba(252,188,53,.18)] [clip-path:polygon(5%_0,95%_0,100%_50%,95%_100%,5%_100%,0_50%)] sm:text-xl"><Trophy className="h-6 w-6 shrink-0"/><span className="break-words">{selectedCard.nomination}</span></div>
-              <div className="my-6 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent"/>
+              <div className="relative mx-auto mt-4 aspect-[5/1] w-full max-w-[560px] md:mx-0">
+                <Image src="/images/legends/nomination_badge.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 90vw, 560px" className="object-cover object-center"/>
+                <span className="absolute inset-y-0 left-[22%] right-[4%] flex items-center justify-center px-3 text-center text-base font-bold text-amber-300 drop-shadow-[0_1px_5px_rgba(255,184,36,.5)] sm:text-lg lg:text-xl">{selectedCard.nomination}</span>
+              </div>
+              <div className="my-4 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent lg:my-5"/>
               <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
-              <p className="mt-4 text-base leading-relaxed text-slate-200 sm:text-lg">Легенда внесла значимый вклад в развитие файтинг-сцены СНГ, поддерживая сообщество, турниры и интерес к дисциплинам региона.</p>
-              <div className="mt-5"><p className="mb-2 text-sm font-semibold uppercase tracking-[.16em] text-violet-300">Комментарий</p><p className="whitespace-pre-wrap text-base leading-relaxed text-slate-100 sm:text-lg">{selectedCard.comment || selectedCard.achievement}</p></div>
-              {selectedCard.podcastUrl && <div className="mt-6"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
+              <p className="mt-3 text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">Легенда внесла значимый вклад в развитие файтинг-сцены СНГ, поддерживая сообщество, турниры и интерес к дисциплинам региона.</p>
+              <div className="mt-4"><p className="mb-1.5 text-xs font-semibold uppercase tracking-[.16em] text-violet-300">Комментарий</p><p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base">{selectedCard.comment || selectedCard.achievement}</p></div>
+              {selectedCard.podcastUrl && <div className="mt-4"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
             </div>
           </div>
         </div>}
