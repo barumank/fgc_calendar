@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { AudioLines, Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
+import { Mic, Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Modal } from '@/src/components/common/modal';
@@ -48,26 +48,43 @@ interface LegendCardView {
   publishedAt: string;
 }
 
+function PodcastArtwork() {
+  const bars = [16, 26, 40, 29, 52, 35, 62, 42, 29, 48, 34, 18];
+  return <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border border-violet-400/60 bg-[radial-gradient(circle_at_50%_38%,rgba(194,75,255,.3),transparent_63%),linear-gradient(145deg,#201331,#121024)] shadow-[inset_0_0_22px_rgba(168,65,255,.2),0_0_18px_rgba(169,64,255,.16)]">
+    <div className="absolute inset-x-2 top-1/2 flex -translate-y-1/2 items-center justify-between gap-[2px] opacity-70" aria-hidden="true">{bars.map((height, index) => <span key={index} className="w-[3px] rounded-full bg-fuchsia-500" style={{ height: `${height}%` }}/>)}</div>
+    <Mic aria-hidden="true" className="relative z-10 h-[58%] w-[48%] stroke-[1.8] text-fuchsia-300 drop-shadow-[0_0_12px_rgba(204,77,255,.85)]"/>
+  </div>;
+}
+
+function PodcastPanel({ title, duration, children }: { title: string; duration: string; children: React.ReactNode }) {
+  return <div className="rounded-2xl border border-violet-400/40 bg-[linear-gradient(120deg,rgba(36,22,57,.96),rgba(20,19,40,.98))] p-3 shadow-[0_0_25px_rgba(158,68,255,.16)] sm:p-4">
+    <div className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-5">
+      <PodcastArtwork/>
+      <div className="min-w-0"><div className="mb-2 flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-xs font-medium text-violet-300">Подкаст</p><p className="mt-1 truncate text-sm font-semibold text-white sm:text-base">{title}</p></div><span className="shrink-0 text-xs tabular-nums text-slate-300 sm:text-sm">{duration}</span></div>{children}</div>
+    </div>
+  </div>;
+}
+
 function PodcastWidget({ url, nickname }: { url: string; nickname: string }) {
-  const podcastTitle = `Подкаст с ${nickname}`;
+  const podcastTitle = `Интервью с ${nickname}`;
   let parsed: URL | null = null;
   try { parsed = new URL(url); } catch { /* Let the player show an unavailable state for malformed links. */ }
 
   if (parsed?.hostname.endsWith('spotify.com')) {
     const embedUrl = parsed.href.replace('://open.spotify.com/', '://open.spotify.com/embed/');
-    return <div className="rounded-2xl border border-violet-400/30 bg-[#17152a]/90 p-4 shadow-[0_0_25px_rgba(158,68,255,.16)]"><div className="mb-2 flex items-center justify-between gap-2"><div className="flex items-center gap-2 text-sm text-violet-200"><AudioLines className="h-4 w-4"/>Подкаст</div><span className="truncate text-sm font-semibold text-white">{podcastTitle}</span></div><iframe title={podcastTitle} src={embedUrl} width="100%" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" className="rounded-xl"/></div>;
+    return <PodcastPanel title={podcastTitle} duration=""><iframe title={podcastTitle} src={embedUrl} width="100%" height="152" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" className="rounded-xl"/></PodcastPanel>;
   }
   if (parsed && (parsed.hostname === 'youtu.be' || parsed.hostname.endsWith('youtube.com') || parsed.hostname.endsWith('youtube-nocookie.com'))) {
     const videoId = parsed.hostname === 'youtu.be' ? parsed.pathname.slice(1) : parsed.searchParams.get('v') || parsed.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/)?.[1];
-    if (videoId) return <div className="rounded-2xl border border-violet-400/30 bg-[#17152a]/90 p-4 shadow-[0_0_25px_rgba(158,68,255,.16)]"><div className="mb-2 flex items-center justify-between gap-2"><div className="flex items-center gap-2 text-sm text-violet-200"><AudioLines className="h-4 w-4"/>Подкаст</div><span className="truncate text-sm font-semibold text-white">{podcastTitle}</span></div><iframe title={podcastTitle} src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen loading="lazy" className="aspect-video w-full rounded-xl"/></div>;
+    if (videoId) return <PodcastPanel title={podcastTitle} duration=""><iframe title={podcastTitle} src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen loading="lazy" className="aspect-video w-full rounded-xl"/></PodcastPanel>;
   }
   if (parsed?.hostname.endsWith('soundcloud.com')) {
     const embedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23b44dff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&visual=false`;
-    return <div className="rounded-2xl border border-violet-400/30 bg-[#17152a]/90 p-4 shadow-[0_0_25px_rgba(158,68,255,.16)]"><div className="mb-2 flex items-center justify-between gap-2"><div className="flex items-center gap-2 text-sm text-violet-200"><AudioLines className="h-4 w-4"/>Подкаст</div><span className="truncate text-sm font-semibold text-white">{podcastTitle}</span></div><iframe title={podcastTitle} src={embedUrl} width="100%" height="166" allow="autoplay" loading="lazy" className="rounded-xl"/></div>;
+    return <PodcastPanel title={podcastTitle} duration=""><iframe title={podcastTitle} src={embedUrl} width="100%" height="166" allow="autoplay" loading="lazy" className="rounded-xl"/></PodcastPanel>;
   }
   if (parsed?.hostname.endsWith('podcasts.apple.com')) {
     const embedUrl = parsed.href.replace('://podcasts.apple.com/', '://embed.podcasts.apple.com/');
-    return <div className="rounded-2xl border border-violet-400/30 bg-[#17152a]/90 p-4 shadow-[0_0_25px_rgba(158,68,255,.16)]"><div className="mb-2 flex items-center justify-between gap-2"><div className="flex items-center gap-2 text-sm text-violet-200"><AudioLines className="h-4 w-4"/>Подкаст</div><span className="truncate text-sm font-semibold text-white">{podcastTitle}</span></div><iframe title={podcastTitle} src={embedUrl} width="100%" height="175" allow="autoplay *; encrypted-media *;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" loading="lazy" className="rounded-xl"/></div>;
+    return <PodcastPanel title={podcastTitle} duration=""><iframe title={podcastTitle} src={embedUrl} width="100%" height="175" allow="autoplay *; encrypted-media *;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-top-navigation-by-user-activation" loading="lazy" className="rounded-xl"/></PodcastPanel>;
   }
 
   return <DirectAudioPlayer url={url} title={podcastTitle} />;
@@ -93,16 +110,22 @@ function DirectAudioPlayer({ url, title }: { url: string; title: string }) {
       try { await audio.play(); setPlaying(true); } catch { setUnavailable(true); }
     } else { audio.pause(); setPlaying(false); }
   };
-  const waveform = [22,35,16,43,26,52,30,61,38,48,28,70,44,58,32,75,41,56,29,66,37,52,25,61,34,72,42,56,28,64,38,47,24,58,34,43,20,31];
-  return <div className="rounded-2xl border border-violet-400/30 bg-[linear-gradient(120deg,rgba(36,22,57,.96),rgba(20,19,40,.98))] p-4 shadow-[0_0_25px_rgba(158,68,255,.16)] sm:p-5">
+  const waveform = Array.from({ length: 72 }, (_, index) => {
+    const progress = (index + 1) / 73;
+    const envelope = 0.34 + 0.66 * Math.pow(Math.sin(Math.PI * progress), 0.7);
+    const texture = 0.2 + 0.8 * Math.abs(Math.sin(index * 1.37) * 0.65 + Math.sin(index * 0.43) * 0.35);
+    return Math.round(12 + 78 * envelope * texture);
+  });
+  return <>
     <audio ref={audioRef} src={url} preload="metadata" onLoadedMetadata={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)} onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setUnavailable(true)} />
-    <div className="mb-3 flex items-center justify-between gap-3"><div><p className="text-xs font-medium uppercase tracking-[.18em] text-violet-300">Подкаст</p><p className="mt-1 font-semibold text-white">{title}</p></div><span className="text-sm tabular-nums text-slate-300">{duration ? formatTime(duration) : '—:—'}</span></div>
-    {unavailable ? <a href={url} target="_blank" rel="noreferrer" className="text-sm text-violet-200 underline underline-offset-4">Открыть подкаст по ссылке</a> : <div className="flex items-center gap-3 rounded-2xl border border-violet-300/20 bg-[#111020]/75 p-3">
-      <button type="button" onClick={() => void togglePlayback()} aria-label={playing ? 'Пауза' : 'Воспроизвести'} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/70 bg-gradient-to-br from-violet-500/70 to-fuchsia-700/50 text-white shadow-[0_0_15px_rgba(195,92,255,.35)]">{playing ? <Pause className="h-5 w-5 fill-current"/> : <Play className="ml-0.5 h-5 w-5 fill-current"/>}</button>
-      <div className="min-w-0 flex-1"><div className="mb-2 flex h-8 items-center justify-between gap-[2px] overflow-hidden" aria-hidden="true">{waveform.map((height, index) => <span key={index} className={`w-[3px] shrink-0 rounded-full bg-gradient-to-t from-violet-500 to-fuchsia-300 ${playing && index / waveform.length < currentTime / (duration || 1) ? 'opacity-100' : 'opacity-65'}`} style={{ height: `${height}%` }}/>)}</div><input aria-label="Позиция воспроизведения" type="range" min={0} max={duration || 0} step={0.1} value={Math.min(currentTime, duration || 0)} onChange={(event) => { const time = Number(event.target.value); if (audioRef.current) audioRef.current.currentTime = time; setCurrentTime(time); }} className="h-1 w-full cursor-pointer accent-fuchsia-400"/><div className="mt-1 text-[11px] tabular-nums text-slate-400">{formatTime(currentTime)}</div></div>
-      <button type="button" aria-label={muted ? 'Включить звук' : 'Выключить звук'} onClick={() => { if (audioRef.current) audioRef.current.muted = !muted; setMuted((value) => !value); }} className="shrink-0 text-slate-200">{muted ? <VolumeX className="h-5 w-5"/> : <Volume2 className="h-5 w-5"/>}</button>
+    <PodcastPanel title={title} duration={duration ? formatTime(duration) : '—:—'}>
+    {unavailable ? <a href={url} target="_blank" rel="noreferrer" className="text-sm text-violet-200 underline underline-offset-4">Открыть подкаст по ссылке</a> : <div className="flex items-center gap-2 rounded-2xl border border-violet-300/20 bg-[#111020]/75 p-2 sm:gap-3 sm:p-3">
+      <button type="button" onClick={() => void togglePlayback()} aria-label={playing ? 'Пауза' : 'Воспроизвести'} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-fuchsia-300/70 bg-gradient-to-br from-violet-500/70 to-fuchsia-700/50 text-white shadow-[0_0_15px_rgba(195,92,255,.35)] sm:h-[52px] sm:w-[52px]">{playing ? <Pause className="h-5 w-5 fill-current sm:h-6 sm:w-6"/> : <Play className="ml-0.5 h-5 w-5 fill-current sm:h-6 sm:w-6"/>}</button>
+      <div className="min-w-0 flex-1"><div className="relative flex h-10 w-full items-center gap-[2px] overflow-hidden" aria-hidden="true">{waveform.map((height, index) => <span key={index} className={`min-w-[2px] max-w-[6px] flex-1 rounded-full bg-gradient-to-t from-violet-500 via-fuchsia-400 to-fuchsia-200 ${playing && index / waveform.length < currentTime / (duration || 1) ? 'opacity-100' : 'opacity-65'}`} style={{ height: `${height}%` }}/>)}</div><input aria-label="Позиция воспроизведения" type="range" min={0} max={duration || 0} step={0.1} value={Math.min(currentTime, duration || 0)} onChange={(event) => { const time = Number(event.target.value); if (audioRef.current) audioRef.current.currentTime = time; setCurrentTime(time); }} className="h-1 w-full cursor-pointer accent-fuchsia-400"/><div className="mt-1 text-[11px] tabular-nums text-slate-400">{formatTime(currentTime)}</div></div>
+      <button type="button" aria-label={muted ? 'Включить звук' : 'Выключить звук'} onClick={() => { if (audioRef.current) audioRef.current.muted = !muted; setMuted((value) => !value); }} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-slate-100 transition hover:bg-white/10 sm:h-12 sm:w-12">{muted ? <VolumeX className="h-6 w-6 sm:h-7 sm:w-7"/> : <Volume2 className="h-6 w-6 sm:h-7 sm:w-7"/>}</button>
     </div>}
-  </div>;
+    </PodcastPanel>
+  </>;
 }
 
 function LegendPlaque({ number, nickname }: { number: number; nickname?: string }) {
@@ -319,8 +342,7 @@ export default function AdminLegendsPage() {
               </div>
               <div className="my-4 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent lg:my-5"/>
               <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">Легенда внесла значимый вклад в развитие файтинг-сцены СНГ, поддерживая сообщество, турниры и интерес к дисциплинам региона.</p>
-              <div className="mt-4"><p className="mb-1.5 text-xs font-semibold uppercase tracking-[.16em] text-violet-300">Комментарий</p><p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base">{selectedCard.comment || selectedCard.achievement}</p></div>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">{selectedCard.comment || selectedCard.achievement}</p>
               {selectedCard.podcastUrl && <div className="mt-4"><PodcastWidget url={selectedCard.podcastUrl} nickname={selectedCard.nickname}/></div>}
             </div>
           </div>
