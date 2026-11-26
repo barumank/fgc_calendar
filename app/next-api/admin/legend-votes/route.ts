@@ -16,6 +16,40 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+function validateLegendLinks(body: Record<string, unknown>) {
+  const read = (key: string) => typeof body[key] === 'string' ? (body[key] as string).trim() : '';
+  const podcastUrl = read('podcastUrl');
+  const videoPodcastUrl = read('videoPodcastUrl');
+  const twitchUrl = read('twitchUrl');
+  const youtubeChannelUrl = read('youtubeChannelUrl');
+  const parseHttpUrl = (value: string) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url : null;
+    } catch { return null; }
+  };
+  if (podcastUrl && videoPodcastUrl) return { error: 'Укажите только один формат подкаста: аудио или YouTube-видео' };
+  if ([podcastUrl, videoPodcastUrl, twitchUrl, youtubeChannelUrl].some((value) => value.length > 500)) return { error: 'Ссылки не должны превышать 500 символов' };
+  if (podcastUrl && !parseHttpUrl(podcastUrl)) return { error: 'Ссылка на аудиоподкаст должна начинаться с http:// или https://' };
+  if (videoPodcastUrl) {
+    const url = parseHttpUrl(videoPodcastUrl);
+    const host = url?.hostname.replace(/^www\./, '').toLowerCase();
+    const videoId = host === 'youtu.be' ? url?.pathname.split('/').filter(Boolean)[0] : url?.searchParams.get('v') || url?.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1];
+    if (!url || !(host === 'youtu.be' || host === 'youtube.com' || host?.endsWith('.youtube.com')) || !videoId || !/^[\w-]{11}$/.test(videoId)) return { error: 'Укажите корректную ссылку на видео YouTube' };
+  }
+  if (twitchUrl) {
+    const url = parseHttpUrl(twitchUrl);
+    if (!url || !['twitch.tv', 'www.twitch.tv', 'm.twitch.tv'].includes(url.hostname.toLowerCase()) || !url.pathname.split('/').filter(Boolean)[0]) return { error: 'Укажите корректную ссылку на канал Twitch' };
+  }
+  if (youtubeChannelUrl) {
+    const url = parseHttpUrl(youtubeChannelUrl);
+    const host = url?.hostname.replace(/^www\./, '').toLowerCase();
+    const firstPathPart = url?.pathname.split('/').filter(Boolean)[0]?.toLowerCase();
+    if (!url || !(host === 'youtube.com' || host?.endsWith('.youtube.com')) || !firstPathPart || ['watch', 'shorts', 'embed', 'live'].includes(firstPathPart)) return { error: 'Укажите корректную ссылку на канал YouTube' };
+  }
+  return { links: { podcastUrl: podcastUrl || null, videoPodcastUrl: videoPodcastUrl || null, twitchUrl: twitchUrl || null, youtubeChannelUrl: youtubeChannelUrl || null } };
+}
+
 export async function GET(req: NextRequest) {
   const { error } = await requireRole(['admin']);
   if (error) return error;
@@ -42,7 +76,7 @@ export async function GET(req: NextRequest) {
     }),
     prisma.legendVote.count({ where }),
     prisma.legendCard.findMany({ select: { legendNumber: true, displayPosition: true, nickname: true } }),
-    prisma.legendCard.findMany({ where: { publishedAt: { not: null } }, orderBy: { legendNumber: 'desc' }, select: { legendNumber: true, displayPosition: true, nickname: true, nomination: true, achievement: true, comment: true, podcastUrl: true, publishedAt: true } }),
+    prisma.legendCard.findMany({ where: { publishedAt: { not: null } }, orderBy: { legendNumber: 'desc' }, select: { legendNumber: true, displayPosition: true, nickname: true, nomination: true, achievement: true, comment: true, podcastUrl: true, videoPodcastUrl: true, twitchUrl: true, youtubeChannelUrl: true, publishedAt: true } }),
     prisma.legendVote.groupBy({ by: ['legendNumber'], _count: { _all: true }, _min: { createdAt: true }, _max: { createdAt: true } }),
     prisma.appSetting.findMany({ where: { key: { in: Array.from({ length: LEGEND_ROUND_COUNT }, (_, index) => index + 1).flatMap((number) => [legendVoteRoundStartedAtKey(number), legendVoteRoundEndedAtKey(number)]) } } }),
   ]);
@@ -107,18 +141,18 @@ export async function POST(req: NextRequest) {
     const comment = typeof body.comment === 'string' ? body.comment.trim() : '';
     const imageData = typeof body.imageData === 'string' ? body.imageData : '';
     const displayPosition = Number(body.displayPosition);
-    const podcastUrl = typeof body.podcastUrl === 'string' ? body.podcastUrl.trim() : '';
+    const validatedLinks = validateLegendLinks(body);
     if (!nickname || nickname.length > 80 || !nomination || nomination.length > 100 || !comment || comment.length > 3000) return NextResponse.json({ error: 'Заполните ник, номинацию и комментарий (до 3000 символов)' }, { status: 400 });
     if (!Number.isInteger(displayPosition) || displayPosition < 1 || displayPosition > LEGEND_ROUND_COUNT) return NextResponse.json({ error: `Выберите позицию от 1 до ${LEGEND_ROUND_COUNT}` }, { status: 400 });
-    if (podcastUrl && (podcastUrl.length > 500 || !/^https?:\/\//i.test(podcastUrl) || !URL.canParse(podcastUrl))) return NextResponse.json({ error: 'Ссылка на подкаст должна начинаться с http:// или https://' }, { status: 400 });
+    if (validatedLinks.error) return NextResponse.json({ error: validatedLinks.error }, { status: 400 });
     if (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(imageData) || imageData.length > 4_500_000) return NextResponse.json({ error: 'Загрузите изображение PNG, JPG или WebP размером до 3 МБ' }, { status: 400 });
     const conflictingCard = await prisma.legendCard.findFirst({ where: { displayPosition, legendNumber: { not: state.legendNumber } }, select: { legendNumber: true } });
     if (conflictingCard) return NextResponse.json({ error: `Позиция №${displayPosition} уже назначена карточке легенды №${conflictingCard.legendNumber}` }, { status: 409 });
     try {
       const card = await prisma.legendCard.upsert({
         where: { legendNumber: state.legendNumber },
-        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, achievement: '', comment, imageData, podcastUrl: podcastUrl || null },
-        update: { displayPosition, nickname, nomination, comment, imageData, podcastUrl: podcastUrl || null },
+        create: { legendNumber: state.legendNumber, displayPosition, nickname, nomination, achievement: '', comment, imageData, ...validatedLinks.links },
+        update: { displayPosition, nickname, nomination, comment, imageData, ...validatedLinks.links },
       });
       return NextResponse.json({ card });
     } catch (cause) {
@@ -137,10 +171,10 @@ export async function POST(req: NextRequest) {
     const comment = typeof body.comment === 'string' ? body.comment.trim() : '';
     const imageData = typeof body.imageData === 'string' ? body.imageData : '';
     const displayPosition = Number(body.displayPosition);
-    const podcastUrl = typeof body.podcastUrl === 'string' ? body.podcastUrl.trim() : '';
+    const validatedLinks = validateLegendLinks(body);
     if (!nickname || nickname.length > 80 || !nomination || nomination.length > 100 || !comment || comment.length > 3000) return NextResponse.json({ error: 'Заполните ник, номинацию и комментарий (до 3000 символов)' }, { status: 400 });
     if (!Number.isInteger(displayPosition) || displayPosition < 1 || displayPosition > LEGEND_ROUND_COUNT) return NextResponse.json({ error: `Выберите позицию от 1 до ${LEGEND_ROUND_COUNT}` }, { status: 400 });
-    if (podcastUrl && (podcastUrl.length > 500 || !/^https?:\/\//i.test(podcastUrl) || !URL.canParse(podcastUrl))) return NextResponse.json({ error: 'Ссылка на подкаст должна начинаться с http:// или https://' }, { status: 400 });
+    if (validatedLinks.error) return NextResponse.json({ error: validatedLinks.error }, { status: 400 });
     if (!imageData || imageData === existing.imageData) {
       // Keep the existing image when the administrator changes only the text fields.
     } else if (!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(imageData) || imageData.length > 4_500_000) {
@@ -148,7 +182,7 @@ export async function POST(req: NextRequest) {
     }
     const conflictingCard = await prisma.legendCard.findFirst({ where: { displayPosition, legendNumber: { not: legendNumber } }, select: { legendNumber: true } });
     if (conflictingCard) return NextResponse.json({ error: `Позиция №${displayPosition} уже назначена карточке легенды №${conflictingCard.legendNumber}` }, { status: 409 });
-    const updated = await prisma.legendCard.update({ where: { legendNumber }, data: { displayPosition, nickname, nomination, comment, imageData: imageData || existing.imageData, podcastUrl: podcastUrl || null } });
+    const updated = await prisma.legendCard.update({ where: { legendNumber }, data: { displayPosition, nickname, nomination, comment, imageData: imageData || existing.imageData, ...validatedLinks.links } });
     return NextResponse.json({ card: updated });
   }
 

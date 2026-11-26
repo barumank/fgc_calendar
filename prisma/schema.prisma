@@ -160,6 +160,9 @@ model LegendCard {
   comment      String        @default("") @db.Text
   imageData    String    @db.Text
   podcastUrl   String?
+  videoPodcastUrl String?
+  twitchUrl    String?
+  youtubeChannelUrl String?
   publishedAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
