@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db';
 export const LEGEND_VOTE_ROUND_SETTING_KEY = 'legend_vote_active_round';
 export const LEGEND_VOTE_DEADLINE_SETTING_KEY = 'legend_vote_round_deadline_at';
 export const LEGEND_ROUND_COUNT = 24;
+export const legendVoteRoundStartedAtKey = (legendNumber: number) => `legend_vote_round_${legendNumber}_started_at`;
+export const legendVoteRoundEndedAtKey = (legendNumber: number) => `legend_vote_round_${legendNumber}_ended_at`;
 
 export const LEGEND_VOTE_ROLE_LABELS: Record<string, string> = {
   player: 'Игрок',
@@ -39,9 +41,24 @@ export async function getLegendVoteDeadline(): Promise<Date> {
 
 export async function getLegendVoteState() {
   const [legendNumber, deadlineAt] = await Promise.all([getActiveLegendVoteRound(), getLegendVoteDeadline()]);
+  const startKey = legendVoteRoundStartedAtKey(legendNumber);
+  let startSetting = await prisma.appSetting.findUnique({ where: { key: startKey } });
+  if (!startSetting) {
+    const [firstVote, previousCard] = await Promise.all([
+      prisma.legendVote.findFirst({ where: { legendNumber }, orderBy: { createdAt: 'asc' }, select: { createdAt: true } }),
+      legendNumber > 1 ? prisma.legendCard.findUnique({ where: { legendNumber: legendNumber - 1 }, select: { publishedAt: true } }) : Promise.resolve(null),
+    ]);
+    let startedAt = firstVote?.createdAt ?? previousCard?.publishedAt ?? null;
+    if (!startedAt && legendNumber === 1) {
+      startedAt = new Date(deadlineAt);
+      startedAt.setMonth(startedAt.getMonth() - 1);
+    }
+    startedAt ??= new Date();
+    startSetting = await prisma.appSetting.upsert({ where: { key: startKey }, update: {}, create: { key: startKey, value: startedAt.toISOString() } });
+  }
   const card = await prisma.legendCard.findUnique({ where: { legendNumber } });
   const status = card?.publishedAt ? 'published' : deadlineAt.getTime() <= Date.now() ? 'processing' : 'open';
-  return { legendNumber, deadlineAt, status, card } as const;
+  return { legendNumber, startedAt: new Date(startSetting.value), deadlineAt, status, card } as const;
 }
 
 export interface LegendVoteDateFilters {

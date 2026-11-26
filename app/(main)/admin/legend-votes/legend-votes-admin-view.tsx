@@ -32,6 +32,18 @@ interface OccupiedPosition {
   nickname: string;
 }
 
+interface PublishedLegend extends Omit<LegendDraft, 'imageData'> {
+  imageData?: string;
+  legendNumber: number;
+  achievement: string;
+  publishedAt: string;
+  roundStartedAt: string | null;
+  roundEndedAt: string | null;
+  votesCount: number;
+  firstVoteAt: string | null;
+  lastVoteAt: string | null;
+}
+
 function toLocalInput(value: string) {
   const date = new Date(value);
   return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
@@ -68,6 +80,7 @@ export function LegendVotesAdminView() {
   const [to, setTo] = useState('');
   const [legendNumber, setLegendNumber] = useState('');
   const [applied, setApplied] = useState({ from: '', to: '', legendNumber: '' });
+  const [filtersTouched, setFiltersTouched] = useState(false);
   const [loading, setLoading] = useState(true);
   const [advancing, setAdvancing] = useState(false);
   const [roundStatus, setRoundStatus] = useState<'open' | 'processing' | 'published'>('open');
@@ -77,6 +90,12 @@ export function LegendVotesAdminView() {
   const [publishing, setPublishing] = useState(false);
   const [draft, setDraft] = useState<LegendDraft>({ nickname: '', nomination: '', comment: '', imageData: '', displayPosition: 1, podcastUrl: '', publishedAt: null });
   const [occupiedPositions, setOccupiedPositions] = useState<OccupiedPosition[]>([]);
+  const [activeTab, setActiveTab] = useState<'current' | 'published'>('current');
+  const [startedAt, setStartedAt] = useState('');
+  const [publishedLegends, setPublishedLegends] = useState<PublishedLegend[]>([]);
+  const [editingLegendNumber, setEditingLegendNumber] = useState<number | null>(null);
+  const [publishedDraft, setPublishedDraft] = useState<LegendDraft>({ nickname: '', nomination: '', comment: '', imageData: '', displayPosition: 1, podcastUrl: '', publishedAt: null });
+  const [savingPublished, setSavingPublished] = useState(false);
 
   const loadVotes = useCallback(async () => {
     setLoading(true);
@@ -91,23 +110,33 @@ export function LegendVotesAdminView() {
       setVotes(data.votes); setActiveLegendNumber(data.activeLegendNumber); setNextLegendNumber(data.nextLegendNumber); setTotal(data.total);
       setRoundStatus(data.roundStatus);
       setOccupiedPositions(data.occupiedPositions);
+      setStartedAt(data.startedAt);
+      setPublishedLegends(data.publishedCards.map((card: PublishedLegend) => ({ ...card, comment: card.comment || card.achievement || '' })));
+      if (!filtersTouched && !applied.legendNumber) {
+        const currentRoundFilter = String(data.activeLegendNumber);
+        setLegendNumber(currentRoundFilter);
+        setApplied((value) => ({ ...value, legendNumber: currentRoundFilter }));
+      }
       setDeadline(toLocalInput(data.deadlineAt));
       setDraft(data.card ? { nickname: data.card.nickname, nomination: data.card.nomination, comment: data.card.comment || data.card.achievement || '', imageData: data.card.imageData, displayPosition: data.card.displayPosition, podcastUrl: data.card.podcastUrl || '', publishedAt: data.card.publishedAt } : { nickname: '', nomination: '', comment: '', imageData: '', displayPosition: data.activeLegendNumber, podcastUrl: '', publishedAt: null });
     } catch (error) {
       showToast(error instanceof Error ? error.message : 'Ошибка загрузки', 'error');
     } finally { setLoading(false); }
-  }, [applied]);
+  }, [applied, filtersTouched]);
 
   useEffect(() => { void loadVotes(); }, [loadVotes]);
 
   const applyFilters = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (from && to && from > to) { showToast('Дата начала должна быть не позже даты окончания', 'error'); return; }
+    setFiltersTouched(true);
     setApplied({ from, to, legendNumber });
   };
 
   const clearFilters = () => {
-    setFrom(''); setTo(''); setLegendNumber(''); setApplied({ from: '', to: '', legendNumber: '' });
+    const currentRoundFilter = String(activeLegendNumber);
+    setFiltersTouched(true);
+    setFrom(''); setTo(''); setLegendNumber(currentRoundFilter); setApplied({ from: '', to: '', legendNumber: currentRoundFilter });
   };
 
   const exportCsv = async () => {
@@ -163,6 +192,37 @@ export function LegendVotesAdminView() {
     event.target.value = '';
   };
 
+  const choosePublishedImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try { const imageData = await compressImage(file); setPublishedDraft((value) => ({ ...value, imageData })); }
+    catch (error) { showToast(error instanceof Error ? error.message : 'Ошибка изображения', 'error'); }
+    event.target.value = '';
+  };
+
+  const editPublishedLegend = async (card: PublishedLegend) => {
+    try {
+      const response = await fetch(`/next-api/admin/legend-votes?publishedCard=${card.legendNumber}`, { cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Не удалось загрузить карточку');
+      setEditingLegendNumber(card.legendNumber);
+      setPublishedDraft({ nickname: data.card.nickname, nomination: data.card.nomination, comment: data.card.comment || data.card.achievement || '', imageData: data.card.imageData, displayPosition: data.card.displayPosition, podcastUrl: data.card.podcastUrl || '', publishedAt: data.card.publishedAt });
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Ошибка загрузки карточки', 'error'); }
+  };
+
+  const savePublishedLegend = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (editingLegendNumber === null) return;
+    setSavingPublished(true);
+    try {
+      await postAction('update-published-card', { legendNumber: editingLegendNumber, nickname: publishedDraft.nickname, nomination: publishedDraft.nomination, comment: publishedDraft.comment, imageData: publishedDraft.imageData, displayPosition: publishedDraft.displayPosition, podcastUrl: publishedDraft.podcastUrl });
+      showToast('Карточка опубликованной легенды обновлена', 'success');
+      setEditingLegendNumber(null);
+      void loadVotes();
+    } catch (error) { showToast(error instanceof Error ? error.message : 'Ошибка сохранения карточки', 'error'); }
+    finally { setSavingPublished(false); }
+  };
+
   const saveCard = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setSavingCard(true);
     try {
@@ -188,39 +248,39 @@ export function LegendVotesAdminView() {
       <div className="mx-auto max-w-[1600px]">
         <div className="mb-6 flex justify-end"><HeaderActions /></div>
         <header className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div><h1 className="text-2xl font-bold">Голосование за легенду</h1><p className="mt-1 text-sm text-muted-foreground">Текущий раунд: легенда №{activeLegendNumber}. Всего записей: {total}.</p></div>
-          <button type="button" onClick={advanceRound} disabled={!nextLegendNumber || roundStatus !== 'published' || advancing} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">
-            {advancing ? 'Открываем…' : nextLegendNumber ? `Опубликовать следующую Легенду и открыть раунд №${nextLegendNumber}` : 'Все раунды открыты'}
-          </button>
+          <div><h1 className="text-2xl font-bold">Голосование за легенду</h1><p className="mt-1 text-sm text-muted-foreground">Управление текущим раундом и опубликованными легендами.</p></div>
+          <button type="button" onClick={() => void loadVotes()} title="Обновить" className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm"><RefreshCw className="h-4 w-4"/>Обновить</button>
         </header>
 
-        <section className="mb-5 rounded-xl border border-border bg-card p-4">
-          <h2 className="text-lg font-semibold">Раунд №{activeLegendNumber}: {roundStatus === 'open' ? 'голосование открыто' : roundStatus === 'processing' ? 'обработка результатов' : 'легенда опубликована'}</h2>
-          {roundStatus === 'open' && <form onSubmit={saveDeadline} className="mt-4 flex flex-wrap items-end gap-3"><label className="text-sm">Голосование закрывается<input required type="datetime-local" value={deadline} min={toLocalInput(new Date().toISOString())} onChange={(event) => setDeadline(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label><button disabled={savingDeadline} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingDeadline ? 'Сохраняем…' : 'Сохранить срок'}</button></form>}
-          {roundStatus === 'processing' && <form onSubmit={saveCard} className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_1.2fr_1.2fr]"><label className="text-sm">Ник легенды<input required maxLength={80} value={draft.nickname} onChange={(event) => setDraft((value) => ({ ...value, nickname: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Номинация<input required maxLength={100} value={draft.nomination} onChange={(event) => setDraft((value) => ({ ...value, nomination: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Место отображения<select required value={draft.displayPosition} onChange={(event) => setDraft((value) => ({ ...value, displayPosition: Number(event.target.value) }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2">{Array.from({ length: 24 }, (_, index) => { const position = index + 1; const owner = occupiedPositions.find((item) => item.displayPosition === position); return <option key={position} value={position} disabled={!!owner && owner.legendNumber !== activeLegendNumber}>{owner ? `Позиция №${position} — Легенда #${owner.legendNumber}` : `Позиция №${position} — свободна`}</option>; })}</select></label><label className="text-sm">Ссылка на подкаст <span className="text-muted-foreground">(необязательно)</span><input type="url" maxLength={500} value={draft.podcastUrl} onChange={(event) => setDraft((value) => ({ ...value, podcastUrl: event.target.value }))} placeholder="https://…" className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2"/><span className="mt-1 block text-xs text-muted-foreground">Прямая аудиоссылка, Spotify, YouTube, SoundCloud или Apple Podcasts.</span></label><label className="text-sm lg:col-span-2">Комментарий о заслугах<textarea required maxLength={3000} rows={4} value={draft.comment} onChange={(event) => setDraft((value) => ({ ...value, comment: event.target.value }))} className="mt-1 block w-full resize-y rounded-md border border-border bg-background px-3 py-2" /></label><div className="space-y-2"><label className="block text-sm">Фото или аватар<input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} className="mt-1 block w-full text-xs" /></label>{draft.imageData && <img src={draft.imageData} alt="Предпросмотр карточки" className="h-20 w-20 rounded-lg object-cover" />}<p className="text-xs text-muted-foreground">PNG, JPG или WebP. Изображение автоматически сжимается.</p></div><div className="flex flex-wrap items-end gap-2"><button disabled={savingCard || !!draft.publishedAt} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingCard ? 'Сохраняем…' : 'Сохранить черновик'}</button><button type="button" onClick={publishCard} disabled={publishing || !draft.nickname || !draft.nomination || !draft.comment || !draft.imageData} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{publishing ? 'Публикуем…' : 'Опубликовать легенду'}</button></div>{draft.publishedAt && <p className="text-sm text-emerald-400 lg:col-span-4">Опубликовано {formatDate(draft.publishedAt)}. Следующее действие — открыть новый раунд.</p>}</form>}
-          {roundStatus === 'published' && <p className="mt-2 text-sm text-muted-foreground">Легенда №{activeLegendNumber} уже опубликована. После нажатия кнопки выше откроется новый раунд голосования на месяц.</p>}
-        </section>
-
-        <form onSubmit={applyFilters} className="mb-5 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4">
-          <label className="text-sm">Дата с<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label>
-          <label className="text-sm">Дата по<input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label>
-          <label className="text-sm">Номер легенды<select value={legendNumber} onChange={(event) => setLegendNumber(event.target.value)} className="mt-1 block min-w-40 rounded-md border border-border bg-background px-3 py-2"><option value="">Все раунды</option>{Array.from({ length: 24 }, (_, index) => <option key={index + 1} value={index + 1}>Легенда №{index + 1}</option>)}</select></label>
-          <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Применить</button>
-          <button type="button" onClick={clearFilters} className="rounded-md border border-border px-4 py-2 text-sm">Сбросить</button>
-          <button type="button" onClick={() => void exportCsv()} className="ml-auto inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm"><Download className="h-4 w-4"/>Скачать CSV</button>
-          <button type="button" onClick={() => void loadVotes()} title="Обновить" className="rounded-md border border-border p-2"><RefreshCw className="h-4 w-4"/></button>
-        </form>
-
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
-              <thead className="bg-muted/50 text-xs uppercase text-muted-foreground"><tr><th className="px-4 py-3">Логин пользователя</th><th className="px-4 py-3">Дата голосования (МСК)</th><th className="px-4 py-3">№ легенды</th><th className="px-4 py-3">Никнейм</th><th className="px-4 py-3">Роль</th><th className="px-4 py-3">Комментарий</th></tr></thead>
-              <tbody className="divide-y divide-border">
-                {loading ? <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Загружаем…</td></tr> : votes.length === 0 ? <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Голосов по выбранным фильтрам нет</td></tr> : votes.map((vote) => <tr key={vote.id} className="align-top hover:bg-muted/20"><td className="whitespace-nowrap px-4 py-3">{vote.userLogin || vote.userName || '—'}</td><td className="whitespace-nowrap px-4 py-3">{formatDate(vote.createdAt)}</td><td className="px-4 py-3">{vote.legendNumber}</td><td className="px-4 py-3">{vote.nickname}</td><td className="px-4 py-3">{vote.roleLabel}</td><td className="max-w-[520px] whitespace-pre-wrap px-4 py-3">{vote.comment}</td></tr>)}
-              </tbody>
-            </table>
-          </div>
+        <div role="tablist" aria-label="Разделы голосования за легенду" className="mb-5 flex flex-wrap gap-2 border-b border-border">
+          <button type="button" role="tab" aria-selected={activeTab === 'current'} onClick={() => setActiveTab('current')} className={`border-b-2 px-4 py-3 text-sm font-semibold ${activeTab === 'current' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Текущий раунд</button>
+          <button type="button" role="tab" aria-selected={activeTab === 'published'} onClick={() => setActiveTab('published')} className={`border-b-2 px-4 py-3 text-sm font-semibold ${activeTab === 'published' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>Опубликованные легенды ({publishedLegends.length})</button>
         </div>
+
+        {activeTab === 'current' ? <section role="tabpanel" className="space-y-5">
+          <section className="rounded-xl border border-border bg-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div><h2 className="text-lg font-semibold">Раунд №{activeLegendNumber}: {roundStatus === 'open' ? 'голосование открыто' : roundStatus === 'processing' ? 'обработка результатов' : 'легенда опубликована'}</h2><p className="mt-1 text-sm text-muted-foreground">Начало: {startedAt ? formatDate(startedAt) : '—'} · Завершение: {deadline ? formatDate(new Date(deadline).toISOString()) : '—'} · Голосов: {total}</p></div>
+              <button type="button" onClick={advanceRound} disabled={!nextLegendNumber || roundStatus !== 'published' || advancing} className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">{advancing ? 'Открываем…' : nextLegendNumber ? `Опубликовать следующую Легенду и открыть раунд №${nextLegendNumber}` : 'Все раунды открыты'}</button>
+            </div>
+            {roundStatus === 'open' && <form onSubmit={saveDeadline} className="mt-4 flex flex-wrap items-end gap-3"><label className="text-sm">Голосование закрывается<input required type="datetime-local" value={deadline} min={toLocalInput(new Date().toISOString())} onChange={(event) => setDeadline(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label><button disabled={savingDeadline} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingDeadline ? 'Сохраняем…' : 'Сохранить срок'}</button></form>}
+            {roundStatus === 'processing' && <form onSubmit={saveCard} className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_1.2fr_1.2fr]"><label className="text-sm">Ник легенды<input required maxLength={80} value={draft.nickname} onChange={(event) => setDraft((value) => ({ ...value, nickname: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Номинация<input required maxLength={100} value={draft.nomination} onChange={(event) => setDraft((value) => ({ ...value, nomination: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2" /></label><label className="text-sm">Место отображения<select required value={draft.displayPosition} onChange={(event) => setDraft((value) => ({ ...value, displayPosition: Number(event.target.value) }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2">{Array.from({ length: 24 }, (_, index) => { const position = index + 1; const owner = occupiedPositions.find((item) => item.displayPosition === position); return <option key={position} value={position} disabled={!!owner && owner.legendNumber !== activeLegendNumber}>{owner ? `Позиция №${position} — Легенда #${owner.legendNumber}` : `Позиция №${position} — свободна`}</option>; })}</select></label><label className="text-sm">Ссылка на подкаст <span className="text-muted-foreground">(необязательно)</span><input type="url" maxLength={500} value={draft.podcastUrl} onChange={(event) => setDraft((value) => ({ ...value, podcastUrl: event.target.value }))} placeholder="https://…" className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2"/><span className="mt-1 block text-xs text-muted-foreground">Прямая аудиоссылка, Spotify, YouTube, SoundCloud или Apple Podcasts.</span></label><label className="text-sm lg:col-span-2">Комментарий о заслугах<textarea required maxLength={3000} rows={4} value={draft.comment} onChange={(event) => setDraft((value) => ({ ...value, comment: event.target.value }))} className="mt-1 block w-full resize-y rounded-md border border-border bg-background px-3 py-2" /></label><div className="space-y-2"><label className="block text-sm">Фото или аватар<input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseImage} className="mt-1 block w-full text-xs" /></label>{draft.imageData && <img src={draft.imageData} alt="Предпросмотр карточки" className="h-20 w-20 rounded-lg object-cover" />}<p className="text-xs text-muted-foreground">PNG, JPG или WebP. Изображение автоматически сжимается.</p></div><div className="flex flex-wrap items-end gap-2"><button disabled={savingCard || !!draft.publishedAt} className="rounded-md border border-border px-4 py-2 text-sm font-semibold disabled:opacity-50">{savingCard ? 'Сохраняем…' : 'Сохранить черновик'}</button><button type="button" onClick={publishCard} disabled={publishing || !draft.nickname || !draft.nomination || !draft.comment || !draft.imageData} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{publishing ? 'Публикуем…' : 'Опубликовать легенду'}</button></div>{draft.publishedAt && <p className="text-sm text-emerald-400 lg:col-span-4">Опубликовано {formatDate(draft.publishedAt)}. Следующее действие — открыть новый раунд.</p>}</form>}
+            {roundStatus === 'published' && <p className="mt-2 text-sm text-muted-foreground">Легенда №{activeLegendNumber} уже опубликована. После нажатия кнопки откроется новый раунд голосования на месяц.</p>}
+          </section>
+
+          <form onSubmit={applyFilters} className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-card p-4">
+            <label className="text-sm">Дата с<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label>
+            <label className="text-sm">Дата по<input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="mt-1 block rounded-md border border-border bg-background px-3 py-2" /></label>
+            <label className="text-sm">Номер легенды<select value={legendNumber} onChange={(event) => setLegendNumber(event.target.value)} className="mt-1 block min-w-40 rounded-md border border-border bg-background px-3 py-2"><option value="">Все раунды</option>{Array.from({ length: 24 }, (_, index) => <option key={index + 1} value={index + 1}>Легенда №{index + 1}</option>)}</select></label>
+            <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">Применить</button><button type="button" onClick={clearFilters} className="rounded-md border border-border px-4 py-2 text-sm">Сбросить</button>
+            <button type="button" onClick={() => void exportCsv()} className="ml-auto inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm"><Download className="h-4 w-4"/>Скачать CSV</button>
+          </form>
+          <div className="overflow-hidden rounded-xl border border-border bg-card"><div className="overflow-x-auto"><table className="w-full min-w-[1050px] border-collapse text-left text-sm"><thead className="bg-muted/50 text-xs uppercase text-muted-foreground"><tr><th className="px-4 py-3">Логин пользователя</th><th className="px-4 py-3">Дата голосования (МСК)</th><th className="px-4 py-3">№ легенды</th><th className="px-4 py-3">Никнейм</th><th className="px-4 py-3">Роль</th><th className="px-4 py-3">Комментарий</th></tr></thead><tbody className="divide-y divide-border">{loading ? <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Загружаем…</td></tr> : votes.length === 0 ? <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Голосов по выбранным фильтрам нет</td></tr> : votes.map((vote) => <tr key={vote.id} className="align-top hover:bg-muted/20"><td className="whitespace-nowrap px-4 py-3">{vote.userLogin || vote.userName || '—'}</td><td className="whitespace-nowrap px-4 py-3">{formatDate(vote.createdAt)}</td><td className="px-4 py-3">{vote.legendNumber}</td><td className="px-4 py-3">{vote.nickname}</td><td className="px-4 py-3">{vote.roleLabel}</td><td className="max-w-[520px] whitespace-pre-wrap px-4 py-3">{vote.comment}</td></tr>)}</tbody></table></div></div>
+        </section> : <section role="tabpanel" className="space-y-4">
+          <div><h2 className="text-lg font-semibold">Опубликованные легенды</h2><p className="text-sm text-muted-foreground">Завершённые раунды, даты голосования, количество голосов и опубликованные карточки.</p></div>
+          {loading ? <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-muted-foreground">Загружаем…</div> : publishedLegends.length === 0 ? <div className="rounded-xl border border-border bg-card px-4 py-10 text-center text-muted-foreground">Опубликованных легенд пока нет.</div> : <div className="space-y-3">{publishedLegends.map((card) => <article key={card.legendNumber} className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-center"><div aria-hidden="true" className="flex h-24 w-20 shrink-0 items-center justify-center rounded-lg bg-muted text-lg font-bold text-muted-foreground">#{card.legendNumber}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-baseline gap-x-3 gap-y-1"><h3 className="text-base font-semibold">Легенда #{card.legendNumber}: {card.nickname}</h3><span className="text-sm text-muted-foreground">{card.nomination}</span></div><p className="mt-1 text-sm text-muted-foreground">Раунд: {card.roundStartedAt ? formatDate(card.roundStartedAt) : 'начало не сохранено'} — {card.roundEndedAt ? formatDate(card.roundEndedAt) : 'завершение не сохранено'} · Опубликована: {formatDate(card.publishedAt)}</p><p className="mt-1 text-sm text-muted-foreground">Позиция №{card.displayPosition} · Голосов: {card.votesCount}{card.firstVoteAt && card.lastVoteAt ? ` · Первый голос: ${formatDate(card.firstVoteAt)} · Последний: ${formatDate(card.lastVoteAt)}` : ''}</p></div><button type="button" onClick={() => void editPublishedLegend(card)} className="shrink-0 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted">Редактировать карточку</button></article>)}</div>}
+          {editingLegendNumber !== null && <form onSubmit={savePublishedLegend} className="rounded-xl border border-border bg-card p-4"><div className="mb-4 flex items-center justify-between gap-3"><h3 className="text-lg font-semibold">Редактирование легенды #{editingLegendNumber}</h3><button type="button" onClick={() => setEditingLegendNumber(null)} className="rounded-md border border-border px-3 py-1.5 text-sm">Закрыть</button></div><div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"><label className="text-sm">Ник легенды<input required maxLength={80} value={publishedDraft.nickname} onChange={(event) => setPublishedDraft((value) => ({ ...value, nickname: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2"/></label><label className="text-sm">Номинация<input required maxLength={100} value={publishedDraft.nomination} onChange={(event) => setPublishedDraft((value) => ({ ...value, nomination: event.target.value }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2"/></label><label className="text-sm">Место отображения<select required value={publishedDraft.displayPosition} onChange={(event) => setPublishedDraft((value) => ({ ...value, displayPosition: Number(event.target.value) }))} className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2">{Array.from({ length: 24 }, (_, index) => { const position = index + 1; const owner = occupiedPositions.find((item) => item.displayPosition === position); return <option key={position} value={position} disabled={!!owner && owner.legendNumber !== editingLegendNumber}>{owner ? `Позиция №${position} — Легенда #${owner.legendNumber}` : `Позиция №${position} — свободна`}</option>; })}</select></label><label className="text-sm md:col-span-2">Комментарий о заслугах<textarea required maxLength={3000} rows={4} value={publishedDraft.comment} onChange={(event) => setPublishedDraft((value) => ({ ...value, comment: event.target.value }))} className="mt-1 block w-full resize-y rounded-md border border-border bg-background px-3 py-2"/></label><label className="text-sm">Ссылка на подкаст <span className="text-muted-foreground">(необязательно)</span><input type="url" maxLength={500} value={publishedDraft.podcastUrl} onChange={(event) => setPublishedDraft((value) => ({ ...value, podcastUrl: event.target.value }))} placeholder="https://…" className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2"/></label><div className="space-y-2"><label className="block text-sm">Фото или аватар<input type="file" accept="image/png,image/jpeg,image/webp" onChange={choosePublishedImage} className="mt-1 block w-full text-xs"/></label>{publishedDraft.imageData && <img src={publishedDraft.imageData} alt="Предпросмотр карточки" className="h-20 w-20 rounded-lg object-cover"/>}</div></div><div className="mt-4 flex flex-wrap gap-2"><button type="submit" disabled={savingPublished} className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{savingPublished ? 'Сохраняем…' : 'Сохранить изменения'}</button><button type="button" onClick={() => setEditingLegendNumber(null)} className="rounded-md border border-border px-4 py-2 text-sm">Отмена</button></div></form>}
+        </section>}
       </div>
     </main>
   );
