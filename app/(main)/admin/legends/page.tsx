@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Mic, Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
+import { Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Modal } from '@/src/components/common/modal';
@@ -52,16 +52,14 @@ interface LegendCardView {
 }
 
 function PodcastArtwork() {
-  const bars = [16, 26, 40, 29, 52, 35, 62, 42, 29, 48, 34, 18];
-  return <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border border-violet-400/60 bg-[radial-gradient(circle_at_50%_38%,rgba(194,75,255,.3),transparent_63%),linear-gradient(145deg,#201331,#121024)] shadow-[inset_0_0_22px_rgba(168,65,255,.2),0_0_18px_rgba(169,64,255,.16)]">
-    <div className="absolute inset-x-2 top-1/2 flex -translate-y-1/2 items-center justify-between gap-[2px] opacity-70" aria-hidden="true">{bars.map((height, index) => <span key={index} className="w-[3px] rounded-full bg-fuchsia-500" style={{ height: `${height}%` }}/>)}</div>
-    <Mic aria-hidden="true" className="relative z-10 h-[58%] w-[48%] stroke-[1.8] text-fuchsia-300 drop-shadow-[0_0_12px_rgba(204,77,255,.85)]"/>
+  return <div className="flex h-10 w-[58px] shrink-0 items-center justify-center">
+    <Image src="/images/legends/legend-microphone-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/>
   </div>;
 }
 
 function PodcastPanel({ title, duration, children }: { title: string; duration: string; children: React.ReactNode }) {
   return <div className="rounded-2xl border border-violet-400/40 bg-[linear-gradient(120deg,rgba(36,22,57,.96),rgba(20,19,40,.98))] p-3 shadow-[0_0_25px_rgba(158,68,255,.16)] sm:p-4">
-    <div className="grid grid-cols-[76px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[112px_minmax(0,1fr)] sm:gap-5">
+    <div className="grid grid-cols-[58px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[58px_minmax(0,1fr)] sm:gap-5">
       <PodcastArtwork/>
       <div className="min-w-0"><div className="mb-2 flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-xs font-medium text-violet-300">Подкаст</p><p className="mt-1 truncate text-sm font-semibold text-white sm:text-base">{title}</p></div><span className="shrink-0 text-xs tabular-nums text-slate-300 sm:text-sm">{duration}</span></div>{children}</div>
     </div>
@@ -324,33 +322,37 @@ export default function AdminLegendsPage() {
         {selectedCard && <div className="relative -mx-6 -my-4 max-h-[88vh] min-h-[660px] overflow-y-auto overflow-x-hidden rounded-[26px] bg-[#100c1c] p-5 sm:p-8 lg:p-10">
           <Image src="/images/legends/profile_card_background.png" alt="" aria-hidden="true" fill sizes="(max-width: 1280px) 96vw, 1280px" className="pointer-events-none absolute inset-0 z-0 h-full w-full object-fill"/>
           <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-4 top-4 z-30 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
-          <div className="relative z-10 grid items-stretch gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
-            <div className={`relative mx-auto w-full max-w-[380px] pt-[30px] ${selectedCard.twitchUrl && selectedCard.youtubeChannelUrl ? 'pb-[220px]' : selectedCard.twitchUrl || selectedCard.youtubeChannelUrl ? 'pb-[170px]' : 'pb-[150px]'}`}>
-              <div className="relative aspect-[3/4] w-full">
-                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
-                <div className="absolute inset-[3px] overflow-hidden bg-[#100c20] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]">
-                  <img src={selectedCard.imageData} alt={selectedCard.nickname} className="h-full w-full object-cover object-center"/>
-                  <div className="absolute inset-0 bg-gradient-to-t from-violet-950/35 via-transparent to-fuchsia-950/10"/>
-                </div>
-                <div className="absolute left-1/2 top-[68%] z-20 aspect-[561/328] w-[122%] -translate-x-1/2">
-                  <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
+          <div className="relative z-10 grid items-stretch gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:grid-rows-[minmax(0,1fr)_auto] md:gap-x-8 md:gap-y-0 lg:gap-x-12">
+            <div className="relative mx-auto grid w-full max-w-[380px] grid-rows-[auto_auto] md:row-span-2 md:grid-rows-[subgrid]">
+              <div className="relative pt-[30px]">
+                <div className="relative aspect-[3/4] w-full">
+                  <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
+                  <div className="absolute inset-[3px] overflow-hidden bg-[#100c20] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]">
+                    <img src={selectedCard.imageData} alt={selectedCard.nickname} className="h-full w-full object-cover object-center"/>
+                    <div className="absolute inset-0 bg-gradient-to-t from-violet-950/35 via-transparent to-fuchsia-950/10"/>
+                  </div>
+                  <div className="absolute left-1/2 top-[68%] z-20 aspect-[561/328] w-[122%] -translate-x-1/2">
+                    <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
+                  </div>
                 </div>
               </div>
-              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="absolute inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2">
+              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="mt-[110px] flex items-center justify-center gap-3 md:mt-0 md:self-center">
                 {selectedCard.twitchUrl && <a href={selectedCard.twitchUrl} target="_blank" rel="noopener noreferrer" aria-label={`Twitch ${selectedCard.nickname}`} title="Открыть Twitch" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-twitch-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
                 {selectedCard.youtubeChannelUrl && <a href={selectedCard.youtubeChannelUrl} target="_blank" rel="noopener noreferrer" aria-label={`YouTube ${selectedCard.nickname}`} title="Открыть канал YouTube" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-youtube-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
               </div>}
             </div>
-            <div className="min-w-0 pb-4 pt-2 md:flex md:self-stretch md:flex-col md:pt-6">
-              <h2 className="break-words pr-8 text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_0_18px_rgba(200,154,255,.2)] sm:text-5xl lg:text-6xl">{selectedCard.nickname}</h2>
-              <div className="relative mx-auto mt-4 aspect-[5/1] w-full max-w-[560px] md:mx-0">
-                <Image src="/images/legends/nomination_badge.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 90vw, 560px" className="object-cover object-center"/>
-                <span className="absolute inset-y-0 left-[22%] right-[4%] flex items-center justify-center px-3 text-center text-base font-bold text-amber-300 drop-shadow-[0_1px_5px_rgba(255,184,36,.5)] sm:text-lg lg:text-xl">{selectedCard.nomination}</span>
+            <div className="min-w-0 pb-4 pt-2 md:contents">
+              <div className="min-w-0 md:col-start-2 md:row-start-1 md:pt-6">
+                <h2 className="break-words pr-8 text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_0_18px_rgba(200,154,255,.2)] sm:text-5xl lg:text-6xl">{selectedCard.nickname}</h2>
+                <div className="relative mx-auto mt-4 aspect-[5/1] w-full max-w-[560px] md:mx-0">
+                  <Image src="/images/legends/nomination_badge.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 90vw, 560px" className="object-cover object-center"/>
+                  <span className="absolute inset-y-0 left-[22%] right-[4%] flex items-center justify-center px-3 text-center text-base font-bold text-amber-300 drop-shadow-[0_1px_5px_rgba(255,184,36,.5)] sm:text-lg lg:text-xl">{selectedCard.nomination}</span>
+                </div>
+                <div className="my-4 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent lg:my-5"/>
+                <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">{selectedCard.comment || selectedCard.achievement}</p>
               </div>
-              <div className="my-4 h-px bg-gradient-to-r from-fuchsia-400/80 via-violet-300/60 to-transparent lg:my-5"/>
-              <h3 className="border-l-4 border-rose-500 pl-4 text-xl font-bold text-white sm:text-2xl">Заслуги и вклад в развитие сцены</h3>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base lg:text-lg">{selectedCard.comment || selectedCard.achievement}</p>
-              {(selectedCard.videoPodcastUrl || selectedCard.podcastUrl) && <div className="mt-4 md:mt-auto md:pt-8"><PodcastWidget url={selectedCard.videoPodcastUrl || selectedCard.podcastUrl || ''} nickname={selectedCard.nickname}/></div>}
+              {(selectedCard.videoPodcastUrl || selectedCard.podcastUrl) && <div className="mt-4 md:col-start-2 md:row-start-2 md:mt-0"><PodcastWidget url={selectedCard.videoPodcastUrl || selectedCard.podcastUrl || ''} nickname={selectedCard.nickname}/></div>}
             </div>
           </div>
         </div>}
