@@ -59,7 +59,7 @@ function PodcastArtwork() {
 
 function PodcastPanel({ title, duration, children }: { title: string; duration: string; children: React.ReactNode }) {
   return <div className="rounded-2xl border border-violet-400/40 bg-[linear-gradient(120deg,rgba(36,22,57,.96),rgba(20,19,40,.98))] p-3 shadow-[0_0_25px_rgba(158,68,255,.16)] sm:p-4">
-    <div className="grid grid-cols-[58px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[58px_minmax(0,1fr)] sm:gap-5">
+    <div className="grid grid-cols-[58px_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[58px_minmax(0,1fr)] sm:gap-5">
       <PodcastArtwork/>
       <div className="min-w-0"><div className="mb-2 flex items-center justify-between gap-3"><div className="min-w-0"><p className="text-xs font-medium text-violet-300">Подкаст</p><p className="mt-1 truncate text-sm font-semibold text-white sm:text-base">{title}</p></div><span className="shrink-0 text-xs tabular-nums text-slate-300 sm:text-sm">{duration}</span></div>{children}</div>
     </div>
@@ -336,7 +336,7 @@ export default function AdminLegendsPage() {
                   </div>
                 </div>
               </div>
-              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="mt-[110px] flex items-center justify-center gap-3 md:mt-0 md:self-center">
+              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="mt-[110px] flex translate-y-[35px] items-center justify-center gap-3 md:mt-0 md:self-center">
                 {selectedCard.twitchUrl && <a href={selectedCard.twitchUrl} target="_blank" rel="noopener noreferrer" aria-label={`Twitch ${selectedCard.nickname}`} title="Открыть Twitch" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-twitch-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
                 {selectedCard.youtubeChannelUrl && <a href={selectedCard.youtubeChannelUrl} target="_blank" rel="noopener noreferrer" aria-label={`YouTube ${selectedCard.nickname}`} title="Открыть канал YouTube" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-youtube-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
               </div>}
