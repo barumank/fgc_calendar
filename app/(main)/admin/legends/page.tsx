@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Mic, Pause, Play, Twitch, Volume2, VolumeX, Vote, X, Youtube } from 'lucide-react';
+import { Mic, Pause, Play, Volume2, VolumeX, Vote, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Modal } from '@/src/components/common/modal';
@@ -325,7 +325,7 @@ export default function AdminLegendsPage() {
           <Image src="/images/legends/profile_card_background.png" alt="" aria-hidden="true" fill sizes="(max-width: 1280px) 96vw, 1280px" className="pointer-events-none absolute inset-0 z-0 h-full w-full object-fill"/>
           <button type="button" aria-label="Закрыть карточку" onClick={() => setSelectedCard(null)} className="absolute right-4 top-4 z-30 rounded-full p-2 text-slate-200 transition hover:bg-white/10 hover:text-white"><X className="h-6 w-6"/></button>
           <div className="relative z-10 grid items-stretch gap-5 md:min-h-[580px] md:grid-cols-[minmax(300px,.82fr)_minmax(0,1.35fr)] md:gap-8 lg:gap-12">
-            <div className="relative mx-auto w-full max-w-[380px] pt-[30px] pb-[150px]">
+            <div className={`relative mx-auto w-full max-w-[380px] pt-[30px] ${selectedCard.twitchUrl && selectedCard.youtubeChannelUrl ? 'pb-[220px]' : selectedCard.twitchUrl || selectedCard.youtubeChannelUrl ? 'pb-[170px]' : 'pb-[150px]'}`}>
               <div className="relative aspect-[3/4] w-full">
                 <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-br from-fuchsia-300 via-violet-400 to-fuchsia-300 drop-shadow-[0_0_15px_rgba(222,114,255,.65)] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]"/>
                 <div className="absolute inset-[3px] overflow-hidden bg-[#100c20] [clip-path:polygon(15%_0,85%_0,100%_11%,100%_100%,0_100%,0_11%)]">
@@ -336,9 +336,9 @@ export default function AdminLegendsPage() {
                   <Image src="/images/legends/profile_laurels_with_trophy.png" alt="" aria-hidden="true" fill sizes="(max-width: 768px) 360px, 550px" className="object-contain"/>
                 </div>
               </div>
-              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="absolute inset-x-0 bottom-0 z-30 flex justify-center gap-3">
-                {selectedCard.twitchUrl && <a href={selectedCard.twitchUrl} target="_blank" rel="noopener noreferrer" aria-label={`Twitch ${selectedCard.nickname}`} title="Открыть Twitch" className="flex h-11 w-11 items-center justify-center rounded-full border border-violet-300/50 bg-[#171126]/95 text-violet-200 shadow-[0_0_18px_rgba(168,85,247,.35)] transition hover:scale-105 hover:text-white"><Twitch className="h-6 w-6"/></a>}
-                {selectedCard.youtubeChannelUrl && <a href={selectedCard.youtubeChannelUrl} target="_blank" rel="noopener noreferrer" aria-label={`YouTube ${selectedCard.nickname}`} title="Открыть канал YouTube" className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/50 bg-[#171126]/95 text-rose-300 shadow-[0_0_18px_rgba(239,68,68,.3)] transition hover:scale-105 hover:text-white"><Youtube className="h-6 w-6"/></a>}
+              {(selectedCard.twitchUrl || selectedCard.youtubeChannelUrl) && <div className="absolute inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2">
+                {selectedCard.twitchUrl && <a href={selectedCard.twitchUrl} target="_blank" rel="noopener noreferrer" aria-label={`Twitch ${selectedCard.nickname}`} title="Открыть Twitch" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-twitch-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
+                {selectedCard.youtubeChannelUrl && <a href={selectedCard.youtubeChannelUrl} target="_blank" rel="noopener noreferrer" aria-label={`YouTube ${selectedCard.nickname}`} title="Открыть канал YouTube" className="block h-10 w-[58px] transition hover:scale-105"><Image src="/images/legends/legend-youtube-link.png" alt="" aria-hidden="true" width={756} height={523} className="h-full w-full object-contain"/></a>}
               </div>}
             </div>
             <div className="min-w-0 pb-4 pt-2 md:flex md:self-stretch md:flex-col md:pt-6">
